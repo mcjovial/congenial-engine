@@ -10,7 +10,6 @@ import PWAPrompt from "react-ios-pwa-prompt";
 import { Offline, Online } from "react-detect-offline";
 import OfflineComponent from "./components/Mobile/OfflineComponent";
 import CustomCssProvider from "./components/CustomCssProvider";
-import PWAInstallation from "./components/Mobile/PWAInstallation";
 
 const polling = {
 	enabled: false,
@@ -20,20 +19,11 @@ const Root = ({ children, initialState = {} }) => (
 	<React.Fragment>
 		<Provider store={store(initialState)}>
 			<CustomCssProvider />
-			<div
-				className="height-100 overlay-loading hidden"
-				style={{ backgroundColor: "rgba(96, 125, 139, 0.45)" }}
-				id="gpsLoadingScreen"
-			>
-				<div className="spin-load" />
-			</div>
-
 			<Online polling={polling}>
 				{children}
 				<img className="cart-empty-img hidden" src="/assets/img/various/offline.png" alt="offline" />
 				<CheckVersion />
 				<InAppNotification />
-				<PWAInstallation />
 				{localStorage.getItem("enIOSPWAPopup") === "true" && (
 					<PWAPrompt
 						delay={2500}

@@ -8,7 +8,7 @@ return [
     |--------------------------------------------------------------------------
      */
     /*Notifications */
-    'orderAcceptedNotification' => 'Order Accepted.',
+    'orderAcceptedNotification' => 'Order Accepted',
     'successNotification' => 'Success 👌',
     'orderSomethingWentWrongNotification' => 'Something went wrong or Order was already accepted/canceled.',
     'woopssNotification' => 'Wooopsss ⚠️',
@@ -37,7 +37,7 @@ return [
     'dashboardStores' => 'Stores',
     'dashboardOrdersProcessed' => 'Orders Processed',
     'dashboardItemsSold' => 'Items Sold',
-    'dashboardEarnings' => 'Earning',
+    'dashboardEarnings' => 'Earnings',
 
     'dashboardNewOrders' => 'New Orders',
     'dashboardOrderID' => 'Order ID',
@@ -56,6 +56,7 @@ return [
     'dashboardOrderAcceptedTime' => 'Order Accepted Time',
     'dashboardMarkAsReady' => 'Mark As Ready',
     'dashboardMarkAsCompleted' => 'Mark As Completed',
+    'dashboardStopSound' => 'Stop Notification Sound',
 
     /* Stores Page */
     'spPageTitle' => 'Stores - Dashboard',
@@ -88,6 +89,7 @@ return [
     'sePhLandMark' => 'Any Near Landmark',
     'seLblLat' => 'Latitude',
     'seLblLong' => 'Longitude',
+    'seLblSearch' => 'Search',
     'sePhTextLatLong1' => 'You can use services like:',
     'sePhTextLatLong2' => 'If you enter an invalid Latitude/Longitude the map system might crash with a white screen.',
     'seLblCertificate' => 'Certificate/License Code',
@@ -152,6 +154,8 @@ return [
     'apePlaceHolderName' => 'Addon Name',
     'apeLabelPrice' => 'Price',
     'apePlaceHolderPrice' => 'Addon Price in',
+    'apeEnableAddon' => 'Enable Addon',
+    'apeDisableAddon' => 'Disable Addon',
 
     /* Menu Categories Page */
 
@@ -162,6 +166,8 @@ return [
     'mcpTableNOI' => 'No of Items',
     'mcpTableStatus' => 'Status',
     'mcpTableCA' => 'Created At',
+    'mcpToolTipDisableCat' => 'Disable Category',
+    'mcpToolTipEnableCat' => 'Enable Category',
     'mcpModalTitle' => 'Add New Item Category',
     'mcpModalLabelName' => 'Name',
     'mcpModalPlaceHolderName' => 'Enter Category Name',
@@ -184,6 +190,8 @@ return [
     'ipRowRecommended' => 'Recommended',
     'ipRowPopular' => 'Popular',
     'ipRowNew' => 'New',
+    'ipToolTipDisable' => 'Disable Item',
+    'ipToolTipEnable' => 'Enable Item',
     'ipmTitle' => 'Add New Item',
     'ipmLabelName' => 'Item Name',
     'ipmPhName' => 'Item Name',
@@ -203,6 +211,7 @@ return [
     'ipmLabelIsRecommended' => 'Is Recommended?',
     'ipmLabelIsPopular' => 'Is Popular?',
     'ipmLabelIsNew' => 'Is New?',
+    'ipmLabelIsVeg' => 'Is Veg?',
     'ipmCsvTitle' => 'CSV Bulk Upload for Items',
     'ipmLabelCsvFile' => 'CSV File',
     'ipmBtnCsvDownloadSample' => 'Download Sample CSV',
@@ -210,6 +219,11 @@ return [
     'ipePageTitle' => 'Item - Dashboard',
     'ipeEditing' => 'Editing',
     'ipeItemDetails' => 'Item Details',
+    'ipeRemoveAllAddonsBtn' => 'Remove All Addons',
+    'ipeConfirmTitle' => 'Are you Sure?',
+    'ipeConfirmContent' => 'This action will remove all addons from this item.',
+    'ipeConfirmYes' => 'Yes',
+    'ipeConfirmCancel' => 'Cancel',
     'ipeDisable' => 'Disable',
     'ipeEnable' => 'Enable',
 
@@ -231,7 +245,7 @@ return [
     'opOrderStatus7' => 'Ready to Pickup',
     'opDeliveryBy' => 'Delivery By',
     'opNone' => 'NONE',
-    'opView' => 'View',
+    'opView' => 'VIEW',
     'ovTitle' => 'View Order - Dashboard',
     'ovPrint' => 'Print',
     'ovOrderPlaced' => 'Order Placed',
@@ -279,9 +293,12 @@ return [
     'epTableMessage' => 'Message',
     'epTableCreated' => 'Created',
     'epTableUpdated' => 'Updated',
+    'epChartEarningsIn' => 'Earning in ',
+    'epChartSalesIn' => 'Sales in',
 
     /* Version 2.3.0 */
     'opPaymentMode' => 'Payment Mode',
+    'dashboardSelfpickupOrders' => 'Self-Pickup Orders',
     'dashboardSelfpickupOrders' => 'Self-Pickup Orders',
     'dashboardOngoingDeliveries' => 'OnGoing Deliveries',
     'seNoStorePaymentGatewayMessage' => 'No Payment Gateways Active. Admin selected Payment Gateways will be inherited.',
@@ -313,7 +330,7 @@ return [
     'newAddonCategoryTypeLabel' => 'Type',
     'newAddonCategoryDescriptionLabel' => 'Description:',
     'newAddonCategoryDescriptionPlaceholder' => 'Short Description (50-80 Characters)',
-    'newAddonCategoryDescriptionSubTitle' => 'This will be displayed in the Items page while selecting Addon Categories',
+    'newAddonCategoryDescriptionSubTitle' => 'This will be disaplayed in the Items page while selecting Addon Categories',
     'newAddonCategoryAddAddonButton' => 'Add Addon',
     'newAddonCategoryAddonsBlockTitle' => 'Addons',
     'newAddonCategoryAddonPlaceholderName' => 'Addon Name',
@@ -321,69 +338,4 @@ return [
     'newAddonCategoryAddonRemove' => 'Remove Addon',
     /* END New Addon Category Page */
 
-    /* Version 2.5.0 */
-    'storeDeliveryTypeLabel' => 'Delivery Type',
-    'storeDeliveryTypeDeliveryOption' => 'Delivery',
-    'storeDeliveryTypeSelfPickupOption' => 'Self Pickup',
-    'storeDeliveryTypeBothOption' => 'Both Delivery & Self Pickup',
-
-    'fileSectionNoFileSelected' => 'No file selected',
-    'fileSectionChooseFileButton' => 'Choose file',
-
-    'storeLatitudeFieldPlaceholder' => 'Latitude of the store',
-    'storeLongitudeFieldPlaceholder' => 'Longitude of the store',
-
-    'closeStoreToolTipMessage' => 'Users won\'t be able to place order from this store if Closed',
-    'openStoreToolTipMessage' => 'Store is Closed. Open to accept orders.',
-
-    'editItemCategoryName' => 'Edit Menu Category',
-
-    /* Version 2.6.0 */
-    'ovTaxNumber' => 'Tax Number',
-    'itemVegNonVegLabel' => 'Veg/Non-Veg',
-    'itemVegLabel' => 'Veg',
-    'itemNonVegLabel' => 'Non-Veg',
-    'itemIsVegNoneLabel' => 'None',
-
-    'sortMenuAndItemButton' => 'Sort Menu and Items',
-    'sortMenuCategoriesButton' => 'Sort Menu Categories',
-    'sortingMenuAndItemForTitle' => 'Sorting Menu and Items for',
-    'sortItemsInTitle' => 'Sort Items in',
-
-    /* Version 2.7.0 */
-    'viewOrderOrderActions' => 'Order Actions',
-    'ratingsAndReviewsText' => 'Ratings and Reviews',
-    'navRatings' => 'Ratings',
-    'ratingsPageTitle' => 'Ratings and Reviews',
-    'ratingsPageReviewsOfTitle' => 'Reviews of ',
-    'ratingsPageOrder' => 'Order',
-    'ratingsPageCustomer' => 'Customer',
-    'ratingsPageReview' => 'Review',
-    'ratingsPageViewBtn' => 'View',
-    'ratingsPageDetailedViewTitle' => 'Detailed Review',
-    'ratingsPageStoreRating' => 'Store Rating',
-    'ratingsPageStoreReview' => 'Store Review',
-
-    /* Version 2.8.0 */
-    'addonCategorySelectionLimitLabel' => 'Limit',
-    'addonCategorySelectionLimitInfo' => 'Max number of addons that can be selected by the customer',
-    'addonCategorySelectionLimitPlaceholder' => 'Addon Selection Limit',
-    'addonCategorySelectionLimitHelpText' => 'Set 0 for no limit.',
-
-    /* Version 2.9.0 */
-    'dashboardOrderPickedupTime' => 'Order Pickedup Time',
-    'dashboardOrderAcceptedByDelivery' => 'Accepted by Delivery Guy',
-    'locationSearchBtnTxt' => 'Search',
-    'locationSearchPlaceholder' => 'Search for resraurant, city or town...',
-    'opOrderStatus10' => 'Scheduled Order',
-    'opOrderStatus11' => 'Confirmed Scheduled Order',
-
-    /* Version 3.0 */
-    'ordersPageTitle' => 'Orders Management',
-    'resetFilterButton' => 'Reset All Filters',
-    'timeElapsedText' => 'Time Elapsed',
-    'searchPlaceholder' => 'Search with anything...',
-    'waitingForServerResponseText' => 'Waiting for server response...',
-    'liveTimerText' => 'Live Timer',
-    'removeItemImageText' => 'Remove Image',
 ];

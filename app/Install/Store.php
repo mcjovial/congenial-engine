@@ -27,10 +27,6 @@ class Store
         $setting->value = $data['storeName'];
         $setting->save();
 
-        $storeUrl = Setting::where('key', 'storeUrl')->first();
-        $storeUrl->value = request()->getSchemeAndHttpHost();
-        $storeUrl->save();
-
         // $cache->forget('settings');
 
         //create payment gateways
@@ -60,7 +56,7 @@ class Store
 
         $paymentGateway = new PaymentGateway();
         $paymentGateway->name = 'Razorpay';
-        $paymentGateway->description = 'Razorpay Payment Gateway';
+        $paymentGateway->description = 'PayStack Payment Gateway';
         $paymentGateway->is_active = 0;
         $paymentGateway->save();
 
@@ -79,18 +75,6 @@ class Store
         $paymentGateway = new PaymentGateway();
         $paymentGateway->name = 'Paytm';
         $paymentGateway->description = 'Paytm Payment Gateway';
-        $paymentGateway->is_active = 0;
-        $paymentGateway->save();
-
-        $paymentGateway = new PaymentGateway();
-        $paymentGateway->name = 'Flutterwave';
-        $paymentGateway->description = 'Flutterwave Payment Gateway';
-        $paymentGateway->is_active = 0;
-        $paymentGateway->save();
-
-        $paymentGateway = new PaymentGateway();
-        $paymentGateway->name = 'Khalti';
-        $paymentGateway->description = 'Khalti Payment Gateway';
         $paymentGateway->is_active = 0;
         $paymentGateway->save();
 
@@ -132,4 +116,5 @@ class Store
         $translation->is_default = 1;
         $translation->save();
     }
+
 }

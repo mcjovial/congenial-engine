@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { deleteAddress, getAddresses, saveAddress, setDefaultAddress } from "../../../../services/addresses/actions";
-import { clearRestaurantList } from "../../../../services/restaurant/actions";
 
 import AddressList from "./AddressList";
 import BackWithSearch from "../../Elements/BackWithSearch";
@@ -83,8 +82,6 @@ class Addresses extends Component {
 						localStorage.removeItem("fromCart");
 						this.context.router.history.push("/cart");
 					} else {
-						//remove restaurants list...
-						this.props.clearRestaurantList();
 						this.context.router.history.goBack();
 					}
 				});
@@ -207,6 +204,5 @@ export default connect(
 		deleteAddress,
 		updateUserInfo,
 		setDefaultAddress,
-		clearRestaurantList,
 	}
 )(Addresses);

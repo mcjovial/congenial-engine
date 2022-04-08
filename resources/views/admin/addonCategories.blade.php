@@ -5,27 +5,24 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
+            <h4><i class="icon-circle-right2 mr-2"></i>
                 @if(empty($query))
-                <span class="font-weight-bold mr-2">Total</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }} Addon Categories</span>
+                <span class="font-weight-bold mr-2">TOTAL</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $count }}</span>
                 @else
-                <span class="font-weight-bold mr-2">Total</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }} Addon Categories</span>
-                <br>
-                <span class="font-weight-normal mr-2">Showing results for "{{ $query }}"</span>
+                <span class="font-weight-bold mr-2">TOTAL</span>
+                <span class="badge badge-primary badge-pill animated flipInX mr-2">{{ $count }}</span>
+                <span class="font-weight-bold mr-2">Results for "{{ $query }}"</span>
                 @endif
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
-        <div class="header-elements d-none py-0 mb-3 mb-md-0">
+         <div class="header-elements d-none py-0 mb-3 mb-md-0">
             <div class="breadcrumb">
-                <a class="btn btn-secondary btn-labeled btn-labeled-left" href="{{route('admin.newAddonCategory')}}">
-                    <b><i class="icon-plus2"></i></b>
-                    Add New Addon Category
-                </a>
+            <a class="btn btn-secondary btn-labeled btn-labeled-left" href="{{route('admin.newAddonCategory')}}">
+                <b><i class="icon-plus2"></i></b>
+                Add New Addon Category
+            </a>
             </div>
         </div>
     </div>
@@ -49,7 +46,6 @@
                         <tr>
                             <th>Name</th>
                             <th>Type</th>
-                            <th>Limit</th>
                             <th>No. of Addons</th>
                             <th style="width: 15%">Created At</th>
                             <th class="text-center" style="width: 10%;"><i class="
@@ -62,37 +58,36 @@
                             <td>{{ $addonCategory->name }}</td>
                             <td>
                                 @if($addonCategory->type == "SINGLE")
-                                <span class="btn btn-xs btn-info p-1">
+                                <span class="badge badge-flat border-grey-800 text-primary text-capitalize mr-1">
                                     Single Selection
                                 </span>
                                 @endif
                                 @if($addonCategory->type == "MULTI")
-                                <span class="btn btn-xs btn-secondary p-1">
-                                    Multiple Selection
+                                <span class="badge badge-flat border-grey-800 text-primary text-capitalize mr-1">
+                                    MULTIPLE Selection
                                 </span>
                                 @endif
-                            </td>
-                            <td>@if($addonCategory->type == "SINGLE") -- @else {{ $addonCategory->addon_limit }} @endif
                             </td>
                             <td>{{ $addonCategory->addons_count }}</td>
                             <td>{{ $addonCategory->created_at->diffForHumans() }}</td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-justified">
                                     <a href="{{ route('admin.editAddonCategory', $addonCategory->id) }}"
-                                        class="btn btn-sm btn-primary"> Edit </a>
+                                        class="badge badge-primary badge-icon"> Edit <i
+                                        class="icon-database-edit2 ml-1"></i></a>
+                                </div>
+                                   </td>
                                 </div>
                             </td>
-            </div>
-            </td>
-            </tr>
-            @endforeach
-            </tbody>
-            </table>
-            <div class="mt-3">
-                {{ $addonCategories->links() }}
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <div class="mt-3">
+                    {{ $addonCategories->links() }}
+                </div>
             </div>
         </div>
     </div>
-</div>
 </div>
 @endsection

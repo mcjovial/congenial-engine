@@ -69,9 +69,7 @@ class Checkout extends Component {
 	};
 
 	handleToPayText = (data) => {
-		setTimeout(() => {
-			this.setState({ toPay: data });
-		}, 200);
+		this.setState({ toPay: data });
 	};
 
 	render() {
@@ -118,7 +116,6 @@ class Checkout extends Component {
 					<div className="pt-30" />
 					<PaymentList
 						handleProcessDistanceCalcLoading={this.handleProcessDistanceCalcLoading}
-						googleLoadingStatus={this.state.process_distance_calc_loading}
 						paymentgateways={this.props.paymentgateways}
 						gatewayStatus={this.state.gateways_received}
 						handleLoading={this.handleLoading}

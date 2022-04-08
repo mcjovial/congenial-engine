@@ -18,8 +18,7 @@ export const placeOrder = (
 	partial_wallet,
 	distance,
 	pending_payment,
-	tipAmount,
-	cash_change_amount
+	tipAmount
 ) => (dispatch, getState) => {
 	return Axios.post(PLACE_ORDER_URL, {
 		token: user.data.auth_token,
@@ -36,15 +35,10 @@ export const placeOrder = (
 		dis: distance,
 		pending_payment: pending_payment,
 		tipAmount: tipAmount,
-		cash_change_amount: cash_change_amount,
-		schedule_date:
-			localStorage.getItem("orderDate") !== null ? JSON.parse(localStorage.getItem("orderDate")) : null,
-		schedule_slot:
-			localStorage.getItem("orderSlot") !== null ? JSON.parse(localStorage.getItem("orderSlot")) : null,
 	})
 		.then((response) => {
 			const checkout = response.data;
-			console.log("From Checkout");
+
 			if (checkout.success) {
 				dispatch({ type: PLACE_ORDER, payload: checkout });
 
@@ -53,8 +47,7 @@ export const placeOrder = (
 				const cartProducts = state.cart.products;
 				// const user = state.user.user;
 				localStorage.removeItem("orderComment");
-				localStorage.removeItem("orderSlot");
-				localStorage.removeItem("orderDate");
+
 				for (let i = cartProducts.length - 1; i >= 0; i--) {
 					// remove all items from cart
 					cartProducts.splice(i, 1);

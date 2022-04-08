@@ -42,8 +42,6 @@ export default (initialState) => {
 			delivery_user: state.delivery_user,
 			languages: state.languages.languages,
 			settings: state.settings,
-			popular_locations: state.popular_locations,
-			// searches: state.searches,
 		};
 		localStorage.setItem("state", JSON.stringify(persist));
 

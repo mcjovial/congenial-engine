@@ -54,7 +54,7 @@ class RecommendedItems extends Component {
 													}}
 												>
 													<span>
-														{product.addon_categories && product.addon_categories.length ? (
+														{product.addon_categories.length ? (
 															<React.Fragment>
 																<i
 																	className="si si-check"
@@ -78,12 +78,12 @@ class RecommendedItems extends Component {
 								<div className="my-2 recommended-item-meta">
 									<div className="px-5 text-left recommended-v2-ellipsis-meta">
 										{localStorage.getItem("showVegNonVegBadge") === "true" ? (
-											product.is_veg !== null ? (
+											product.is_veg !== null && (
 												<div className="d-flex justify-content-between align-items-center">
 													{product.is_veg ? (
 														<React.Fragment>
 															<img
-																src="/assets/img/various/veg-icon-bg.png"
+																src="/assets/img/various/veg-icon.png"
 																alt="Veg"
 																style={{ width: "1rem", alignSelf: "center" }}
 																className="mr-1 my-1"
@@ -93,7 +93,7 @@ class RecommendedItems extends Component {
 													) : (
 														<React.Fragment>
 															<img
-																src="/assets/img/various/non-veg-icon-bg.png"
+																src="/assets/img/various/non-veg-icon.png"
 																alt="Non-Veg"
 																style={{ width: "1rem", alignSelf: "center" }}
 																className="mr-1 my-1"
@@ -102,19 +102,16 @@ class RecommendedItems extends Component {
 														</React.Fragment>
 													)}
 												</div>
-											) : (
-												<span className="meta-name">{product.name}</span>
 											)
 										) : (
 											<span className="meta-name">{product.name}</span>
 										)}
+										{/* {localStorage.getItem("showVegNonVegBadge") === "false" && <br />} */}
 									</div>
 									<div className="ml-2">
 										<span className="meta-price">
 											{localStorage.getItem("hidePriceWhenZero") === "true" &&
-											product.price === "0.00" ? (
-												<span style={{ height: "20px", display: "block" }}> </span>
-											) : (
+											product.price === "0.00" ? null : (
 												<React.Fragment>
 													{product.old_price > 0 && (
 														<span className="strike-text mr-1">
@@ -134,9 +131,40 @@ class RecommendedItems extends Component {
 														{localStorage.getItem("currencySymbolAlign") === "right" &&
 															localStorage.getItem("currencyFormat")}
 													</span>
+
+													{/* {product.old_price > 0 &&
+														localStorage.getItem("showPercentageDiscount") === "true" && (
+															<React.Fragment>
+																<span
+																	className="price-percentage-discount mb-0 ml-1"
+																	style={{
+																		color: localStorage.getItem("cartColorBg"),
+																	}}
+																>
+																	{parseFloat(
+																		((parseFloat(product.old_price) -
+																			parseFloat(product.price)) /
+																			parseFloat(product.old_price)) *
+																			100
+																	).toFixed(0)}
+																	{localStorage.getItem("itemPercentageDiscountText")}
+																</span>
+															</React.Fragment>
+														)} */}
 												</React.Fragment>
 											)}
 										</span>
+										{/* {localStorage.getItem("showVegNonVegBadge") === "false" && <br />} */}
+										{/* {product.addon_categories.length > 0 && (
+											<span
+												className={`customizable-item-text ${localStorage.getItem(
+													"showVegNonVegBadge"
+												) === "true" && "ml-2"}`}
+												style={{ color: localStorage.getItem("storeColor") }}
+											>
+												{localStorage.getItem("customizableItemText")}
+											</span>
+										)} */}
 									</div>
 									<div
 										className="d-flex btn-group btn-group-sm my-5 btn-full justify-content-around"
@@ -146,7 +174,7 @@ class RecommendedItems extends Component {
 									>
 										{product.is_active ? (
 											<React.Fragment>
-												{product.addon_categories && product.addon_categories.length ? (
+												{product.addon_categories.length ? (
 													<button
 														disabled
 														type="button"
@@ -211,10 +239,7 @@ class RecommendedItems extends Component {
 				) : (
 					<div key={product.id} className="col-6 p-0 d-flex justify-content-center px-5">
 						<div className="block border-radius-275 recommended-item-shadow mb-3">
-							<div
-								className="block-content recommended-item-content py-5 mb-5"
-								style={{ position: "relative", height: "17.5rem" }}
-							>
+							<div className="block-content recommended-item-content py-5 mb-5">
 								<Link to={restaurant.slug + "/" + product.id}>
 									<img src={product.image} alt={product.name} className="recommended-item-image" />
 								</Link>
@@ -229,7 +254,7 @@ class RecommendedItems extends Component {
 												}}
 											>
 												<span>
-													{product.addon_categories && product.addon_categories.length ? (
+													{product.addon_categories.length ? (
 														<React.Fragment>
 															<i
 																className="si si-check"
@@ -247,134 +272,139 @@ class RecommendedItems extends Component {
 									)}
 								</React.Fragment>
 								<div className="my-2 recommended-item-meta">
-									<div className="px-5 text-left recommended-v2-ellipsis-meta">
-										{localStorage.getItem("showVegNonVegBadge") === "true" ? (
-											product.is_veg !== null ? (
-												<div className="d-flex justify-content-left align-items-center">
+									<div className="px-5 text-left">
+										{localStorage.getItem("showVegNonVegBadge") === "true" &&
+											product.is_veg !== null && (
+												<React.Fragment>
 													{product.is_veg ? (
-														<React.Fragment>
-															<img
-																src="/assets/img/various/veg-icon-bg.png"
-																alt="Veg"
-																style={{ width: "1rem", alignSelf: "center" }}
-																className="mr-1 my-1"
-															/>
-															<span className="meta-name">{product.name}</span>
-														</React.Fragment>
+														<img
+															src="/assets/img/various/veg-icon.png"
+															alt="Veg"
+															style={{ width: "1rem" }}
+															className="mr-1"
+														/>
 													) : (
-														<React.Fragment>
-															<img
-																src="/assets/img/various/non-veg-icon-bg.png"
-																alt="Non-Veg"
-																style={{ width: "1rem", alignSelf: "center" }}
-																className="mr-1 my-1"
-															/>
-															<span className="meta-name">{product.name}</span>
-														</React.Fragment>
+														<img
+															src="/assets/img/various/non-veg-icon.png"
+															alt="Non-Veg"
+															style={{ width: "1rem" }}
+															className="mr-1"
+														/>
 													)}
-												</div>
-											) : (
-												<span className="meta-name">{product.name}</span>
-											)
-										) : (
-											<span className="meta-name">{product.name}</span>
-										)}
-
-										<div className="ml-2">
-											<span className="meta-price">
-												{localStorage.getItem("hidePriceWhenZero") === "true" &&
-												product.price === "0.00" ? null : (
-													<React.Fragment>
-														{product.old_price > 0 && (
-															<span className="strike-text mr-1">
-																{" "}
-																{localStorage.getItem("currencySymbolAlign") ===
-																	"left" &&
-																	localStorage.getItem("currencyFormat")}{" "}
-																{product.old_price}
-																{localStorage.getItem("currencySymbolAlign") ===
-																	"right" && localStorage.getItem("currencyFormat")}
-															</span>
-														)}
-
-														<span>
+												</React.Fragment>
+											)}
+										<span className="meta-name">{product.name}</span>
+										<br />
+										<span className="meta-price">
+											{localStorage.getItem("hidePriceWhenZero") === "true" &&
+											product.price === "0.00" ? null : (
+												<React.Fragment>
+													{product.old_price > 0 && (
+														<span className="strike-text mr-1">
+															{" "}
 															{localStorage.getItem("currencySymbolAlign") === "left" &&
 																localStorage.getItem("currencyFormat")}{" "}
-															{product.price}
+															{product.old_price}
 															{localStorage.getItem("currencySymbolAlign") === "right" &&
 																localStorage.getItem("currencyFormat")}
 														</span>
-													</React.Fragment>
-												)}
-											</span>
-										</div>
+													)}
 
-										<div
-											className="d-flex btn-group btn-group-sm my-5 btn-full justify-content-around"
-											role="group"
-											aria-label="btnGroupIcons1"
-											style={{ height: "40px" }}
-										>
-											{product.is_active ? (
-												<React.Fragment>
-													{product.addon_categories && product.addon_categories.length ? (
-														<button
-															disabled
-															type="button"
-															className="btn btn-add-remove"
-															style={{
-																color: localStorage.getItem("cartColor-bg"),
-															}}
-														>
-															<span className="btn-dec">-</span>
-															<Ink duration="500" />
-														</button>
-													) : (
-														<button
-															type="button"
-															className="btn btn-add-remove"
-															style={{
-																color: localStorage.getItem("cartColor-bg"),
-															}}
-															onClick={() => {
-																removeProduct(product);
-																this.forceStateUpdate();
-															}}
-														>
-															<span className="btn-dec">-</span>
-															<Ink duration="500" />
-														</button>
-													)}
-													{product.addon_categories && product.addon_categories.length ? (
-														<Customization
-															product={product}
-															addProduct={addProduct}
-															update={this.props.forceStateUpdate}
-															forceUpdate={this.forceStateUpdate}
-														/>
-													) : (
-														<button
-															type="button"
-															className="btn btn-add-remove"
-															style={{
-																color: localStorage.getItem("cartColor-bg"),
-															}}
-															onClick={() => {
-																addProduct(product);
-																this.forceStateUpdate();
-															}}
-														>
-															<span className="btn-inc">+</span>
-															<Ink duration="500" />
-														</button>
-													)}
+													<span>
+														{localStorage.getItem("currencySymbolAlign") === "left" &&
+															localStorage.getItem("currencyFormat")}{" "}
+														{product.price}
+														{localStorage.getItem("currencySymbolAlign") === "right" &&
+															localStorage.getItem("currencyFormat")}
+													</span>
+
+													{product.old_price > 0 &&
+														localStorage.getItem("showPercentageDiscount") === "true" && (
+															<React.Fragment>
+																<span
+																	className="price-percentage-discount mb-0 ml-1"
+																	style={{
+																		color: localStorage.getItem("cartColorBg"),
+																	}}
+																>
+																	{parseFloat(
+																		((parseFloat(product.old_price) -
+																			parseFloat(product.price)) /
+																			parseFloat(product.old_price)) *
+																			100
+																	).toFixed(0)}
+																	{localStorage.getItem("itemPercentageDiscountText")}
+																</span>
+															</React.Fragment>
+														)}
 												</React.Fragment>
-											) : (
-												<div className="text-danger text-item-not-available d-flex align-items-center">
-													{localStorage.getItem("cartItemNotAvailable")}
-												</div>
 											)}
-										</div>
+										</span>
+										{product.addon_categories.length > 0 && (
+											<span
+												className="ml-2 customizable-item-text"
+												style={{ color: localStorage.getItem("storeColor") }}
+											>
+												{localStorage.getItem("customizableItemText")}
+											</span>
+										)}
+									</div>
+									<div
+										className="d-flex btn-group btn-group-sm my-5 btn-full justify-content-around"
+										role="group"
+										aria-label="btnGroupIcons1"
+									>
+										{product.addon_categories.length ? (
+											<button
+												disabled
+												type="button"
+												className="btn btn-add-remove"
+												style={{
+													color: localStorage.getItem("cartColor-bg"),
+												}}
+											>
+												<span className="btn-dec">-</span>
+												<Ink duration="500" />
+											</button>
+										) : (
+											<button
+												type="button"
+												className="btn btn-add-remove"
+												style={{
+													color: localStorage.getItem("cartColor-bg"),
+												}}
+												onClick={() => {
+													removeProduct(product);
+													this.forceStateUpdate();
+												}}
+											>
+												<span className="btn-dec">-</span>
+												<Ink duration="500" />
+											</button>
+										)}
+										{product.addon_categories.length ? (
+											<Customization
+												product={product}
+												addProduct={addProduct}
+												update={this.props.forceStateUpdate}
+												forceUpdate={this.forceStateUpdate}
+											/>
+										) : (
+											<button
+												type="button"
+												className="btn btn-add-remove"
+												style={{
+													color: localStorage.getItem("cartColor-bg"),
+												}}
+												onClick={() => {
+													addProduct(product);
+													this.forceStateUpdate();
+												}}
+											>
+												<span className="btn-inc">+</span>
+												<Ink duration="500" />
+											</button>
+										)}
 									</div>
 								</div>
 							</div>

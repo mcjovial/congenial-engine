@@ -2,10 +2,9 @@ import React, { Component } from "react";
 import Modal from "react-responsive-modal";
 import Ink from "react-ink";
 import { formatPrice } from "../../../../../helpers/formatPrice";
-
 class OrderCancelPopup extends Component {
 	state = {
-		open: false,
+		open: false
 	};
 	handlePopupOpen = () => {
 		this.setState({ open: true });
@@ -29,10 +28,13 @@ class OrderCancelPopup extends Component {
 				<Modal open={this.state.open} onClose={this.handlePopupClose} closeIconSize={32}>
 					<div className="text-center mt-100">
 						<div style={{ fontSize: "1.2rem", fontWeight: "500" }}>
-							<i className="si si-info" style={{ fontSize: "4rem", opacity: "0.3", color: "#FF9800" }} />
+							<i
+								className="si si-info"
+								style={{ fontSize: "4rem", opacity: "0.3", color: "#FF9800" }}
+							></i>
 							<p>{order.unique_order_id}</p>
 							<p>{localStorage.getItem("orderCancellationConfirmationText")}</p>
-							{order.orderstatus_id === 1 || order.orderstatus_id === 10 ? (
+							{order.orderstatus_id === 1 ? (
 								<React.Fragment>
 									{order.payment_mode !== "COD" && (
 										<p className="text-muted font-w400">
@@ -66,7 +68,7 @@ class OrderCancelPopup extends Component {
 								style={{
 									border: "0",
 									borderRadius: "0",
-									backgroundColor: localStorage.getItem("storeColor"),
+									backgroundColor: localStorage.getItem("storeColor")
 								}}
 							>
 								{localStorage.getItem("yesCancelOrderBtn")}

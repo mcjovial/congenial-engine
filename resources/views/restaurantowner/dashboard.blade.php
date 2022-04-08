@@ -4,13 +4,13 @@
 @endsection
 @section('content')
 
-@if(config('setting.oneSignalAppId') != null && config('setting.oneSignalRestApiKey') != null)
+@if(config('settings.oneSignalAppId') != null && config('settings.oneSignalRestApiKey') != null)
 <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js"></script>
 <script>
     window.OneSignal = window.OneSignal || [];
     OneSignal.push(function() {
       OneSignal.init({
-        appId: "{{ config('setting.oneSignalAppId') }}",
+        appId: "{{ config('settings.oneSignalAppId') }}",
       });
     });
     let user_id = "{{ Auth::user()->id }}";
@@ -31,28 +31,26 @@
     <div class="row mt-3">
         <div class="col-6 col-xl-3 mt-2">
             <div class="col-xl-12 dashboard-display p-3">
-                <a class="block block-link-shadow text-left" href="{{ route('restaurant.restaurants') }}">
+                <a class="block block-link-shadow text-left" href="javascript:void(0)">
                     <div class="block-content block-content-full clearfix">
                         <div class="float-right mt-10 d-none d-sm-block">
                             <i class="dashboard-display-icon icon-store2"></i>
                         </div>
                         <div class="dashboard-display-number">{{ $restaurantsCount }}</div>
-                        <div class="font-size-sm text-uppercase text-muted">{{__('storeDashboard.dashboardStores')}}
-                        </div>
+                        <div class="font-size-sm text-uppercase text-muted">{{__('storeDashboard.dashboardStores')}}</div>
                     </div>
                 </a>
             </div>
         </div>
         <div class="col-6 col-xl-3 mt-2">
             <div class="col-xl-12 dashboard-display p-3">
-                <a class="block block-link-shadow text-left" href="{{ route('restaurant.orders') }}">
+                <a class="block block-link-shadow text-left" href="javascript:void(0)">
                     <div class="block-content block-content-full clearfix">
                         <div class="float-right mt-10 d-none d-sm-block">
                             <i class="dashboard-display-icon icon-basket"></i>
                         </div>
                         <div class="dashboard-display-number">{{ $ordersCount }}</div>
-                        <div class="font-size-sm text-uppercase text-muted">
-                            {{__('storeDashboard.dashboardOrdersProcessed')}}</div>
+                        <div class="font-size-sm text-uppercase text-muted">{{__('storeDashboard.dashboardOrdersProcessed')}}</div>
                     </div>
                 </a>
             </div>
@@ -65,24 +63,22 @@
                             <i class="dashboard-display-icon icon-stack-star"></i>
                         </div>
                         <div class="dashboard-display-number">{{ $orderItemsCount }}</div>
-                        <div class="font-size-sm text-uppercase text-muted">{{__('storeDashboard.dashboardItemsSold')}}
-                        </div>
+                        <div class="font-size-sm text-uppercase text-muted">{{__('storeDashboard.dashboardItemsSold')}}</div>
                     </div>
                 </a>
             </div>
         </div>
-        <div class="col-6 col-xl-3 mt-2 store-dashboard-stats--Earnings">
+        <div class="col-6 col-xl-3 mt-2">
             <div class="col-xl-12 dashboard-display p-3">
-                <a class="block block-link-shadow text-left" href="{{ route('restaurant.earnings') }}">
+                <a class="block block-link-shadow text-left" href="javascript:void(0)">
                     <div class="block-content block-content-full clearfix">
                         <div class="float-right mt-10 d-none d-sm-block">
                             <i class="dashboard-display-icon icon-coin-dollar"></i>
                         </div>
-                        <div class="dashboard-display-number">{{ config('setting.currencyFormat') }}
+                        <div class="dashboard-display-number">{{ config('settings.currencyFormat') }}
                             {{ floatval($totalEarning) }}
                         </div>
-                        <div class="font-size-sm text-uppercase text-muted">{{__('storeDashboard.dashboardEarnings')}}
-                        </div>
+                        <div class="font-size-sm text-uppercase text-muted">{{__('storeDashboard.dashboardEarnings')}}</div>
                     </div>
                 </a>
             </div>
@@ -91,14 +87,7 @@
     <div class="row pt-4 p-0">
         <div class="col-xl-12">
             <div class="panel panel-flat dashboard-main-col mt-4">
-
-                @if($autoPrinting)
-                <button class="btn text-danger btn-lg mr-2 mt-2 float-right printerStatus" data-popup="tooltip"
-                    data-placement="right" title="{{ __('thermalPrinterLang.connectingToPrinterFailedMessage') }}"
-                    style="border: 0; background-color: #F5F5F5;"><i class="icon-printer4"></i>
-                </button>
-                @endif
-
+                {{-- <button class="btn btn-default btn-labeled btn-lg mr-2 mt-2 stopSound float-right" data-popup="tooltip" data-placement="right" title="{{ __('storeDashboard.dashboardStopSound') }}" style="background-color: #F5F5F5;"><i class="icon-volume-mute5"></i></button> --}}
                 <div class="panel-heading">
                     <h4 class="panel-title pl-3 pt-3"><strong>{{__('storeDashboard.dashboardNewOrders')}}</strong></h4>
                     <hr>
@@ -120,70 +109,38 @@
                             <tr>
                                 <td>
                                     <a href="{{ route('restaurant.viewOrder', $nO->unique_order_id) }}"
-                                        class="letter-icon-title">#{{ substr ($nO->unique_order_id, -9)  }}</a>
-                                    @if($nO->schedule_slot != null)
-                                    <br>
-                                    <small>
-                                        <mark class="px-0">
-                                            {{ json_decode($nO->schedule_date)->day }},
-                                            {{ json_decode($nO->schedule_date)->date }}<br>
-                                            {{ json_decode($nO->schedule_slot)->open }} -
-                                            {{ json_decode($nO->schedule_slot)->close }}
-                                        </mark>
-                                    </small>
-                                    @endif
+                                        class="letter-icon-title">{{ $nO->unique_order_id }}</a>
                                 </td>
                                 <td class="text-center new-order-actions">
-                                    @if($nO->orderstatus_id == 1)
-                                    <a href="javascript:void(0)"
-                                        class="btn btn-primary btn-labeled btn-labeled-left mr-2 accpetOrderBtnTableList"
-                                        data-id={{ $nO->id }}> <b><i class="icon-checkmark3 ml-1"></i> </b>
-                                        {{__('storeDashboard.dashboardAcceptOrder')}} </a>
-                                    @endif
-                                    @if($nO->orderstatus_id == 10)
-                                    <a href="{{ route('restaurant.confirmScheduledOrder', $nO->id) }}"
-                                        class="btn btn-success btn-labeled btn-labeled-left mr-2 confirmOrderBtnTableList"
-                                        data-id={{ $nO->id }}> <b><i class="icon-checkmark3 ml-1"></i> </b>
-                                        {{__('orderScheduleLang.dashboardConfirmScheduledOrder')}} </a>
-                                    @endif
-
+                                    <a href="{{ route('restaurant.acceptOrder', $nO->id) }}"
+                                        class="btn btn-primary btn-labeled btn-labeled-left mr-2 accpetOrderBtnTableList"> <b><i
+                                        class="icon-checkmark3 ml-1"></i> </b> {{__('storeDashboard.dashboardAcceptOrder')}} </a>
                                     <a href="{{ route('restaurant.cancelOrder', $nO->id) }}"
-                                        class="btn btn-danger btn-labeled btn-labeled-right mr-2 cancelOrderBtnTableList"
-                                        data-popup="tooltip" data-placement="right"
-                                        title="{{ __('storeDashboard.dashboardDoubleClickMsg') }}"> <b><i
-                                                class="icon-cross ml-1"></i></b>
-                                        {{__('storeDashboard.dashboardCancelOrder')}} </a>
+                                        class="btn btn-danger btn-labeled btn-labeled-right mr-2 cancelOrderBtnTableList" data-popup="tooltip"
+                                        data-placement="right" title="{{ __('storeDashboard.dashboardDoubleClickMsg') }}"> <b><i
+                                        class="icon-cross ml-1"></i></b> {{__('storeDashboard.dashboardCancelOrder')}} </a>
                                 </td>
                                 <td>
                                     {{ $nO->restaurant->name }}
                                 </td>
-                                @php
-                                if(!is_null($nO->tip_amount)) {
-                                $nOTotal = $nO->total - $nO->tip_amount;
-                                } else {
-                                $nOTotal = $nO->total;
-                                }
+                                 @php
+                                    if(!is_null($nO->tip_amount)) {
+                                        $nOTotal = $nO->total - $nO->tip_amount;
+                                    } else {
+                                        $nOTotal = $nO->total;
+                                    }
                                 @endphp
                                 <td>
-                                    <span class="text-semibold no-margin">{{ config('setting.currencyFormat') }}
-                                        {{ $nOTotal }}</span>
+                                    <span class="text-semibold no-margin">{{ config('settings.currencyFormat') }}
+                                    {{ $nOTotal }}</span>
                                 </td>
                                 <td>
-                                    @if($nO->orderstatus_id == 1)
                                     <span class="badge badge-flat border-grey-800 text-default text-capitalize">
-                                        {{__('storeDashboard.dashboardNew')}}
+                                    {{__('storeDashboard.dashboardNew')}}
                                     </span>
-                                    @endif
-
-                                    @if($nO->orderstatus_id == 10)
-                                    <span class="badge badge-warning text-white text-capitalize">
-                                        {{__('orderScheduleLang.scheduledOrderStatusText')}}
-                                    </span>
-                                    @endif
-
                                     @if($nO->delivery_type == 2)
                                     <span class="badge badge-flat border-danger-800 text-default text-capitalize">
-                                        {{__('storeDashboard.dashboardSelfPickup')}}
+                                    {{__('storeDashboard.dashboardSelfPickup')}}
                                     </span>
                                     @endif
                                 </td>
@@ -202,8 +159,7 @@
         <div class="col-xl-12">
             <div class="panel panel-flat dashboard-main-col mt-4">
                 <div class="panel-heading">
-                    <h4 class="panel-title pl-3 pt-3"><strong>{{__('storeDashboard.dashboardPreparingOrders')}}</strong>
-                    </h4>
+                    <h4 class="panel-title pl-3 pt-3"><strong>{{__('storeDashboard.dashboardPreparingOrders')}}</strong></h4>
                     <hr>
                 </div>
                 <div class="table-responsive">
@@ -224,56 +180,33 @@
                             <tr>
                                 <td>
                                     <a href="{{ route('restaurant.viewOrder', $pO->unique_order_id) }}"
-                                        class="letter-icon-title">#{{ substr ($pO->unique_order_id, -9)  }}</a>
-                                    @if($pO->schedule_slot != null)
-                                    <br>
-                                    <small>
-                                        <mark class="px-0">
-                                            {{ json_decode($pO->schedule_date)->day }},
-                                            {{ json_decode($pO->schedule_date)->date }}<br>
-                                            {{ json_decode($pO->schedule_slot)->open }} -
-                                            {{ json_decode($pO->schedule_slot)->close }}
-                                        </mark>
-                                    </small>
-                                    @endif
+                                        class="letter-icon-title">{{ $pO->unique_order_id }}</a>
                                 </td>
                                 <td class="text-center accepted-order-actions">
                                     @if($pO->delivery_type == 2 && $pO->orderstatus_id == 2)
                                     <a href="{{ route('restaurant.markOrderReady', $pO->id) }}"
-                                        class="btn btn-warning btn-labeled btn-labeled-left mr-2 actionAfterAccept">
-                                        <b><i class="icon-checkmark3 ml-1"></i></b>
-                                        {{__('storeDashboard.dashboardMarkAsReady')}} </a>
+                                        class="btn btn-warning btn-labeled btn-labeled-left mr-2 actionAfterAccept"> <b><i
+                                        class="icon-checkmark3 ml-1"></i></b> {{__('storeDashboard.dashboardMarkAsReady')}} </a>
                                     @endif
                                     @if($pO->delivery_type == 2 && $pO->orderstatus_id == 7)
                                     <a href="{{ route('restaurant.markSelfPickupOrderAsCompleted', $pO->id) }}"
-                                        class="btn btn-success btn-labeled btn-labeled-left mr-2 actionAfterAccept">
-                                        <b><i class="icon-checkmark3 ml-1"></i></b>
-                                        {{__('storeDashboard.dashboardMarkAsCompleted')}} </a>
+                                        class="btn btn-success btn-labeled btn-labeled-left mr-2 actionAfterAccept"> <b><i
+                                        class="icon-checkmark3 ml-1"></i></b> {{__('storeDashboard.dashboardMarkAsCompleted')}} </a>
                                     @endif
-
-                                    @if($pO->orderstatus_id == 11)
-                                    <span class="badge badge-warning text-white text-capitalize">
-                                        {{__('orderScheduleLang.scheduledOrderStatusText')}}
-                                    </span>
-                                    @elseif($pO->orderstatus_id == "3")
-                                    <span class="badge badge-dark text-white text-capitalize">
-                                        {{__('storeDashboard.dashboardOrderAcceptedByDelivery')}}
-                                    </span>
-                                    @else
+                                    @if($pO->delivery_type == 1)
                                     <span>--</span>
                                     @endif
-
                                 </td>
-                                @php
-                                if(!is_null($pO->tip_amount)) {
-                                $pOTotal = $pO->total - $pO->tip_amount;
-                                } else {
-                                $pOTotal = $pO->total;
-                                }
+                                 @php
+                                    if(!is_null($pO->tip_amount)) {
+                                        $pOTotal = $pO->total - $pO->tip_amount;
+                                    } else {
+                                        $pOTotal = $pO->total;
+                                    }
                                 @endphp
                                 <td>
-                                    <span class="text-semibold no-margin">{{ config('setting.currencyFormat') }}
-                                        {{ $pOTotal }}</span>
+                                    <span class="text-semibold no-margin">{{ config('settings.currencyFormat') }}
+                                    {{ $pOTotal }}</span>
                                 </td>
                                 <td>
                                     {{ $pO->created_at->diffForHumans() }}
@@ -293,12 +226,10 @@
                 </div>
             </div>
         </div>
-        @if(config('setting.enSPU')== "true")
         <div class="col-xl-12">
             <div class="panel panel-flat dashboard-main-col mt-4">
                 <div class="panel-heading">
-                    <h4 class="panel-title pl-3 pt-3">
-                        <strong>{{__('storeDashboard.dashboardSelfpickupOrders')}}</strong></h4>
+                    <h4 class="panel-title pl-3 pt-3"><strong>{{__('storeDashboard.dashboardSelfpickupOrders')}}</strong></h4>
                     <hr>
                 </div>
                 <div class="table-responsive">
@@ -319,28 +250,26 @@
                             <tr>
                                 <td>
                                     <a href="{{ route('restaurant.viewOrder', $spO->unique_order_id) }}"
-                                        class="letter-icon-title">#{{ substr ($spO->unique_order_id, -9)  }}</a>
+                                        class="letter-icon-title">{{ $spO->unique_order_id }}</a>
                                 </td>
                                 <td class="text-center accepted-order-actions">
                                     @if($spO->delivery_type == 2 && $spO->orderstatus_id == 2)
                                     <a href="{{ route('restaurant.markOrderReady', $spO->id) }}"
-                                        class="btn btn-warning btn-labeled btn-labeled-left mr-2 actionAfterAccept">
-                                        <b><i class="icon-checkmark3 ml-1"></i></b>
-                                        {{__('storeDashboard.dashboardMarkAsReady')}} </a>
+                                        class="btn btn-warning btn-labeled btn-labeled-left mr-2 actionAfterAccept"> <b><i
+                                        class="icon-checkmark3 ml-1"></i></b> {{__('storeDashboard.dashboardMarkAsReady')}} </a>
                                     @endif
                                     @if($spO->delivery_type == 2 && $spO->orderstatus_id == 7)
                                     <a href="{{ route('restaurant.markSelfPickupOrderAsCompleted', $spO->id) }}"
-                                        class="btn btn-success btn-labeled btn-labeled-left mr-2 actionAfterAccept">
-                                        <b><i class="icon-checkmark3 ml-1"></i></b>
-                                        {{__('storeDashboard.dashboardMarkAsCompleted')}} </a>
+                                        class="btn btn-success btn-labeled btn-labeled-left mr-2 actionAfterAccept"> <b><i
+                                        class="icon-checkmark3 ml-1"></i></b> {{__('storeDashboard.dashboardMarkAsCompleted')}} </a>
                                     @endif
                                     @if($spO->delivery_type == 1)
                                     <span>--</span>
                                     @endif
                                 </td>
                                 <td>
-                                    <span class="text-semibold no-margin">{{ config('setting.currencyFormat') }}
-                                        {{ $spO->total }}</span>
+                                    <span class="text-semibold no-margin">{{ config('settings.currencyFormat') }}
+                                    {{ $spO->total }}</span>
                                 </td>
                                 <td>
                                     {{ $spO->created_at->diffForHumans() }}
@@ -360,12 +289,10 @@
                 </div>
             </div>
         </div>
-        @endif
         <div class="col-xl-12">
             <div class="panel panel-flat dashboard-main-col mt-4">
                 <div class="panel-heading">
-                    <h4 class="panel-title pl-3 pt-3">
-                        <strong>{{__('storeDashboard.dashboardOngoingDeliveries')}}</strong></h4>
+                    <h4 class="panel-title pl-3 pt-3"><strong>{{__('storeDashboard.dashboardOngoingDeliveries')}}</strong></h4>
                     <hr>
                 </div>
                 @if(count($ongoingOrders))
@@ -378,7 +305,7 @@
                                     icon-circle-down2"></i></th>
                                 <th>{{__('storeDashboard.dashboardPrice')}}</th>
                                 <th>{{__('storeDashboard.dashboardOrderPlacedTime')}}</th>
-                                <th>{{__('storeDashboard.dashboardOrderPickedupTime')}}</th>
+                                <th>{{__('storeDashboard.dashboardOrderAcceptedTime')}}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -386,35 +313,33 @@
                             <tr>
                                 <td>
                                     <a href="{{ route('restaurant.viewOrder', $ogO->unique_order_id) }}"
-                                        class="letter-icon-title">#{{ substr ($ogO->unique_order_id, -9)  }}</a>
+                                        class="letter-icon-title">{{ $ogO->unique_order_id }}</a>
                                 </td>
                                 <td class="text-center accepted-order-actions">
                                     @if($ogO->delivery_type == 2 && $ogO->orderstatus_id == 2)
                                     <a href="{{ route('restaurant.markOrderReady', $ogO->id) }}"
-                                        class="btn btn-warning btn-labeled btn-labeled-left mr-2 actionAfterAccept">
-                                        <b><i class="icon-checkmark3 ml-1"></i></b>
-                                        {{__('storeDashboard.dashboardMarkAsReady')}} </a>
+                                        class="btn btn-warning btn-labeled btn-labeled-left mr-2 actionAfterAccept"> <b><i
+                                        class="icon-checkmark3 ml-1"></i></b> {{__('storeDashboard.dashboardMarkAsReady')}} </a>
                                     @endif
                                     @if($ogO->delivery_type == 2 && $ogO->orderstatus_id == 7)
                                     <a href="{{ route('restaurant.markSelfPickupOrderAsCompleted', $ogO->id) }}"
-                                        class="btn btn-success btn-labeled btn-labeled-left mr-2 actionAfterAccept">
-                                        <b><i class="icon-checkmark3 ml-1"></i></b>
-                                        {{__('storeDashboard.dashboardMarkAsCompleted')}} </a>
+                                        class="btn btn-success btn-labeled btn-labeled-left mr-2 actionAfterAccept"> <b><i
+                                        class="icon-checkmark3 ml-1"></i></b> {{__('storeDashboard.dashboardMarkAsCompleted')}} </a>
                                     @endif
                                     @if($ogO->delivery_type == 1)
                                     <span>--</span>
                                     @endif
                                 </td>
-                                @php
-                                if(!is_null($ogO->tip_amount)) {
-                                $ogOTotal = $ogO->total - $ogO->tip_amount;
-                                } else {
-                                $ogOTotal = $ogO->total;
-                                }
+                                 @php
+                                    if(!is_null($ogO->tip_amount)) {
+                                        $ogOTotal = $ogO->total - $ogO->tip_amount;
+                                    } else {
+                                        $ogOTotal = $ogO->total;
+                                    }
                                 @endphp
                                 <td>
-                                    <span class="text-semibold no-margin">{{ config('setting.currencyFormat') }}
-                                        {{ $ogOTotal }}</span>
+                                    <span class="text-semibold no-margin">{{ config('settings.currencyFormat') }}
+                                    {{ $ogOTotal }}</span>
                                 </td>
                                 <td>
                                     {{ $ogO->created_at->diffForHumans() }}
@@ -455,57 +380,11 @@
     </div>
 </div>
 <script>
-    var autoPrinting = '{{ $autoPrinting }}';
-
-    if (autoPrinting) {
-        var socket = null;
-        var socket_host = 'ws://127.0.0.1:6441';
-
-        initializeSocket = function() {
-            try {
-                if (socket == null) {
-                    socket = new WebSocket(socket_host);
-                    socket.onopen = function() {};
-                    socket.onmessage = function(msg) {
-                        let message = msg.data;
-                        $.jGrowl("", {
-                            position: 'bottom-center',
-                            header: message,
-                            theme: 'bg-danger',
-                            life: '5000'
-                        });
-                    };
-                    socket.onclose = function() {
-                        socket = null;
-                    };
-                }
-            } catch (e) {
-                console.log("ERROR", e);
-            }
-
-            var checkSocketConnecton = setInterval(function() {
-                if (socket == null || socket.readyState != 1) {
-                    $('.printerStatus').attr('data-original-title', '{{__('thermalPrinterLang.connectingToPrinterFailedMessage')}}').removeClass('text-success').addClass('text-danger');
-                }
-                if (socket != null && socket.readyState == 1) {
-                     $('.printerStatus').removeClass('text-danger').addClass('text-success').attr('data-original-title', '{{ __('thermalPrinterLang.connectionSuccessToLocalServer') }}');
-                }
-                clearInterval(checkSocketConnecton);
-            }, 500)
-        };
-    }
-
-
     $(function() {
-
-        if (autoPrinting) {
-            initializeSocket();
-        }
-
         var touchtime = 0;
         
         let notification = document.createElement('audio');
-        let notificationFileRoute = '{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/backend/tones/{{ config('setting.restaurantNotificationAudioTrack') }}.mp3';
+        let notificationFileRoute = '{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/backend/tones/{{ config('settings.restaurantNotificationAudioTrack') }}.mp3';
            notification.setAttribute('src', notificationFileRoute);
            notification.setAttribute('type', 'audio/mp3');
            // notification.setAttribute('muted', 'muted');
@@ -565,7 +444,7 @@
                         } else {
                              var orderTotal = order.total;
                         }
-                        newOrderData +='<div class="popup-order mb-3"><div class="text-center my-3 h5"><strong><span class="text-semibold no-margin">{{ config('setting.currencyFormat') }}'+orderTotal+'</span> <i class="icon-arrow-right5"></i> <a href="'+viewOrderURL+'">'+order.unique_order_id+'</a> <i class="icon-arrow-right5"></i>'+order.restaurant.name+'</strong> '+ selfPickup +'</div>';
+                        newOrderData +='<div class="popup-order mb-3"><div class="text-center my-3 h5"><strong><span class="text-semibold no-margin">{{ config('settings.currencyFormat') }}'+orderTotal+'</span> <i class="icon-arrow-right5"></i> <a href="'+viewOrderURL+'">'+order.unique_order_id+'</a> <i class="icon-arrow-right5"></i>'+order.restaurant.name+'</strong> '+ selfPickup +'</div>';
     
                         newOrderData += '<div class="d-flex justify-content-center"><button data-id="'+order.id+'" class="btn btn-primary btn-labeled btn-labeled-left mr-2 acceptOrderBtn"><b><i class="icon-checkmark3 ml-1"></i></b> {{__('storeDashboard.dashboardAcceptOrder')}} </a> <button data-id="'+order.id+'" class="btn btn-danger btn-labeled btn-labeled-right mr-2 cancelOrderBtnPopup" data-popup="tooltip" data-placement="top" title="{{__('storeDashboard.dashboardDoubleClickMsg')}}"> <b><i class="icon-cross ml-1"></i></b> {{__('storeDashboard.dashboardCancelOrder')}}  </a></div></div>'
                         
@@ -583,7 +462,7 @@
             .fail(function() {
                 console.log("error");
             })  
-        }, {{ config("setting.restaurantNewOrderRefreshRate") }} * 1000); //all API every x seconds (config settings from admin)
+        }, {{ config("settings.restaurantNewOrderRefreshRate") }} * 1000); //all API every x seconds (config settings from admin)
         
         //reload page when popup closed
         $('#newOrderModal').on('hidden.bs.modal', function () {
@@ -594,69 +473,11 @@
         //on single click, accpet order and disable block
         $('body').on("click", ".acceptOrderBtn", function(e) {
             
-            let elem = $(this);
             let context = $(this).parents('.popup-order');
             context.addClass('popup-order-processing').prepend('<div class="d-flex pt-2 pr-2 float-right"><i class="icon-spinner10 spinner"></i></div>')
-
-            @if($autoPrinting)
-                console.log("autoPrinting is enabled...")
-                let printType = null;
-                let order_id = $(this).data("id");
-                let token = $('.csrfToken').val();
-
-                $.ajax({
-                    url: '{{ route('thermalprinter.getOrderData') }}',
-                    type: 'POST',
-                    dataType: 'JSON',
-                    data: {order_id: order_id, _token: token, print_type: printType },
-                })
-                .done(function(response) {
-                    let content = {};
-                    content.type = 'print-receipt';
-                    content.data = response;
-                    let sendData = JSON.stringify(content);
-                        if (socket != null && socket.readyState == 1) {
-                            socket.send(sendData);
-                            console.log("print command sent...")
-                            $.jGrowl("", {
-                                position: 'bottom-center',
-                                header: '{{__('thermalPrinterLang.printCommandSentMessage')}}',
-                                theme: 'bg-success',
-                                life: '3000'
-                            });
-                            setTimeout(function() {
-                                popupAcceptOrderBtn(elem,context);
-                            }, 2500);
-                        } else {
-                            initializeSocket();
-                            setTimeout(function() {
-                                socket.send(sendData);
-                                console.log("print command sent...")
-                                $.jGrowl("", {
-                                    position: 'bottom-center',
-                                    header: '{{__('storeDashboard.printCommandSentMessage')}}',
-                                    theme: 'bg-success',
-                                    life: '5000'
-                                });
-                            }, 700);
-                            setTimeout(function() {
-                                popupAcceptOrderBtn(elem,context);
-                            }, 2500);
-                        }
-                    })
-                    .fail(function() {
-                        console.log("Print Error.")
-                        popupAcceptOrderBtn(elem,context);
-                    })
-                @else
-                    console.log("autoPrinting is disabled...")
-                    popupAcceptOrderBtn(elem,context);
-                @endif
-            
-        });
-
-        popupAcceptOrderBtn = function(elem, context) {
-            let id = elem.attr("data-id");
+            console.log("HERE", context);
+    
+            let id = $(this).attr("data-id");
             let acceptOrderUrl = "{{ url('/store-owner/orders/accept-order') }}/" +id;
             $.ajax({
                 url: acceptOrderUrl,
@@ -664,9 +485,11 @@
                 dataType: 'JSON',
             })
             .done(function(data) {
-                // $(context).remove();
+                $(context).remove();
                 //count number of order on popup, if 0 then remove popup
-                $('#newOrderModal').modal('hide');
+                if ($('.popup-order').length == 0) {
+                    $('#newOrderModal').modal('hide');
+                }
                 $.jGrowl("{{__('storeDashboard.orderAcceptedNotification')}}", {
                     position: 'bottom-center',
                     header: '{{__('storeDashboard.successNotification')}}',
@@ -683,103 +506,11 @@
                     life: '5000'
                 });
             })
-        }
-
-        $('body').on("click", ".confirmOrderBtnTableList", function(e) {
-            $(this).parents('.new-order-actions').addClass('popup-order-processing');
-            window.location = this.href;
-            return false;
         });
-
+        
         $('body').on("click", ".accpetOrderBtnTableList", function(e) {
-            
-            let elem = $(this);
             $(this).parents('.new-order-actions').addClass('popup-order-processing');
-            @if($autoPrinting)
-                console.log("autoPrinting is enabled...")
-                let printType = null;
-                let order_id = $(this).data("id");
-                let token = $('.csrfToken').val();
-
-                $.ajax({
-                    url: '{{ route('thermalprinter.getOrderData') }}',
-                    type: 'POST',
-                    dataType: 'JSON',
-                    data: {order_id: order_id, _token: token, print_type: printType },
-                })
-                .done(function(response) {
-                    let content = {};
-                    content.type = 'print-receipt';
-                    content.data = response;
-                    let sendData = JSON.stringify(content);
-                        if (socket != null && socket.readyState == 1) {
-                            socket.send(sendData);
-                            console.log("print command sent...")
-                            $.jGrowl("", {
-                                position: 'bottom-center',
-                                header: '{{__('thermalPrinterLang.printCommandSentMessage')}}',
-                                theme: 'bg-success',
-                                life: '3000'
-                            });
-                            setTimeout(function() {
-                                acceptOrderTableList(elem);
-                            }, 2500);
-                        } else {
-                            initializeSocket();
-                            setTimeout(function() {
-                                socket.send(sendData);
-                                console.log("print command sent...")
-                                $.jGrowl("", {
-                                    position: 'bottom-center',
-                                    header: '{{__('storeDashboard.printCommandSentMessage')}}',
-                                    theme: 'bg-success',
-                                    life: '5000'
-                                });
-                            }, 700);
-                            setTimeout(function() {
-                                acceptOrderTableList(elem);
-                            }, 2500);
-                        }
-                    })
-                    .fail(function() {
-                        console.log("Print Error.")
-                        acceptOrderTableList(elem);
-                    })
-                @else
-                    console.log("autoPrinting is disabled...")
-                    acceptOrderTableList(elem);
-                @endif
         });
-
-        acceptOrderTableList = function(elem) {
-            let id = elem.attr("data-id");
-            let acceptOrderUrl = "{{ url('/store-owner/orders/accept-order') }}/" +id;
-            $.ajax({
-                url: acceptOrderUrl,
-                type: 'GET',
-                dataType: 'JSON',
-            })
-            .done(function(data) {
-                $.jGrowl("{{__('storeDashboard.orderAcceptedNotification')}}", {
-                    position: 'bottom-center',
-                    header: '{{__('storeDashboard.successNotification')}}',
-                    theme: 'bg-success',
-                    life: '5000'
-                });
-                setTimeout(function() {
-                    window.location.reload();
-                }, 500);
-            })
-            .fail(function() {
-                console.log("error")
-                $.jGrowl("{{__('storeDashboard.orderSomethingWentWrongNotification')}}", {
-                    position: 'bottom-center',
-                    header: '{{__('storeDashboard.woopssNotification')}}',
-                    theme: 'bg-warning',
-                    life: '5000'
-                });
-            })
-        }
     
         //on Single click donot cancel order table list
         $('body').on("click", ".cancelOrderBtnTableList", function(e) {

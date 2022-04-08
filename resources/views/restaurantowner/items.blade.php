@@ -5,17 +5,14 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
+            <h4><i class="icon-circle-right2 mr-2"></i>
                 @if(empty($query))
-                <span class="font-weight-bold mr-2">{{ __('storeDashboard.total')}}</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }}</span>
+                <span class="font-weight-bold mr-2">{{__('storeDashboard.total')}}</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $count }}</span>
                 @else
-                <span class="font-weight-bold mr-2">{{ __('storeDashboard.total')}}</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }}</span>
-                <br>
-                <span class="font-weight-normal mr-2">{{ __('storeDashboard.sphResultFor') }} "{{ $query }}"</span>
+                <span class="font-weight-bold mr-2">{{__('storeDashboard.total')}}</span>
+                <span class="badge badge-primary badge-pill animated flipInX mr-2">{{ $count }}</span>
+                <span class="font-weight-bold mr-2">Results for "{{ $query }}"</span>
                 @endif
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
@@ -39,8 +36,8 @@
 <div class="content">
     <form action="{{ route('restaurant.post.searchItems') }}" method="GET">
         <div class="form-group form-group-feedback form-group-feedback-right search-box">
-            <input type="text" class="form-control form-control-lg search-input"
-                placeholder="{{__('storeDashboard.ipSearchPH')}}" name="query">
+            <input type="text" class="form-control form-control-lg search-input" placeholder="{{__('storeDashboard.ipSearchPH')}}"
+                name="query">
             <div class="form-control-feedback form-control-feedback-lg">
                 <i class="icon-search4"></i>
             </div>
@@ -68,11 +65,8 @@
                     <tbody>
                         @foreach ($items as $item)
                         <tr>
-                            <td>
-                                @if($item->image)
-                                <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}{{ $item->image }}"
+                            <td><img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}{{ $item->image }}"
                                     alt="{{ $item->name }}" height="80" width="80" style="border-radius: 0.275rem;">
-                                @endif
                             </td>
                             <td>{{ $item->name }}</td>
                             <td>{{ $item->restaurant->name }}</td>
@@ -81,17 +75,17 @@
                             <td>
                                 @if($item->is_recommended)
                                 <span class="badge badge-flat border-grey-800 text-danger text-capitalize mr-1">
-                                    {{__('storeDashboard.ipRowRecommended')}}
+                                {{__('storeDashboard.ipRowRecommended')}}
                                 </span>
                                 @endif
                                 @if($item->is_popular)
                                 <span class="badge badge-flat border-grey-800 text-primary text-capitalize mr-1">
-                                    {{__('storeDashboard.ipRowPopular')}}
+                                {{__('storeDashboard.ipRowPopular')}}
                                 </span>
                                 @endif
                                 @if($item->is_new)
                                 <span class="badge badge-flat border-grey-800 text-default text-capitalize mr-1">
-                                    {{__('storeDashboard.ipRowNew')}}
+                                {{__('storeDashboard.ipRowNew')}}
                                 </span>
                                 @endif
                             </td>
@@ -99,13 +93,13 @@
                             <td class="text-center">
                                 <div class="btn-group btn-group-justified align-items-center">
                                     <a href="{{ route('restaurant.get.editItem', $item->id) }}"
-                                        class="btn btn-sm btn-primary"> {{__('storeDashboard.edit')}} </a>
+                                        class="badge badge-primary badge-icon"> {{__('storeDashboard.edit')}} <i
+                                            class="icon-database-edit2 ml-1"></i></a>
 
                                     <div class="checkbox checkbox-switchery ml-1" style="padding-top: 0.8rem;">
                                         <label>
-                                            <input value="true" type="checkbox" class="action-switch"
-                                                @if($item->is_active) checked="checked" @endif
-                                            data-id="{{ $item->id }}">
+                                        <input value="true" type="checkbox" class="action-switch"
+                                        @if($item->is_active) checked="checked" @endif data-id="{{ $item->id }}">
                                         </label>
                                     </div>
                                 </div>
@@ -126,8 +120,7 @@
         <div class="card-header pb-0">
             <div class="d-flex">
                 <div>
-                    <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}{{ $item->image }}" alt="{{ $item->name }}"
-                        height="80" width="80" style="border-radius: 0.275rem;">
+                    <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}{{ $item->image }}" alt="{{ $item->name }}" height="80" width="80" style="border-radius: 0.275rem;">
                 </div>
                 <div class="ml-3">
                     <h4 class="mb-0"><strong>{{ $item->name }}</strong></h4>
@@ -140,7 +133,7 @@
         <div class="card-body pt-0 pb-2">
             <div class="d-flex justify-content-between">
                 <div>
-                    <h4 class="mb-0"><strong>{{ config('setting.currencyFormat') }}{{ $item->price }}</strong></h4>
+                    <h4 class="mb-0"><strong>{{ config('settings.currencyFormat') }}{{ $item->price }}</strong></h4>
                 </div>
                 <div>
                     @if($item->is_recommended)
@@ -164,15 +157,15 @@
                 <div>
                     <a href="{{ route('restaurant.get.editItem', $item->id) }}"
                         class="btn btn-secondary btn-labeled btn-labeled-left">
-                        <b><i class="icon-database-edit2"></i></b>
-                        {{__('storeDashboard.edit')}}
+                    <b><i class="icon-database-edit2"></i></b>
+                    {{__('storeDashboard.edit')}}
                     </a>
                 </div>
                 <div>
                     <div class="checkbox checkbox-switchery" style="padding-top: 0.93rem;">
                         <label>
-                            <input value="true" type="checkbox" class="action-switch-mobile" @if($item->is_active)
-                            checked="checked" @endif data-id="{{ $item->id }}">
+                        <input value="true" type="checkbox" class="action-switch-mobile"
+                        @if($item->is_active) checked="checked" @endif data-id="{{ $item->id }}">
                         </label>
                     </div>
                 </div>
@@ -196,44 +189,38 @@
             <div class="modal-body">
                 <form action="{{ route('restaurant.saveNewItem') }}" method="POST" enctype="multipart/form-data">
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.ipmLabelName')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelName')}}:</label>
                         <div class="col-lg-9">
-                            <input type="text" class="form-control form-control-lg" name="name"
-                                placeholder="{{__('storeDashboard.ipmPhName')}}" required>
+                            <input type="text" class="form-control form-control-lg" name="name" placeholder="Item Name"
+                                required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label">{{__('storeDashboard.ipmLabelDescription')}}</label>
                         <div class="col-lg-9">
-                            <textarea class="summernote-editor" name="desc"
-                                placeholder="{{__('storeDashboard.ipmPhDescription')}}" rows="6"></textarea>
+                            <textarea class="summernote-editor" name="desc" placeholder="{{__('storeDashboard.ipmPhDescription')}}"
+                                rows="6"></textarea>
                         </div>
                     </div>
                     <div class="form-group row" style="display: none;" id="discountedTwoPrice">
                         <div class="col-lg-6">
-                            <label class="col-form-label">{{__('storeDashboard.ipmLabelMarkPrice')}}: <i
-                                    class="icon-question3 ml-1" data-popup="tooltip"
-                                    title="{{__('storeDashboard.ipmMarkPriceToolTip')}}"
+                            <label class="col-form-label">{{__('storeDashboard.ipmLabelMarkPrice')}}: <i class="icon-question3 ml-1"
+                                    data-popup="tooltip" title="{{__('storeDashboard.ipmMarkPriceToolTip')}}"
                                     data-placement="top"></i></label>
                             <input type="text" class="form-control form-control-lg price" name="old_price"
-                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('setting.currencyFormat') }}">
+                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('settings.currencyFormat') }}">
                         </div>
                         <div class="col-lg-6">
-                            <label class="col-form-label"><span
-                                    class="text-danger">*</span>{{__('storeDashboard.ipmLabelSellingPrice')}}:</label>
+                            <label class="col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelSellingPrice')}}:</label>
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('setting.currencyFormat') }}"
-                                id="newSP">
+                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('settings.currencyFormat') }}" id="newSP">
                         </div>
                     </div>
                     <div class="form-group row" id="singlePrice">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.ipmLabelPrice')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelPrice')}}:</label>
                         <div class="col-lg-6">
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('setting.currencyFormat') }}"
-                                required id="oldSP">
+                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('settings.currencyFormat') }}" required id="oldSP">
                         </div>
                         <div class="col-lg-3">
                             <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left mr-2"
@@ -252,8 +239,7 @@
                         });
                     </script>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.ipmLabelItemRestaurant')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelItemRestaurant')}}:</label>
                         <div class="col-lg-9">
                             <select class="form-control select" name="restaurant_id" required>
                                 @foreach ($restaurants as $restaurant)
@@ -264,8 +250,7 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.ipmLabelItemCategory')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelItemCategory')}}:</label>
                         <div class="col-lg-9">
                             <select class="form-control select" name="item_category_id" required>
                                 @foreach ($itemCategories as $itemCategory)
@@ -282,18 +267,17 @@
                                 name="addon_category_item[]">
                                 @foreach($addonCategories as $addonCategory)
                                 <option value="{{ $addonCategory->id }}" class="text-capitalize">
-                                    {{ $addonCategory->name }} @if($addonCategory->description != null)->
-                                    {{ $addonCategory->description }} @endif</option>
+                                    {{ $addonCategory->name }} @if($addonCategory->description != null)-> {{ $addonCategory->description }} @endif</option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label">{{__('storeDashboard.ipmLabelImage')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelImage')}}:</label>
                         <div class="col-lg-9">
                             <img class="slider-preview-image hidden" />
                             <div class="uploader">
-                                <input type="file" class="form-control-lg form-control-uniform" name="image"
+                                <input type="file" class="form-control-lg form-control-uniform" name="image" required
                                     accept="image/x-png,image/gif,image/jpeg" onchange="readURL(this);">
                                 <span class="help-text text-muted">{{__('storeDashboard.ipmImageHelperText')}}</span>
                             </div>
@@ -332,33 +316,20 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="form-group row">
-                        <label
-                            class="col-lg-3 col-form-label display-block">{{__('storeDashboard.itemVegNonVegLabel')}}:
-                        </label>
-                        <div class="col-lg-9 d-flex align-items-center">
-                            <label class="radio-inline mr-2">
-                                <input type="radio" name="is_veg" value="veg">
-                                {{__('storeDashboard.itemVegLabel')}}
-                            </label>
-
-                            <label class="radio-inline mr-2">
-                                <input type="radio" name="is_veg" value="nonveg">
-                                {{__('storeDashboard.itemNonVegLabel')}}
-                            </label>
-
-                            <label class="radio-inline mr-2">
-                                <input type="radio" name="is_veg" value="none" checked="checked">
-                                {{__('storeDashboard.itemIsVegNoneLabel')}}
-                            </label>
+                        <label class="col-lg-3 col-form-label">{{__('storeDashboard.ipmLabelIsVeg')}}</label>
+                        <div class="col-lg-9">
+                            <div class="checkbox checkbox-switchery mt-2">
+                                <label>
+                                    <input value="true" type="checkbox" class="switchery-primary vegitem" name="is_veg">
+                                </label>
+                            </div>
                         </div>
                     </div>
-
                     @csrf
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            {{__('storeDashboard.save')}}
+                        {{__('storeDashboard.save')}}
                             <i class="icon-database-insert ml-1"></i></button>
                     </div>
                 </form>
@@ -386,13 +357,13 @@
                     </div>
                     <div class="text-left">
                         <button type="button" class="btn btn-primary" id="downloadSampleItemCsv">
-                            {{__('storeDashboard.ipmBtnCsvDownloadSample')}}
+                        {{__('storeDashboard.ipmBtnCsvDownloadSample')}}
                             <i class="icon-file-download ml-1"></i>
                         </button>
                     </div>
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            {{__('storeDashboard.ipmBtnCsvUpload')}}
+                        {{__('storeDashboard.ipmBtnCsvUpload')}}
                             <i class="icon-database-insert ml-1"></i>
                         </button>
                     </div>
@@ -437,11 +408,10 @@
        var newitem = document.querySelector('.newitem');
        new Switchery(newitem, { color: '#333' });
 
+       var vegitem = document.querySelector('.vegitem');
+       new Switchery(vegitem, { color: '#008000' });
        
-       $('.form-control-uniform').uniform({
-            fileDefaultHtml: '{{ __('storeDashboard.fileSectionNoFileSelected') }}',
-            fileButtonHtml: '{{ __('storeDashboard.fileSectionChooseFileButton') }}'
-        });
+       $('.form-control-uniform').uniform();
        
         $('#downloadSampleItemCsv').click(function(event) {
            event.preventDefault();

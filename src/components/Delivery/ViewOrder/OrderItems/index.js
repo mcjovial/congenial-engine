@@ -18,7 +18,7 @@ class OrderInfo extends Component {
 							<React.Fragment>
 								{localStorage.getItem("currencySymbolAlign") === "left" &&
 									localStorage.getItem("currencyFormat")}
-								{item.price * item.quantity}
+								{item.price}
 								{localStorage.getItem("currencySymbolAlign") === "right" &&
 									localStorage.getItem("currencyFormat")}
 							</React.Fragment>

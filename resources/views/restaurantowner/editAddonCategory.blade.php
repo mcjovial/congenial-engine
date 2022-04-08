@@ -5,10 +5,9 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
+            <h4><i class="icon-circle-right2 mr-2"></i>
                 <span class="font-weight-bold mr-2">{{ __('storeDashboard.acpEditTitle')}}</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $addonCategory->name }}</span>
+                <span class="badge badge-primary badge-pill animated flipInX">"{{ $addonCategory->name }}"</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
@@ -18,66 +17,25 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('restaurant.updateAddonCategory') }}" method="POST"
-                    enctype="multipart/form-data">
+                <form action="{{ route('restaurant.updateAddonCategory') }}" method="POST" enctype="multipart/form-data">
                     <legend class="font-weight-semibold text-uppercase font-size-sm">
                         <i class="icon-address-book mr-2"></i> {{ __('storeDashboard.acpEditTitleAd')}}
                     </legend>
                     <input type="hidden" name="id" value="{{ $addonCategory->id }}">
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{ __('storeDashboard.acpInputName')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{ __('storeDashboard.acpInputName')}}:</label>
                         <div class="col-lg-9">
-                            <input value="{{ $addonCategory->name }}" type="text" class="form-control form-control-lg"
-                                name="name" placeholder="{{ __('storeDashboard.acpInputName')}}" required>
+                            <input value="{{ $addonCategory->name }}" type="text" class="form-control form-control-lg" name="name"
+                                placeholder="{{ __('storeDashboard.acpInputName')}}" required>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{ __('storeDashboard.acpTableType')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{ __('storeDashboard.acpTableType')}}:</label>
                         <div class="col-lg-9">
                             <select name="type" class="form-control form-control-lg">
-                                <option value="SINGLE" @if($addonCategory->type == "SINGLE") selected="selected" @endif>
-                                    {{ __('storeDashboard.acpRowSingleSelection')}} </option>
-                                <option value="MULTI" @if($addonCategory->type == "MULTI") selected="selected" @endif>
-                                    {{ __('storeDashboard.acpRowMultipleSelection')}} </option>
+                                <option value="SINGLE" @if($addonCategory->type == "SINGLE") selected="selected" @endif> {{ __('storeDashboard.acpRowSingleSelection')}} </option>
+                                <option value="MULTI" @if($addonCategory->type == "MULTI") selected="selected" @endif> {{ __('storeDashboard.acpRowMultipleSelection')}} </option>
                             </select>
-                        </div>
-                    </div>
-                    <div class="form-group row @if($addonCategory->type == " SINGLE") hidden @endif"
-                        id="addonLimitInputBlock">
-                        <label
-                            class="col-lg-3 col-form-label">{{ __('storeDashboard.addonCategorySelectionLimitLabel') }}
-                            <i class="icon-question3 ml-1" data-popup="tooltip"
-                                title="{{ __('storeDashboard.addonCategorySelectionLimitInfo') }}"
-                                data-placement="top"></i></label>
-                        <div class="col-lg-9">
-                            <input value="{{ $addonCategory->addon_limit }}" type="text"
-                                class="form-control form-control-lg" name="addon_limit"
-                                placeholder="{{ __('storeDashboard.addonCategorySelectionLimitPlaceholder') }}"
-                                value="0">
-                            <span class="small">{{ __('storeDashboard.addonCategorySelectionLimitHelpText') }}</span>
-                        </div>
-                    </div>
-                    <script>
-                        $("[name='type']").change(function() {
-                            let addonType = $(this).val();
-                            if (addonType == "MULTI") {
-                                $('#addonLimitInputBlock').removeClass('hidden');
-                            } else {
-                                $('#addonLimitInputBlock').addClass('hidden');
-                            }
-                        });
-                    </script>
-                    <div class="form-group row">
-                        <label
-                            class="col-lg-3 col-form-label">{{ __('storeDashboard.newAddonCategoryDescriptionLabel') }}:</label>
-                        <div class="col-lg-9">
-                            <input type="text" class="form-control form-control-lg" name="description"
-                                value="{{ $addonCategory->description }}"
-                                placeholder="{{ __('storeDashboard.newAddonCategoryDescriptionLabel') }}">
-                            <span class="help-text text-muted">
-                                {{ __('storeDashboard.newAddonCategoryDescriptionSubTitle') }}</span>
                         </div>
                     </div>
                     <div class="mt-4">
@@ -86,42 +44,37 @@
                         </legend>
                     </div>
                     @foreach ($addons as $addon)
-                    <div class='form-group row'>
+                    <div class='form-group row'> 
                         <div class='col-lg-5'>
-                            <input type="text" hidden name="addon_old[{{$loop->index}}][id]" value="{{$addon->id}}">
-                            <input type='text' class='form-control clock form-control-lg' value="{{ $addon->name }}"
-                                name="addon_old[{{$loop->index}}][name]" placeholder="Addon Name">
-                        </div>
-                        <div class='col-lg-5'>
-                            <input type='text' class='form-control clock form-control-lg' value="{{ $addon->price }}"
-                                name="addon_old[{{$loop->index}}][price]" placeholder="Addon Price">
-                        </div>
-                        <div class='col-lg-1'>
+                        <input type="text" hidden name="addon_old[{{$loop->index}}][id]" value="{{$addon->id}}">
+                            <input type='text' class='form-control clock form-control-lg'  value="{{ $addon->name }}" name="addon_old[{{$loop->index}}][name]" placeholder="Addon Name"> 
+                        </div> 
+                        <div  class='col-lg-5'>
+                            <input type='text' class='form-control clock form-control-lg' value="{{ $addon->price }}" name="addon_old[{{$loop->index}}][price]" placeholder="Addon Price"> 
+                        </div> 
+                        <div class='col-lg-1'> 
                             <div class="checkbox checkbox-switchery ml-1" style="padding-top: 0.8rem;">
                                 <label>
-                                    <input value="true" type="checkbox" class="action-switch" @if($addon->is_active)
-                                    checked="checked" @endif data-id="{{ $addon->id }}">
+                                <input value="true" type="checkbox" class="action-switch"
+                                @if($addon->is_active) checked="checked" @endif data-id="{{ $addon->id }}">
                                 </label>
                             </div>
                         </div>
-                        <div class='col-lg-1'>
-                            <div class='btn btn-danger' data-popup='tooltip' data-placement='right'
-                                onclick="del({{$addon->id}})" title='Delete Addon'><i class='icon-bin'></i></div>
-
-                        </div>
+                        <div class='col-lg-1'> 
+                        <div class='btn btn-danger' data-popup='tooltip' data-placement='right' onclick="del({{$addon->id}})" title='Delete Addon'><i class='icon-bin'></i></div>
+                        
+                    </div>
                     </div>
                     @endforeach
                     <div id="addon" class="timeSlots">
                     </div>
-                    <a href="javascript:void(0)" onclick="add(this)"
-                        class="btn btn-secondary btn-labeled btn-labeled-left mr-2"> <b><i
-                                class="icon-plus22"></i></b>{{ __('storeDashboard.newAddonCategoryAddAddonButton') }}</a>
+                    <a href="javascript:void(0)" onclick="add(this)" class="btn btn-secondary btn-labeled btn-labeled-left mr-2"> <b><i class="icon-plus22"></i></b>Add Addon</a>
 
                     @csrf
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            {{ __('storeDashboard.update')}}
-                            <i class="icon-database-insert ml-1"></i>
+                        {{ __('storeDashboard.update')}}
+                        <i class="icon-database-insert ml-1"></i>
                         </button>
                     </div>
                 </form>
@@ -130,7 +83,8 @@
     </div>
 </div>
 <script>
-    function add(data) {
+        
+        function add(data) {
             $('#addonsLegend').removeClass('hidden');
             var newAddon = document.createElement("div");
             newAddon.innerHTML ="<div class='form-group row'> <div class='col-lg-5'><input type='text' class='form-control  form-control-lg' placeholder='Addon Name' name='addon_names[]' required> </div> <div class='col-lg-5'> <input type='text' class='form-control  form-control-lg' name='addon_prices[]' placeholder='Addon Price'  required> </div> <div class='col-lg-2'><button class='remove btn btn-danger' data-popup='tooltip' data-placement='right' title='Remove Addon'><i class='icon-cross2'></i></button></div></div>";

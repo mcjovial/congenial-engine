@@ -1,8 +1,8 @@
 <?php
 
-/* API ROUTES */
+use Illuminate\Http\Request;
 
-Route::post('files-checksum', 'FilesChecksumController@filesCheck');
+/* API ROUTES */
 
 Route::post('/coordinate-to-address', [
     'uses' => 'GeocoderController@coordinatesToAddress',
@@ -16,6 +16,7 @@ Route::post('/get-settings', [
     'uses' => 'SettingController@getSettings',
 ]);
 
+//  to get tip amount list in cart page
 Route::get('/get-setting/{key}', [
     'uses' => 'SettingController@getSettingByKey',
 ]);
@@ -135,37 +136,8 @@ Route::post('/payment/process-paytm', [
 ]);
 /* END Paytm */
 
-Route::get('/get-store-reviews/{slug}', [
-    'uses' => 'RatingReviewController@getRatingAndReview',
-]);
-
-Route::get('/payment/verify-khalti-payment', [
-    'uses' => 'PaymentController@verifyKhaltiPayment',
-]);
-
-Route::post('/save-notification-token-no-user', [
-    'uses' => 'NotificationController@saveTokenNoUser',
-]);
-
-
 /* Protected Routes for Loggedin users */
 Route::group(['middleware' => ['jwt.auth']], function () {
-
-    Route::post('/get-ratable-order', [
-        'uses' => 'RatingReviewController@getRatableOrder',
-    ]);
-
-    Route::post('/rate-order', [
-        'uses' => 'RatingReviewController@rateOrder',
-    ]);
-
-    // Route::post('/get-store-reviews', [
-    //     'uses' => 'RatingReviewController@getStoreReviews',
-    // ]);
-
-    Route::post('/get-restaurant-info-with-favourite/{slug}', [
-        'uses' => 'RestaurantController@getRestaurantInfoWithFavourite',
-    ]);
 
     Route::post('/apply-coupon', [
         'uses' => 'CouponController@applyCoupon',
@@ -173,10 +145,6 @@ Route::group(['middleware' => ['jwt.auth']], function () {
 
     Route::post('/save-notification-token', [
         'uses' => 'NotificationController@saveToken',
-    ]);
-
-    Route::post('/update-app-token-for-user', [
-        'uses' => 'NotificationController@updateAppTokenForUser',
     ]);
 
     Route::post('/get-payment-gateways', [
@@ -269,14 +237,6 @@ Route::group(['middleware' => ['jwt.auth']], function () {
         'uses' => 'DeliveryController@deliverOrder',
     ]);
 
-    Route::post('/delivery/toggle-delivery-guy-status', [
-        'uses' => 'DeliveryController@updateDeliveryUserInfo',
-    ]);
-
-    Route::post('/delivery/get-completed-orders', [
-        'uses' => 'DeliveryController@getCompletedOrders',
-    ]);
-
     Route::post('/conversation/chat', [
         'uses' => 'ChatController@deliveryCustomerChat',
     ]);
@@ -288,33 +248,8 @@ Route::group(['middleware' => ['jwt.auth']], function () {
     Route::post('/check-ban', [
         'uses' => 'UserController@checkBan',
     ]);
-
-    Route::post('/toggle-favorite', [
-        'uses' => 'UserController@toggleFavorite',
-    ]);
-
-    Route::post('/get-favorite-stores', [
-        'uses' => 'RestaurantController@getFavoriteStores',
-    ]);
-
-    Route::post('/update-tax-number', [
-        'uses' => 'UserController@updateTaxNumber',
-    ]);
 });
 /* END Protected Routes */
-
-/*Razorpay APIs*/
-Route::post('/payment/razorpay/create-order', [
-    'uses' => 'RazorpayController@razorPayCreateOrder',
-]);
-Route::post('/payment/razorpay/process', [
-    'uses' => 'RazorpayController@processRazorpayPayment',
-]);
-Route::post('/payment/razorpay/webhook', [
-    'uses' => 'RazorpayController@webhook',
-]);
-/*END Razorpay APIs*/
-
 
 Route::post('/payment/process-razor-pay', [
     'uses' => 'PaymentController@processRazorpay',
@@ -339,14 +274,6 @@ Route::post('/login', [
     'uses' => 'UserController@login',
 ]);
 
-Route::post('/login-with-otp', [
-    'uses' => 'UserController@loginWithOtp',
-]);
-
-Route::post('/generate-otp-for-login', [
-    'uses' => 'SmsController@generateOtpForLogin',
-]);
-
 Route::post('/register', [
     'uses' => 'UserController@register',
 ]);
@@ -355,109 +282,3 @@ Route::post('/delivery/login', [
     'uses' => 'DeliveryController@login',
 ]);
 /* END Auth Routes */
-
-/*Store App Routes */
-
-
-Route::post('/store-owner/login', [
-    'uses' => 'StoreOwner\StoreOwnerAppController@login',
-]);
-
-Route::get('/store-owner/get-all-language', [
-    'uses' => 'StoreOwner\StoreOwnerAppController@getAllLanguage',
-]);
-Route::get('/store-owner/get-single-language/{language_code}', [
-    'uses' => 'StoreOwner\StoreOwnerAppController@getSingleLanguage',
-]);
-
-Route::group(['middleware' => ['jwt.auth']], function () {
-
-    Route::post('/store-owner/dashboard', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@dashboard',
-    ]);
-
-    Route::post('/store-owner/toggle-store-status', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@toggleStoreStatus',
-    ]);
-
-    Route::post('/store-owner/get-orders', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@getOrders',
-    ]);
-
-    Route::post('/store-owner/get-single-order', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@getSingleOrder',
-    ]);
-
-    Route::post('/store-owner/cancel-order', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@cancelOrder',
-    ]);
-
-    Route::post('/store-owner/accept-order', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@acceptOrder',
-    ]);
-
-    Route::post('/store-owner/mark-selfpickup-order-ready', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@markSelfpickupOrderReady',
-    ]);
-
-    Route::post('/store-owner/mark-selfpickup-order-completed', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@markSelfpickupOrderCompleted',
-    ]);
-    Route::post('/store-owner/confirm-scheduled-order', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@confirmScheduledOrder',
-    ]);
-
-    Route::post('/store-owner/get-menu', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@getMenu',
-    ]);
-
-    Route::post('/store-owner/toggle-item-status', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@toggleItemStatus',
-    ]);
-
-    Route::post('/store-owner/search-items', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@searchItems',
-    ]);
-
-    Route::post('/store-owner/edit-item', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@editItem',
-    ]);
-
-    Route::post('/store-owner/update-item', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@updateItem',
-    ]);
-    Route::post('/store-owner/get-past-orders', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@getPastOrders',
-    ]);
-    Route::post('/store-owner/search-orders', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@searchOrders',
-    ]);
-
-    Route::post('/store-owner/update-item-image', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@updateItemImage',
-    ]);
-
-    Route::post('/store-owner/get-ratings', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@getRatings',
-    ]);
-
-    Route::post('/store-owner/get-earnings', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@getEarnings',
-    ]);
-
-    Route::post('/store-owner/send-payout-request', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@sendPayoutRequest',
-    ]);
-
-    Route::post('/store-owner/get-inactive-items', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@getInactiveItems',
-    ]);
-
-    Route::post('/store-owner/get-store-page', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@getStorePage',
-    ]);
-
-    Route::post('/store-owner/toggle-category-status', [
-        'uses' => 'StoreOwner\StoreOwnerAppController@toggleCategoryStatus',
-    ]);
-});

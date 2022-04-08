@@ -7,8 +7,7 @@
         <div class="page-title d-flex">
             <h4><i class="icon-circle-right2 mr-2"></i>
                 <span class="font-weight-bold mr-2">{{__('storeDashboard.ipeEditing')}}</span>
-                <span class="badge badge-primary badge-pill animated flipInX">{{ $item->name }} <i
-                        class="icon-circle-right2 mx-1"></i>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $item->name }} <i class="icon-circle-right2 mx-1"></i>
                     {{ $item->restaurant->name }}</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
@@ -25,8 +24,7 @@
                     </legend>
                     <input type="hidden" name="id" value="{{ $item->id }}">
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.ipmLabelName')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelName')}}:</label>
                         <div class="col-lg-9">
                             <input value="{{ $item->name }}" type="text" class="form-control form-control-lg"
                                 name="name" placeholder="{{__('storeDashboard.ipmPhName')}}" required>
@@ -35,8 +33,7 @@
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label">{{__('storeDashboard.ipmLabelDescription')}}:</label>
                         <div class="col-lg-9">
-                            <textarea class="summernote-editor" name="desc"
-                                placeholder="{{__('storeDashboard.ipmPhDescription')}}"
+                            <textarea class="summernote-editor" name="desc" placeholder="{{__('storeDashboard.ipmPhDescription')}}"
                                 rows="6">{{ $item->desc }}</textarea>
                         </div>
                     </div>
@@ -46,25 +43,23 @@
                         <div class="col-lg-6">
                             <label class="col-form-label">{{__('storeDashboard.ipmLabelMarkPrice')}}:</label>
                             <input type="text" class="form-control form-control-lg price" name="old_price"
-                                placeholder="{{__('storeDashboard.ipmOldPricePh')}}  {{ config('setting.currencyFormat') }}"
+                                placeholder="{{__('storeDashboard.ipmOldPricePh')}}  {{ config('settings.currencyFormat') }}"
                                 value="{{ $item->old_price }}">
                         </div>
                         <div class="col-lg-6">
-                            <label class="col-form-label"><span
-                                    class="text-danger">*</span>{{__('storeDashboard.ipmLabelSellingPrice')}}:</label>
+                            <label class="col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelSellingPrice')}}:</label>
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('setting.currencyFormat') }}"
-                                id="newSP" value="{{ $item->price }}">
+                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('settings.currencyFormat') }}" id="newSP"
+                                value="{{ $item->price }}">
                         </div>
                     </div>
 
                     <div class="form-group row" id="singlePrice">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.ipmLabelPrice')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelPrice')}}:</label>
                         <div class="col-lg-5">
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('setting.currencyFormat') }}"
-                                required id="oldSP" value="{{ $item->price }}">
+                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('settings.currencyFormat') }}" required id="oldSP"
+                                value="{{ $item->price }}">
                         </div>
                         <div class="col-lg-4">
                             <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left mr-2"
@@ -86,27 +81,24 @@
                     @else
                     <div class="form-group row">
                         <div class="col-lg-6">
-                            <label class="col-form-label">{{__('storeDashboard.ipmLabelMarkPrice')}}: <i
-                                    class="icon-question3 ml-1" data-popup="tooltip"
-                                    title="Make this filed empty or zero if not required" data-placement="top"></i>
-                            </label>
+                            <label class="col-form-label">{{__('storeDashboard.ipmLabelMarkPrice')}}: <i class="icon-question3 ml-1"
+                                    data-popup="tooltip" title="Make this filed empty or zero if not required"
+                                    data-placement="top"></i> </label>
                             <input type="text" class="form-control form-control-lg price" name="old_price"
-                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('setting.currencyFormat') }}"
+                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('settings.currencyFormat') }}"
                                 value="{{ $item->old_price }}">
                         </div>
                         <div class="col-lg-6">
-                            <label class="col-form-label"><span
-                                    class="text-danger">*</span>{{__('storeDashboard.ipmLabelSellingPrice')}}:</label>
+                            <label class="col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelSellingPrice')}}:</label>
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('setting.currencyFormat') }}"
-                                id="newSP" value="{{ $item->price }}">
+                                placeholder="{{__('storeDashboard.ipmOldPricePh')}} {{ config('settings.currencyFormat') }}" id="newSP"
+                                value="{{ $item->price }}">
                         </div>
                     </div>
                     @endif
 
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.ipmLabelItemRestaurant')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelItemRestaurant')}}:</label>
                         <div class="col-lg-9">
                             <select class="form-control select" name="restaurant_id" required>
                                 @foreach ($restaurants as $restaurant)
@@ -117,8 +109,7 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.ipmLabelItemCategory')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.ipmLabelItemCategory')}}:</label>
                         <div class="col-lg-9">
                             <select class="form-control select" name="item_category_id" required>
                                 @foreach ($itemCategories as $itemCategory)
@@ -135,10 +126,8 @@
                             <select multiple="multiple" class="form-control addonCategorySelect" data-fouc
                                 name="addon_category_item[]">
                                 @foreach($addonCategories as $addonCategory)
-                                <option value="{{ $addonCategory->id }}" class="text-capitalize"
-                                    {{isset($item) &&  in_array($item->id, $addonCategory->items()->pluck('item_id')->toArray()) ? 'selected' : '' }}>
-                                    {{ $addonCategory->name }} @if($addonCategory->description != null)->
-                                    {{ $addonCategory->description }} @endif</option>
+                                <option value="{{ $addonCategory->id }}" class="text-capitalize" {{isset($item) &&  in_array($item->id, $addonCategory->items()->pluck('item_id')->toArray()) ? 'selected' : '' }}>
+                                    {{ $addonCategory->name }} @if($addonCategory->description != null)-> {{ $addonCategory->description }} @endif</option>
                                 @endforeach
                             </select>
                         </div>
@@ -146,21 +135,8 @@
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label">{{__('storeDashboard.ipmLabelImage')}}:</label>
                         <div class="col-lg-9">
-                            @if($item->image)
                             <img src="{{ substr(url("/"), 0, strrpos(url("/"), '/')) }}{{ $item->image }}" alt="Image"
                                 width="160" style="border-radius: 0.275rem;">
-                            <br>
-                            <span id="removeItemImage"
-                                class="cursor-pointer text-warning"><u>{{ __('storeDashboard.removeItemImageText') }}</u></span>
-                            <script>
-                                $('#removeItemImage').click(function(event) {
-                                conf = confirm('Are you sure?');
-                                    if (conf == true) {
-                                        window.location.href="{{ route('restaurant.removeItemImage', $item->id) }}";
-                                    } 
-                                });
-                            </script>
-                            @endif
                             <img class="slider-preview-image hidden" style="border-radius: 0.275rem;" />
                             <div class="uploader">
                                 <input type="hidden" name="old_image" value="{{ $item->image }}">
@@ -203,43 +179,28 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="form-group row">
-                        <label
-                            class="col-lg-3 col-form-label display-block">{{__('storeDashboard.itemVegNonVegLabel')}}:
-                        </label>
-                        <div class="col-lg-9 d-flex align-items-center">
-                            <label class="radio-inline mr-2">
-                                <input type="radio" name="is_veg" value="veg" @if($item->is_veg) checked="checked"
-                                @endif>
-                                {{__('storeDashboard.itemVegLabel')}}
-                            </label>
-
-                            <label class="radio-inline mr-2">
-                                <input type="radio" name="is_veg" value="nonveg" @if(!$item->is_veg) checked="checked"
-                                @endif>
-                                {{__('storeDashboard.itemNonVegLabel')}}
-                            </label>
-
-                            <label class="radio-inline mr-2">
-                                <input type="radio" name="is_veg" value="none" @if(is_null($item->is_veg))
-                                checked="checked" @endif>
-                                {{__('storeDashboard.itemIsVegNoneLabel')}}
-                            </label>
+                        <label class="col-lg-3 col-form-label">{{__('storeDashboard.ipmLabelIsVeg')}}</label>
+                        <div class="col-lg-9">
+                            <div class="checkbox checkbox-switchery mt-2">
+                                <label>
+                                    <input value="true" type="checkbox" class="switchery-primary vegitem"
+                                        @if($item->is_veg) checked="checked" @endif name="is_veg">
+                                </label>
+                            </div>
                         </div>
                     </div>
-
                     @csrf
                     <div class="text-left">
                         <div class="btn-group btn-group-justified" style="width: 150px;">
                             @if($item->is_active)
                             <a class="btn btn-primary" href="{{ route('restaurant.disableItem', $item->id) }}">
-                                {{__('storeDashboard.ipeDisable')}}
+                            {{__('storeDashboard.ipeDisable')}}
                                 <i class="icon-switch2 ml-1"></i>
                             </a>
                             @else
                             <a class="btn btn-danger" href="{{ route('restaurant.disableItem', $item->id) }}">
-                                {{__('storeDashboard.ipeEnable')}}
+                            {{__('storeDashboard.ipeEnable')}}
                                 <i class="icon-switch2 ml-1"></i>
                             </a>
                             @endif
@@ -247,7 +208,7 @@
                     </div>
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            {{__('storeDashboard.update')}}
+                        {{__('storeDashboard.update')}}
                             <i class="icon-database-insert ml-1"></i>
                         </button>
                     </div>
@@ -272,12 +233,12 @@
     }
     $(function () {
        $('.summernote-editor').summernote({
-          height: 200,
-          popover: {
-              image: [],
-              link: [],
-              air: []
-            }
+                  height: 200,
+                  popover: {
+                      image: [],
+                      link: [],
+                      air: []
+                    }
         }); 
 
         $('.select').select2();
@@ -286,7 +247,7 @@
             closeOnSelect: false
         })
     
-        var recommendeditem = document.querySelector('.recommendeditem');
+         var recommendeditem = document.querySelector('.recommendeditem');
         new Switchery(recommendeditem, { color: '#f44336' });
     
         var popularitem = document.querySelector('.popularitem');
@@ -294,12 +255,12 @@
     
         var newitem = document.querySelector('.newitem');
         new Switchery(newitem, { color: '#333' });
-       
-        $('.form-control-uniform').uniform({
-            fileDefaultHtml: '{{ __('storeDashboard.fileSectionNoFileSelected') }}',
-            fileButtonHtml: '{{ __('storeDashboard.fileSectionChooseFileButton') }}'
-        });
 
+        var vegitem = document.querySelector('.vegitem');
+       new Switchery(vegitem, { color: '#008000' });
+       
+        
+        $('.form-control-uniform').uniform();
         $('.price').numeric({allowThouSep:false, maxDecimalPlaces: 2 });
     });
 </script>

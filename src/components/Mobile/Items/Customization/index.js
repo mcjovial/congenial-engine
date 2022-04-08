@@ -39,21 +39,11 @@ class Customization extends Component {
 
 	handlePopupOpen = () => {
 		this.setState({ open: true });
-		//for forcing state update every 100ms to prevent misuse of changing addon price
-		this.rerenderInterval = setInterval(() => {
-			this.props.forceUpdate();
-		}, 100);
 	};
 	handlePopupClose = () => {
 		this.setState({ open: false });
 		this.props.forceUpdate();
-		clearInterval(this.rerenderInterval);
 	};
-
-	componentWillUnmount() {
-		clearInterval(this.rerenderInterval);
-	}
-
 	render() {
 		const { product } = this.props;
 		return (
@@ -103,26 +93,6 @@ class Customization extends Component {
 															defaultChecked={
 																addon_category.type === "SINGLE" && index === 0 && true
 															}
-															id={`uId${addon_category.id}`}
-															onClick={() => {
-																if (addon_category.addon_limit > 0) {
-																	var uId = addon_category.id;
-																	var checks = document.querySelectorAll(
-																		"#uId" + uId
-																	);
-																	var max = addon_category.addon_limit;
-																	for (var i = 0; i < checks.length; i++) {
-																		checks[i].onclick = selectiveCheck;
-																		function selectiveCheck() {
-																			var checkedChecks = document.querySelectorAll(
-																				"#uId" + uId + ":checked"
-																			);
-																			if (checkedChecks.length >= max + 1)
-																				return false;
-																		}
-																	}
-																}
-															}}
 														/>
 														{addon_category.type === "SINGLE" && (
 															<label htmlFor={addon.name} />

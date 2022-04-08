@@ -3,87 +3,78 @@
 Store Owners | Dashboard
 @endsection
 @section('content')
-
-<div class="content mt-3">
-    <div class="d-flex justify-content-between my-2">
-        <h3><strong>Store Owners</strong></h3>
-        <div>
-            <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" id="clearFilterAndState"> <b><i
-                        class=" icon-reload-alt"></i></b> Reset All Filters</button>
+<div class="page-header">
+    <div class="page-header-content header-elements-md-inline">
+        <div class="page-title d-flex">
+            <h4><i class="icon-circle-right2 mr-2"></i>
+                <span class="font-weight-bold mr-2">TOTAL</span>
+                <span class="badge badge-primary badge-pill animated flipInX mr-2">{{ $count }}</span>
+                <span class="font-weight-bold">Store Owners</span>
+            </h4>
+            <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
     </div>
+</div>
+<div class="content">
+    <form action="{{ route('admin.post.searchUsers') }}" method="GET">
+        <div class="form-group form-group-feedback form-group-feedback-right search-box">
+            <input type="text" class="form-control form-control-lg search-input"
+                placeholder="Search with user name or email..." name="query">
+            <div class="form-control-feedback form-control-feedback-lg">
+                <i class="icon-search4"></i>
+            </div>
+        </div>
+        @csrf
+    </form>
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped" id="usersDatatable" width="100%">
+                <table class="table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Created Date</th>
-                            <th class="text-center"><i class="
+                            <th style="width: 20%;">Name</th>
+                            <th style="width: 30%">Email</th>
+                            <th style="width: 20%;">Phone</th>
+                            <th style="width: 30%;">Created</th>
+                            <th style="width: 15%; text-align: right;">{{ config('settings.walletName') }}</th>
+                            <th class="text-center" style="width: 10%;"><i class="
                                 icon-circle-down2"></i></th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody>
+                        @foreach ($users as $user)
+                        <tr>
+                            <td>{{ $user->name }}</td>
+                            <td>{{ $user->email }}</td>
+                            <td>{{ $user->phone }}</td>
+                            <td>{{ $user->created_at->diffForHumans() }}</td>
+                            <td class="text-right">
+                               {{ config('settings.currencyFormat') }}{{ $user->balanceFloat }}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-justified">
+                                    <a href="{{ route('admin.get.getManageRestaurantOwnersRestaurants', $user->id) }}"
+                                    class="badge badge-primary badge-icon"> Manage Owner's Stores <i
+                                    class="icon-link ml-1"></i></a>
+                                    <a href="{{ route('admin.get.editUser', $user->id) }}"
+                                    class="badge bg-secondary badge-icon ml-2"> EDIT <i
+                                    class="icon-database-edit2 ml-1"></i></a>
+                                    @if($user->hasRole('Store Owner'))
+                                    <a href="{{ route('admin.impersonate', $user->id) }}"
+                                                class="ml-2" data-popup="tooltip"
+                                    data-placement="left" title="Login as {{ $user->name }}" style="border: 1px solid #E0E0E0; border-radius: 0.275rem; padding: 1.5px 4px;"> <i class="icon-redo2 text-warning"></i></a>
+                                @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
                 </table>
+                <div class="mt-3">
+                    {{ $users->links() }}
+                </div>
             </div>
         </div>
     </div>
 </div>
-<script>
-    $('body').tooltip({selector: '[data-popup="tooltip"]'});
-     var datatable = $('#usersDatatable').DataTable({
-        processing: true,
-        serverSide: true,
-        stateSave: true,
-        lengthMenu: [ 10, 25, 50, 100, 200, 500 ],
-        order: [[ 0, "desc" ]],
-        ajax: '{{ route('admin.storeOwnerUsersDatatable') }}',
-        columns: [
-            {data: 'id', visible: false, searchable: false},
-            {data: 'name'},
-            {data: 'email'},
-            {data: 'phone'},
-            {data: 'created_at'},
-            {data: 'action', sortable: false, searchable: false},
-        ],
-        colReorder: true,
-        drawCallback: function( settings ) {
-            $('select').select2({
-               minimumResultsForSearch: Infinity,
-               width: 'auto'
-            });
-        },
-        scrollX: true,
-        scrollCollapse: true,
-        dom: '<"custom-processing-banner"r>flBtip',
-        language: {
-            search: '_INPUT_',
-            searchPlaceholder: 'Search with anything...',
-            lengthMenu: '_MENU_',
-            paginate: { 'first': 'First', 'last': 'Last', 'next': '&rarr;', 'previous': '&larr;' },
-            processing: '<i class="icon-spinner10 spinner position-left mr-1"></i>Waiting for server response...'
-        },
-       buttons: {
-               dom: {
-                   button: {
-                       className: 'btn btn-default'
-                   }
-               },
-               buttons: [
-                   {extend: 'csv', filename: 'store-owners-'+ new Date().toISOString().slice(0,10), text: 'Export as CSV'},
-               ]
-           }
-    });
-
-     $('#clearFilterAndState').click(function(event) {
-        if (datatable) {
-            datatable.state.clear();
-            window.location.reload();
-        }
-     });
-</script>
 @endsection

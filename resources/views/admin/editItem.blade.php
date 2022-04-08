@@ -5,13 +5,10 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
+            <h4><i class="icon-circle-right2 mr-2"></i>
                 <span class="font-weight-bold mr-2">Editing</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2"> {{ $item->name }} </span>
-                <span class="small">(Store: <a
-                        href="{{ route('admin.get.editRestaurant', $item->restaurant->id) }}">{{ $item->restaurant->name }})</a>
-                </span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $item->name }} <i class="icon-circle-right2 mx-1"></i>
+                    {{ $item->restaurant->name }}</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
@@ -46,13 +43,13 @@
                         <div class="col-lg-6">
                             <label class="col-form-label">Mark Price:</label>
                             <input type="text" class="form-control form-control-lg price" name="old_price"
-                                placeholder="Item Price in {{ config('setting.currencyFormat') }}"
+                                placeholder="Item Price in {{ config('settings.currencyFormat') }}"
                                 value="{{ $item->old_price }}">
                         </div>
                         <div class="col-lg-6">
                             <label class="col-form-label"><span class="text-danger">*</span>Selling Price:</label>
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="Item Price in {{ config('setting.currencyFormat') }}" id="newSP"
+                                placeholder="Item Price in {{ config('settings.currencyFormat') }}" id="newSP"
                                 value="{{ $item->price }}">
                         </div>
                     </div>
@@ -61,7 +58,7 @@
                         <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Price:</label>
                         <div class="col-lg-5">
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="Item Price in {{ config('setting.currencyFormat') }}" required id="oldSP"
+                                placeholder="Item Price in {{ config('settings.currencyFormat') }}" required id="oldSP"
                                 value="{{ $item->price }}">
                         </div>
                         <div class="col-lg-4">
@@ -88,13 +85,13 @@
                                     data-popup="tooltip" title="Make this filed empty or zero if not required"
                                     data-placement="top"></i> </label>
                             <input type="text" class="form-control form-control-lg price" name="old_price"
-                                placeholder="Item Price in {{ config('setting.currencyFormat') }}"
+                                placeholder="Item Price in {{ config('settings.currencyFormat') }}"
                                 value="{{ $item->old_price }}">
                         </div>
                         <div class="col-lg-6">
                             <label class="col-form-label"><span class="text-danger">*</span>Selling Price:</label>
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="Item Price in {{ config('setting.currencyFormat') }}" id="newSP"
+                                placeholder="Item Price in {{ config('settings.currencyFormat') }}" id="newSP"
                                 value="{{ $item->price }}">
                         </div>
                     </div>
@@ -132,10 +129,8 @@
                             <select multiple="multiple" class="form-control addonCategorySelect" data-fouc
                                 name="addon_category_item[]">
                                 @foreach($addonCategories as $addonCategory)
-                                <option value="{{ $addonCategory->id }}" class="text-capitalize"
-                                    {{isset($item) &&  in_array($item->id, $addonCategory->items()->pluck('item_id')->toArray()) ? 'selected' : '' }}>
-                                    {{ $addonCategory->name }} @if($addonCategory->description != null)->
-                                    {{ $addonCategory->description }} @endif</option>
+                                <option value="{{ $addonCategory->id }}" class="text-capitalize" {{isset($item) &&  in_array($item->id, $addonCategory->items()->pluck('item_id')->toArray()) ? 'selected' : '' }}>
+                                    {{ $addonCategory->name }} @if($addonCategory->description != null)-> {{ $addonCategory->description }} @endif</option>
                                 @endforeach
                             </select>
 
@@ -144,21 +139,8 @@
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label">Image:</label>
                         <div class="col-lg-9">
-                            @if($item->image)
                             <img src="{{ substr(url("/"), 0, strrpos(url("/"), '/')) }}{{ $item->image }}" alt="Image"
                                 width="160" style="border-radius: 0.275rem;">
-                            <br>
-                            <span id="removeItemImage" class="cursor-pointer text-warning"><u>Remove
-                                    Image</u></span>
-                            <script>
-                                $('#removeItemImage').click(function(event) {
-                                conf = confirm('Are you sure?');
-                                    if (conf == true) {
-                                        window.location.href="{{ route('admin.removeItemImage', $item->id) }}";
-                                    } 
-                                });
-                            </script>
-                            @endif
                             <img class="slider-preview-image hidden" style="border-radius: 0.275rem;" />
                             <div class="uploader">
                                 <input type="hidden" name="old_image" value="{{ $item->image }}">
@@ -201,30 +183,17 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label display-block">Veg/Non-Veg: </label>
-                        <div class="col-lg-9 d-flex align-items-center">
-                            <label class="radio-inline mr-2">
-                                <input type="radio" @if($item->is_veg) checked="checked" @endif name="is_veg"
-                                value="veg">
-                                Veg
-                            </label>
-
-                            <label class="radio-inline mr-2">
-                                <input type="radio" @if(!$item->is_veg) checked="checked" @endif name="is_veg"
-                                value="nonveg">
-                                Non-Veg
-                            </label>
-
-                            <label class="radio-inline mr-2">
-                                <input type="radio" @if(is_null($item->is_veg)) checked="checked" @endif name="is_veg"
-                                value="none">
-                                None
-                            </label>
+                        <label class="col-lg-3 col-form-label">Is Veg?</label>
+                        <div class="col-lg-9">
+                            <div class="checkbox checkbox-switchery mt-2">
+                                <label>
+                                    <input value="true" type="checkbox" class="switchery-primary vegitem"
+                                        @if($item->is_veg) checked="checked" @endif name="is_veg">
+                                </label>
+                            </div>
                         </div>
                     </div>
-
                     @csrf
                     <div class="text-left">
                         <div class="btn-group btn-group-justified" style="width: 150px">
@@ -289,6 +258,9 @@
     
         var newitem = document.querySelector('.newitem');
         new Switchery(newitem, { color: '#333' });
+
+        var vegitem = document.querySelector('.vegitem');
+       new Switchery(vegitem, { color: '#008000' });
 
         
         $('.form-control-uniform').uniform();

@@ -37,12 +37,10 @@ class LoginController extends Controller
             return '/admin/dashboard';
         }
         // Store Owner Role
-        elseif (Auth::user()->hasRole('Store Owner')) {
+        if (Auth::user()->hasRole('Store Owner')) {
             return '/store-owner/dashboard';
-        } elseif (Auth::user()->hasPermissionTo('dashboard_view')) {
-            return '/admin/dashboard';
         } else {
-            return '/admin/manager';
+            return '/auth/login';
         }
 
     }
@@ -54,13 +52,7 @@ class LoginController extends Controller
     protected function authenticated(Request $request, $user)
     {
         //Check user role, if it is not admin then logout
-        // if (!$user->hasRole(['Admin', 'Store Owner'])) {
-        //     $this->guard()->logout();
-        //     $request->session()->invalidate();
-        //     return redirect('/auth/login')->withErrors('You are unauthorized to login');
-        // }
-
-        if ($user->hasRole(['Customer', 'Delivery Guy'])) {
+        if (!$user->hasRole(['Admin', 'Store Owner'])) {
             $this->guard()->logout();
             $request->session()->invalidate();
             return redirect('/auth/login')->withErrors('You are unauthorized to login');
@@ -77,10 +69,6 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
-    /**
-     * @param Request $request
-     * @return mixed
-     */
     public function logout(Request $request)
     {
         $locale = Session::get('locale');

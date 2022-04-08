@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\AcceptDelivery;
 use App\DeliveryCollection;
 use App\DeliveryCollectionLog;
 use App\User;
 use Illuminate\Http\Request;
-use Auth;
 
 class DeliveryCollectionController extends Controller
 {
     public function deliveryCollections()
     {
+        $count = DeliveryCollection::count();
+        $deliveryCollections = DeliveryCollection::orderBy('id', 'DESC')->paginate();
 
-        return view('admin.deliveryCollections');
+        return view('admin.deliveryCollections', array(
+            'count' => $count,
+            'deliveryCollections' => $deliveryCollections,
+        ));
     }
 
     /**
@@ -21,6 +26,8 @@ class DeliveryCollectionController extends Controller
      */
     public function collectDeliveryCollection(Request $request)
     {
+        // dd($request->all());
+
         $deliveryCollection = DeliveryCollection::where('id', $request->delivery_collection_id)->first();
 
         if ($deliveryCollection) {
@@ -38,16 +45,13 @@ class DeliveryCollectionController extends Controller
                 $deliveryCollectionLog->type = 'CUSTOM';
 
                 if ((float) $request->custom_amount > (float) $deliveryCollection->amount) {
-                    return redirect()->back()->with(['message' => 'The entered amount is greater than the pending amount']);
+                    $deliveryCollection->amount = 0;
                 } else {
                     $deliveryCollection->amount = (float) $deliveryCollection->amount - (float) $request->custom_amount;
                 }
             }
 
             $deliveryCollectionLog->message = $request->message;
-
-            $deliveryCollectionLog->zone_id = $deliveryCollection->zone_id ? $deliveryCollection->zone_id : null;
-            $deliveryCollectionLog->user_id = Auth::user()->id;
 
             try {
                 $deliveryCollectionLog->save();
@@ -66,16 +70,14 @@ class DeliveryCollectionController extends Controller
         }
     }
 
-    public function deliveryCollectionLogs(Request $request)
+    public function deliveryCollectionLogs()
     {
-        if ($request->has('user_id')) {
-            $user = User::where('id', $request->user_id)->first();
-        } else {
-            $user = null;
-        }
+        $count = DeliveryCollectionLog::count();
+        $logs = DeliveryCollectionLog::orderBy('id', 'DESC')->paginate();
+
         return view('admin.deliveryCollectionLogs', array(
-            'user' => $user,
-            'user_id' => $user ? $user->id : null,
+            'count' => $count,
+            'logs' => $logs,
         ));
     }
 

@@ -5,19 +5,18 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
-                <span class="font-weight-bold mr-2">Total</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }} Menu Categories</span>
+            <h4><i class="icon-circle-right2 mr-2"></i>
+                <span class="font-weight-bold mr-2">TOTAL</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $count }}</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
         <div class="header-elements d-none py-0 mb-3 mb-md-0">
             <div class="breadcrumb">
-                <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" data-toggle="modal"
-                    data-target="#addNewItemCategory">
-                    <b><i class="icon-plus2"></i></b>
-                    Add New Category
+                <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left"
+                    data-toggle="modal" data-target="#addNewItemCategory">
+                <b><i class="icon-plus2"></i></b>
+                Add New Category
                 </button>
             </div>
         </div>
@@ -46,31 +45,27 @@
                             <td>{{ $itemCategory->id }}</td>
                             <td>{{ $itemCategory->name }}</td>
                             <td>{{ $itemCategory->items_count }}</td>
-                            <td><span
-                                    class="badge badge-flat border-grey-800 text-default text-capitalize">@if($itemCategory->is_enabled)
-                                    ENABLED @else DISABLED @endif</span></td>
+                            <td><span class="badge badge-flat border-grey-800 text-default text-capitalize">@if($itemCategory->is_enabled) ENABLED @else DISABLED @endif</span></td>
                             <td>
                                 <span class="badge badge-flat border-grey-800 text-default text-capitalize">
-                                    @if($itemCategory->user !== NULL)
-                                    {{ $itemCategory->user->name }}
-                                    @else
-                                    Admin
-                                    @endif
+                                @if($itemCategory->user !== NULL)
+                                {{ $itemCategory->user->name }}
+                                @else
+                                Admin
+                                @endif
                                 </span>
                             </td>
                             <td>{{ $itemCategory->created_at->diffForHumans() }}</td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-justified align-items-center">
-                                    <a href="javascript:void(0)" data-toggle="modal" data-target="#editItemCategory"
-                                        data-catid="{{ $itemCategory->id }}" data-catname="{{ $itemCategory->name }}"
-                                        class="btn btn-sm btn-primary editItemCategory"> Edit</a>
-                                    <div class="checkbox checkbox-switchery ml-1" style="padding-top: 0.8rem;">
-                                        <label>
-                                            <input value="true" type="checkbox" class="action-switch"
-                                                @if($itemCategory->is_enabled) checked="checked" @endif
-                                            data-id="{{ $itemCategory->id }}">
-                                        </label>
-                                    </div>
+                                <a href="javascript:void(0)" data-toggle="modal" data-target="#editItemCategory" data-catid="{{ $itemCategory->id }}" data-catname="{{ $itemCategory->name }}"
+                                        class="badge badge-primary badge-icon editItemCategory"> EDIT <i class="icon-database-edit2 ml-1"></i></a>
+                                <div class="checkbox checkbox-switchery ml-1" style="padding-top: 0.8rem;">
+                                    <label>
+                                    <input value="true" type="checkbox" class="action-switch"
+                                    @if($itemCategory->is_enabled) checked="checked" @endif data-id="{{ $itemCategory->id }}">
+                                    </label>
+                                </div>
                                 </div>
                             </td>
                         </tr>
@@ -100,8 +95,8 @@
                     @csrf
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            SAVE
-                            <i class="icon-database-insert ml-1"></i>
+                        SAVE
+                        <i class="icon-database-insert ml-1"></i>
                         </button>
                     </div>
                 </form>
@@ -129,8 +124,8 @@
                     @csrf
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            SAVE
-                            <i class="icon-database-insert ml-1"></i>
+                        SAVE
+                        <i class="icon-database-insert ml-1"></i>
                         </button>
                     </div>
                 </form>

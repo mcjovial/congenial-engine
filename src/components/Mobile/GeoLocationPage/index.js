@@ -13,7 +13,6 @@ import { GET_ADDRESS_FROM_COORDINATES } from "../../../configs";
 import Axios from "axios";
 import SimpleReactValidator from "simple-react-validator";
 import Loading from "../../helpers/loading";
-import { clearRestaurantList } from "../../../services/restaurant/actions";
 
 export class GeoLocationPage extends Component {
 	constructor() {
@@ -32,7 +31,7 @@ export class GeoLocationPage extends Component {
 
 	state = {
 		location: "",
-		dragging: false,
+		dragging: true,
 		house: null,
 		tag: null,
 		error: false,
@@ -127,8 +126,6 @@ export class GeoLocationPage extends Component {
 					localStorage.removeItem("fromCart");
 					this.context.router.history.push("/cart");
 				} else {
-					//remove restaurants list...
-					this.props.clearRestaurantList();
 					this.context.router.history.push("/");
 				}
 			});
@@ -159,8 +156,6 @@ export class GeoLocationPage extends Component {
 					localStorage.removeItem("fromCart");
 					this.context.router.history.push("/cart");
 				} else {
-					//remove restaurants list...
-					this.props.clearRestaurantList();
 					this.context.router.history.push("/");
 				}
 			});
@@ -180,11 +175,8 @@ export class GeoLocationPage extends Component {
 		document.removeEventListener("mousedown", this.handleClickOutside);
 	}
 
-	getLocation = () => {
-		this.setState({ location: JSON.parse(localStorage.getItem("geoLocation")).formatted_address });
-	};
-
 	render() {
+		// console.log(this.props.addresses);
 		if (window.innerWidth > 768) {
 			return <Redirect to="/" />;
 		}
@@ -193,7 +185,6 @@ export class GeoLocationPage extends Component {
 		}
 		return (
 			<div>
-				{console.log(localStorage.getItem("isAllowed"))}
 				<Meta
 					seotitle={localStorage.getItem("seoMetaTitle")}
 					seodescription={localStorage.getItem("seoMetaDescription")}
@@ -210,8 +201,6 @@ export class GeoLocationPage extends Component {
 					reverseLookup={this.reverseLookup}
 					onMarkerDragEnd={this.onMarkerDragEnd}
 					handleDragging={this.handleDragging}
-					dragging={this.state.dragging}
-					location={this.getLocation}
 				/>
 				<button
 					type="button"
@@ -284,20 +273,18 @@ export class GeoLocationPage extends Component {
 											value={this.state.house}
 										/>
 									</div>
-									<div class="address-tags-block">
-										<label className="col-12 edit-address-input-label p-0">
-											{localStorage.getItem("editAddressTag")}
-										</label>
-										<div className="col-md-9 p-0">
-											<input
-												type="text"
-												name="tag"
-												onChange={this.handleAddressInput}
-												className="form-control edit-address-input edit-address-tag mb-2"
-												placeholder={localStorage.getItem("addressTagPlaceholder")}
-												value={this.state.tag}
-											/>
-										</div>
+									<label className="col-12 edit-address-input-label p-0">
+										{localStorage.getItem("editAddressTag")}
+									</label>
+									<div className="col-md-9  p-0">
+										<input
+											type="text"
+											name="tag"
+											onChange={this.handleAddressInput}
+											className="form-control edit-address-input edit-address-tag mb-2"
+											placeholder={localStorage.getItem("addressTagPlaceholder")}
+											value={this.state.tag}
+										/>
 									</div>
 								</div>
 							</div>
@@ -331,5 +318,5 @@ const mapStateToProps = (state) => ({
 
 export default connect(
 	mapStateToProps,
-	{ saveAddress, clearRestaurantList }
+	{ saveAddress }
 )(GeoLocationPage);

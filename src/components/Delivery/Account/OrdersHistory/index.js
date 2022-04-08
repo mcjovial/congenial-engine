@@ -9,11 +9,7 @@ class OrdersHistory extends Component {
 				<div className="delivery-account-orders-block p-15 mb-20">
 					<div className="d-flex justify-content-between mb-2">
 						<div className="font-w700">
-							<h4
-								className={`mb-0 ${
-									localStorage.getItem("deliveryAppLightMode") === "true" ? "text-dark" : "text-white"
-								}`}
-							>
+							<h4 className="text-white mb-0">
 								#{order.order.unique_order_id.substr(order.order.unique_order_id.length - 6)}
 							</h4>
 						</div>

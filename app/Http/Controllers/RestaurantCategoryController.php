@@ -141,12 +141,10 @@ class RestaurantCategoryController extends Controller
 
         foreach ($slides as $slide) {
             $newArr = new Collection();
-
-            $resCats = RestaurantCategory::whereIn('id', $slide->categories_ids)->get();
-
-            foreach ($resCats as $resCat) {
+            foreach ($slide->categories_ids as $key) {
+                $resCat = RestaurantCategory::where('id', $key)->first();
                 $arr = [
-                    'value' => (int) $resCat->id,
+                    'value' => (int) $key,
                     'label' => $resCat->name,
                 ];
                 $newArr->push($arr);

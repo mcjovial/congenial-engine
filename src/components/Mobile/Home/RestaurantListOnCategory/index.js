@@ -5,13 +5,13 @@ import { connect } from "react-redux";
 import ContentLoader from "react-content-loader";
 import DelayLink from "../../../helpers/delayLink";
 import Ink from "react-ink";
+import LazyLoad from "react-lazyload";
 import PromoSlider from "../PromoSlider";
 
 import { Redirect } from "react-router";
 
 import Meta from "../../../helpers/meta";
 import Nav from "../../Nav";
-import Fade from "react-reveal/Fade";
 
 export class RestaurantListOnCategory extends Component {
 	state = {
@@ -36,6 +36,8 @@ export class RestaurantListOnCategory extends Component {
 
 		let checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
 		this.setState({ checkedCount: checkboxes.length });
+
+		// console.log(checkboxes.length);
 
 		if (checkboxes.length === 0) {
 			console.log("Came here");
@@ -255,60 +257,47 @@ export class RestaurantListOnCategory extends Component {
 											delay={200}
 											className="block text-center mb-3"
 											clickAction={() => {
-												// localStorage.getItem("userPreferredSelection") === "DELIVERY" &&
-												// 	restaurant.delivery_type === 1 &&
-												// 	localStorage.setItem("userSelected", "DELIVERY");
-												// localStorage.getItem("userPreferredSelection") === "SELFPICKUP" &&
-												// 	restaurant.delivery_type === 2 &&
-												// 	localStorage.setItem("userSelected", "SELFPICKUP");
-												// localStorage.getItem("userPreferredSelection") === "DELIVERY" &&
-												// 	restaurant.delivery_type === 3 &&
-												// 	localStorage.setItem("userSelected", "DELIVERY");
-												// localStorage.getItem("userPreferredSelection") === "SELFPICKUP" &&
-												// 	restaurant.delivery_type === 3 &&
-												// 	localStorage.setItem("userSelected", "SELFPICKUP");
+												localStorage.getItem("userPreferredSelection") === "DELIVERY" &&
+													restaurant.delivery_type === 1 &&
+													localStorage.setItem("userSelected", "DELIVERY");
+												localStorage.getItem("userPreferredSelection") === "SELFPICKUP" &&
+													restaurant.delivery_type === 2 &&
+													localStorage.setItem("userSelected", "SELFPICKUP");
+												localStorage.getItem("userPreferredSelection") === "DELIVERY" &&
+													restaurant.delivery_type === 3 &&
+													localStorage.setItem("userSelected", "DELIVERY");
+												localStorage.getItem("userPreferredSelection") === "SELFPICKUP" &&
+													restaurant.delivery_type === 3 &&
+													localStorage.setItem("userSelected", "SELFPICKUP");
 											}}
 										>
 											<div
 												className={`block-content block-content-full ${
-													restaurant.is_featured && restaurant.is_active
+													restaurant.is_featured
 														? "ribbon ribbon-bookmark ribbon-warning pt-2"
 														: "pt-2"
 												} `}
 											>
 												{restaurant.is_featured ? (
-													<React.Fragment>
-														{restaurant.custom_featured_name == null ? (
-															<div className="ribbon-box">
-																{localStorage.getItem("restaurantFeaturedText")}
-															</div>
-														) : (
-															<div className="ribbon-box">
-																{restaurant.custom_featured_name}
-															</div>
-														)}
-													</React.Fragment>
+													<div className="ribbon-box">
+														{localStorage.getItem("restaurantFeaturedText")}
+													</div>
 												) : null}
 
-												<Fade duration={500}>
+												<LazyLoad>
 													<img
 														src={restaurant.image}
 														alt={restaurant.name}
 														className={`restaurant-image ${!restaurant.is_active &&
 															"restaurant-not-active"}`}
 													/>
-												</Fade>
+												</LazyLoad>
 											</div>
 											<div className="block-content block-content-full restaurant-info">
 												<div className="font-w600 mb-5 text-dark">{restaurant.name}</div>
 												<div className="font-size-sm text-muted truncate-text text-muted">
 													{restaurant.description}
 												</div>
-												{!restaurant.is_active && (
-													<span className="restaurant-not-active-msg">
-														{localStorage.getItem("restaurantNotActiveMsg")}
-													</span>
-												)}
 												<hr className="my-10" />
 												<div className="text-center restaurant-meta mt-5 d-flex align-items-center justify-content-between text-muted">
 													<div className="col-2 p-0 text-left">
@@ -318,9 +307,7 @@ export class RestaurantListOnCategory extends Component {
 																color: localStorage.getItem("storeColor"),
 															}}
 														/>{" "}
-														{restaurant.avgRating === "0"
-															? restaurant.rating
-															: restaurant.avgRating}
+														{restaurant.rating}
 													</div>
 													<div className="col-4 p-0 text-center">
 														<i className="si si-clock pr-1" /> {restaurant.delivery_time}{" "}

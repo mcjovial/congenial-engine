@@ -2,32 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
-use Mail;
-use Image;
-use App\Sms;
-use Artisan;
-use App\Item;
-use App\User;
 use App\Addon;
+use App\AddonCategory;
+use App\Helpers\TranslationHelper;
+use App\Item;
+use App\ItemCategory;
 use App\Order;
-use Exception;
-use Carbon\Carbon;
+use App\PaymentGateway;
 use App\PushNotify;
 use App\Restaurant;
-use App\ItemCategory;
-use App\AddonCategory;
-use App\AcceptDelivery;
-use App\PaymentGateway;
-use App\RestaurantPayout;
 use App\RestaurantEarning;
+use App\RestaurantPayout;
+use App\Sms;
 use App\StorePayoutDetail;
+use App\User;
+use Auth;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
-use App\Helpers\TranslationHelper;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Nwidart\Modules\Facades\Module;
+use Image;
 use Modules\ThermalPrinter\Entities\PrinterSetting;
 use Modules\ThermalPrinter\Entities\ThermalPrinter;
+use Nwidart\Modules\Facades\Module;
+use OneSignal;
 
 class RestaurantOwnerController extends Controller
 {
@@ -40,49 +39,45 @@ class RestaurantOwnerController extends Controller
         $restaurantIds = $user->restaurants->pluck('id')->toArray();
 
         $newOrders = Order::whereIn('restaurant_id', $restaurantIds)
-            ->whereIn('orderstatus_id', ['1', '10'])
+            ->where('orderstatus_id', '1')
             ->orderBy('id', 'DESC')
             ->with('restaurant')
             ->get();
 
-        // dd($newOrders);
-
         $newOrdersIds = $newOrders->pluck('id')->toArray();
 
         $preparingOrders = Order::whereIn('restaurant_id', $restaurantIds)
-            ->whereIn('orderstatus_id', ['2', '3', '11'])
+            ->whereIn('orderstatus_id', ['2'])
             ->where('delivery_type', '<>', 2)
-            ->orderBy('orderstatus_id', 'ASC')
-            ->with('restaurant')
+            ->orderBy('id', 'DESC')
             ->get();
 
         $selfpickupOrders = Order::whereIn('restaurant_id', $restaurantIds)
             ->whereIn('orderstatus_id', ['2', '7'])
             ->where('delivery_type', 2)
             ->orderBy('orderstatus_id', 'DESC')
-            ->with('restaurant')
             ->get();
 
         $ongoingOrders = Order::whereIn('restaurant_id', $restaurantIds)
-            ->whereIn('orderstatus_id', ['4'])
+            ->whereIn('orderstatus_id', ['3', '4'])
             ->orderBy('orderstatus_id', 'DESC')
-            ->with('restaurant')
             ->get();
 
-        $ordersCount = Order::whereIn('restaurant_id', $restaurantIds)
-            ->where('orderstatus_id', '5')->count();
-
-        $allCompletedOrders = Order::whereIn('restaurant_id', $restaurantIds)
-            ->with('orderitems')
+        $allOrders = Order::whereIn('restaurant_id', $restaurantIds)
             ->where('orderstatus_id', '5')
+            ->with('orderitems')
             ->get();
+        $ordersCount = count($allOrders);
 
         $orderItemsCount = 0;
-        foreach ($allCompletedOrders as $cO) {
-            foreach ($cO->orderitems as $orderItem) {
-                $orderItemsCount += $orderItem->quantity;
-            }
+        foreach ($allOrders as $order) {
+            $orderItemsCount += count($order->orderitems);
         }
+
+        $allCompletedOrders = Order::whereIn('restaurant_id', $restaurantIds)
+            ->where('orderstatus_id', '5')
+            ->with('orderitems', 'orderitems.order_item_addons')
+            ->get();
 
         $totalEarning = 0;
         settype($var, 'float');
@@ -92,24 +87,6 @@ class RestaurantOwnerController extends Controller
         }
 
         $zenMode = \Session::get('zenMode');
-
-        if (Module::find('ThermalPrinter') && Module::find('ThermalPrinter')->isEnabled()) {
-
-            $printerSetting = PrinterSetting::where('user_id', Auth::user()->id)->first();
-            if ($printerSetting) {
-                $data = json_decode($printerSetting->data);
-
-                if ($data->automatic_printing == 'OFF') {
-                    $autoPrinting = false;
-                } else {
-                    $autoPrinting = true;
-                }
-            } else {
-                $autoPrinting = false;
-            }
-        } else {
-            $autoPrinting = false;
-        }
 
         $arrayData = [
             'restaurantsCount' => count($user->restaurants),
@@ -121,7 +98,6 @@ class RestaurantOwnerController extends Controller
             'preparingOrders' => $preparingOrders,
             'ongoingOrders' => $ongoingOrders,
             'selfpickupOrders' => $selfpickupOrders,
-            'autoPrinting' => $autoPrinting,
         ];
 
         if ($zenMode == 'true') {
@@ -175,34 +151,78 @@ class RestaurantOwnerController extends Controller
             $order->orderstatus_id = 2;
             $order->save();
 
-            if (config('setting.enablePushNotificationOrders') == 'true') {
+            if (config('settings.enablePushNotificationOrders') == 'true') {
                 //to user
                 $notify = new PushNotify();
                 $notify->sendPushNotification('2', $order->user_id, $order->unique_order_id);
             }
 
-            //send notification and sms to delivery only when order type is Delivery...
-            if ($order->delivery_type == '1') {
-
-                sendPushNotificationToDelivery($order->restaurant->id, $order);
-                sendSmsToDelivery($order->restaurant->id);
+            // Send Push Notification to Delivery Guy
+            if (config('settings.enablePushNotificationOrders') == 'true') {
+                //get restaurant
+                $restaurant = Restaurant::where('id', $order->restaurant_id)->first();
+                if ($restaurant) {
+                    //get all pivot users of restaurant (delivery guy/ res owners)
+                    $pivotUsers = $restaurant->users()
+                        ->wherePivot('restaurant_id', $order->restaurant_id)
+                        ->get();
+                    //filter only res owner and send notification.
+                    foreach ($pivotUsers as $pU) {
+                        if ($pU->hasRole('Delivery Guy')) {
+                            //send Notification to Res Owner
+                            $notify = new PushNotify();
+                            $notify->sendPushNotification('TO_DELIVERY', $pU->id, $order->unique_order_id);
+                        }
+                    }
+                }
             }
+            // END Send Push Notification to Delivery Guy
 
-            activity()
-                ->performedOn($order)
-                ->causedBy($user)
-                ->withProperties(['type' => 'Order_Accepted_Store'])->log('Order accepted');
+            // Send SMS Notification to Delivery Guy
+            if (config('settings.smsDeliveryNotify') == 'true') {
+                //get restaurant
+                $restaurant = Restaurant::where('id', $order->restaurant_id)->first();
+                if ($restaurant) {
+                    //get all pivot users of restaurant (delivery guy/ res owners)
+                    $pivotUsers = $restaurant->users()
+                        ->wherePivot('restaurant_id', $order->restaurant_id)
+                        ->get();
+                    //filter only res owner and send notification.
+                    foreach ($pivotUsers as $pU) {
+                        if ($pU->hasRole('Delivery Guy')) {
+                            //send sms to Delivery Guy
+                            if ($pU->delivery_guy_detail->is_notifiable) {
+                                $message = config('settings.defaultSmsDeliveryMsg');
+                                $otp = null;
+                                $smsnotify = new Sms();
+                                $smsnotify->processSmsAction('OD_NOTIFY', $pU->phone, $otp, $message);
+                            }
+                        }
+                    }
+                }
+            }
+            // END Send SMS Notification to Delivery Guy
+
+            if (Module::find('ThermalPrinter') && Module::find('ThermalPrinter')->isEnabled()) {
+
+                $printerSetting = PrinterSetting::where('user_id', Auth::user()->id)->first();
+                $data = json_decode($printerSetting->data);
+
+                if ($data->automatic_printing == 'FULLINVOICE') {
+                    $this->printInvoice($order->unique_order_id);
+                }
+            }
 
             if (\Illuminate\Support\Facades\Request::ajax()) {
                 return response()->json(['success' => true]);
             } else {
-                return redirect()->back()->with(array('success' => __('storeDashboard.orderAcceptedNotification')));
+                return redirect()->back()->with(array('success' => 'Order Accepted'));
             }
         } else {
             if (\Illuminate\Support\Facades\Request::ajax()) {
                 return response()->json(['success' => false], 406);
             } else {
-                return redirect()->back()->with(array('message' => __('storeDashboard.orderSomethingWentWrongNotification')));
+                return redirect()->back()->with(array('message' => 'Something went wrong.'));
             }
         }
     }
@@ -221,17 +241,12 @@ class RestaurantOwnerController extends Controller
             $order->orderstatus_id = 7;
             $order->save();
 
-            if (config('setting.enablePushNotificationOrders') == 'true') {
+            if (config('settings.enablePushNotificationOrders') == 'true') {
 
                 //to user
                 $notify = new PushNotify();
                 $notify->sendPushNotification('7', $order->user_id, $order->unique_order_id);
             }
-
-            activity()
-                ->performedOn($order)
-                ->causedBy($user)
-                ->withProperties(['type' => 'Order_Ready_Store'])->log('Order prepared');
 
             return redirect()->back()->with(array('success' => 'Order Marked as Ready'));
         } else {
@@ -254,19 +269,17 @@ class RestaurantOwnerController extends Controller
             $order->save();
 
             //if selfpickup add amount to restaurant earnings if not COD then add order total
-            if ($order->payment_mode == 'STRIPE' || $order->payment_mode == 'PAYPAL' || $order->payment_mode == 'PAYSTACK' || $order->payment_mode == 'RAZORPAY' || $order->payment_mode == 'PAYMONGO' || $order->payment_mode == 'MERCADOPAGO' || $order->payment_mode == 'PAYTM' || $order->payment_mode == 'FLUTTERWAVE' || $order->payment_mode == 'KHALTI' || $order->payment_mode == 'WALLET') {
+            if ($order->payment_mode == 'STRIPE' || $order->payment_mode == 'PAYPAL' || $order->payment_mode == 'PAYSTACK' || $order->payment_mode == 'RAZORPAY' || $order->payment_mode == 'PAYMONGO' || $order->payment_mode == 'MERCADOPAGO') {
                 $restaurant_earning = RestaurantEarning::where('restaurant_id', $order->restaurant->id)
                     ->where('is_requested', 0)
                     ->first();
                 if ($restaurant_earning) {
                     $restaurant_earning->amount += $order->total;
-                    $restaurant_earning->zone_id = $order->restaurant->zone_id ? $order->restaurant->zone_id : null;
                     $restaurant_earning->save();
                 } else {
                     $restaurant_earning = new RestaurantEarning();
                     $restaurant_earning->restaurant_id = $order->restaurant->id;
                     $restaurant_earning->amount = $order->total;
-                    $restaurant_earning->zone_id = $order->restaurant->zone_id ? $order->restaurant->zone_id : null;
                     $restaurant_earning->save();
                 }
             }
@@ -276,36 +289,22 @@ class RestaurantOwnerController extends Controller
                     ->where('is_requested', 0)
                     ->first();
                 if ($restaurant_earning) {
-                    $restaurant_earning->amount += $order->total - $order->payable;
-                    $restaurant_earning->zone_id = $order->restaurant->zone_id ? $order->restaurant->zone_id : null;
+                    $restaurant_earning->amount += $order->total;
                     $restaurant_earning->save();
                 } else {
                     $restaurant_earning = new RestaurantEarning();
                     $restaurant_earning->restaurant_id = $order->restaurant->id;
-                    $restaurant_earning->amount = $order->total - $order->payable;
-                    $restaurant_earning->zone_id = $order->restaurant->zone_id ? $order->restaurant->zone_id : null;
+                    $restaurant_earning->amount = $order->total;
                     $restaurant_earning->save();
                 }
             }
 
-            if (config('setting.enablePushNotificationOrders') == 'true') {
+            if (config('settings.enablePushNotificationOrders') == 'true') {
+
                 //to user
                 $notify = new PushNotify();
                 $notify->sendPushNotification('5', $order->user_id, $order->unique_order_id);
             }
-
-            if (config('setting.sendOrderInvoiceOverEmail') == 'true') {
-                Mail::send('emails.invoice', ['order' => $order], function ($email) use ($order) {
-                    $email->subject(config('setting.orderInvoiceEmailSubject') . '#' . $order->unique_order_id);
-                    $email->from(config('setting.sendEmailFromEmailAddress'), config('setting.sendEmailFromEmailName'));
-                    $email->to($order->user->email);
-                });
-            }
-
-            activity()
-                ->performedOn($order)
-                ->causedBy($user)
-                ->withProperties(['type' => 'Order_Completed_Store'])->log('Order completed');
 
             return redirect()->back()->with(array('success' => 'Order Completed'));
         } else {
@@ -360,11 +359,7 @@ class RestaurantOwnerController extends Controller
      */
     public function disableRestaurant($id)
     {
-        $user = Auth::user();
-        $restaurantIds = $user->restaurants->pluck('id')->toArray();
-
-        $restaurant = Restaurant::where('id', $id)->whereIn('id', $restaurantIds)->first();
-
+        $restaurant = Restaurant::where('id', $id)->first();
         if ($restaurant) {
             $restaurant->is_schedulable = false;
             $restaurant->toggleActive();
@@ -390,7 +385,7 @@ class RestaurantOwnerController extends Controller
         $filename = $rand_name . '.jpg';
         Image::make($image)
             ->resize(160, 117)
-            ->save(base_path('assets/img/restaurants/' . $filename), config('setting.uploadImageQuality '), 'jpg');
+            ->save(base_path('assets/img/restaurants/' . $filename), config('settings.uploadImageQuality '), 'jpg');
         $restaurant->image = '/assets/img/restaurants/' . $filename;
 
         $restaurant->delivery_time = $request->delivery_time;
@@ -419,10 +414,6 @@ class RestaurantOwnerController extends Controller
 
         $restaurant->min_order_price = $request->min_order_price;
 
-        if ($request->has('delivery_type')) {
-            $restaurant->delivery_type = $request->delivery_type;
-        }
-
         try {
 
             $restaurant->save();
@@ -443,10 +434,7 @@ class RestaurantOwnerController extends Controller
      */
     public function updateRestaurant(Request $request)
     {
-        $user = Auth::user();
-        $restaurantIds = $user->restaurants->pluck('id')->toArray();
-
-        $restaurant = Restaurant::where('id', $request->id)->whereIn('id', $restaurantIds)->first();
+        $restaurant = Restaurant::where('id', $request->id)->first();
 
         if ($restaurant) {
             $restaurant->name = $request->name;
@@ -460,7 +448,7 @@ class RestaurantOwnerController extends Controller
                 $filename = $rand_name . '.jpg';
                 Image::make($image)
                     ->resize(160, 117)
-                    ->save(base_path('assets/img/restaurants/' . $filename), config('setting.uploadImageQuality '), 'jpg');
+                    ->save(base_path('assets/img/restaurants/' . $filename), config('settings.uploadImageQuality '), 'jpg');
                 $restaurant->image = '/assets/img/restaurants/' . $filename;
             }
 
@@ -485,30 +473,10 @@ class RestaurantOwnerController extends Controller
 
             $restaurant->min_order_price = $request->min_order_price;
 
-            if ($request->has('delivery_type')) {
-                $restaurant->delivery_type = $request->delivery_type;
-            }
-
             if ($request->is_schedulable == 'true') {
                 $restaurant->is_schedulable = true;
             } else {
                 $restaurant->is_schedulable = false;
-            }
-
-            if ($request->accept_scheduled_orders == 'true') {
-                $restaurant->accept_scheduled_orders = true;
-            } else {
-                $restaurant->accept_scheduled_orders = false;
-            }
-
-            if ($request->has('schedule_slot_buffer')) {
-                if ($request->schedule_slot_buffer == null) {
-                    $restaurant->schedule_slot_buffer = 30; //defaults to 30 mins
-                } else {
-                    $restaurant->schedule_slot_buffer = $request->schedule_slot_buffer;
-                }
-            } else {
-                $restaurant->schedule_slot_buffer = $restaurant->schedule_slot_buffer ? $restaurant->schedule_slot_buffer : 0;
             }
 
             try {
@@ -666,13 +634,6 @@ class RestaurantOwnerController extends Controller
     {
         // dd($request->all());
 
-        $user = Auth::user();
-        $restaurantIds = $user->restaurants->pluck('id')->toArray();
-
-        if (!in_array($request->restaurant_id, $restaurantIds)) {
-            abort(404);
-        }
-
         $item = new Item();
 
         $item->name = $request->name;
@@ -681,16 +642,14 @@ class RestaurantOwnerController extends Controller
         $item->restaurant_id = $request->restaurant_id;
         $item->item_category_id = $request->item_category_id;
 
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $rand_name = time() . str_random(10);
-            $filename = $rand_name . '.jpg';
-            Image::make($image)
-                ->resize(486, 355)
-                ->save(base_path('assets/img/items/' . $filename), config('setting.uploadImageQuality '), 'jpg');
+        $image = $request->file('image');
+        $rand_name = time() . str_random(10);
+        $filename = $rand_name . '.jpg';
+        Image::make($image)
+            ->resize(486, 355)
+            ->save(base_path('assets/img/items/' . $filename), config('settings.uploadImageQuality '), 'jpg');
 
-            $item->image = '/assets/img/items/' . $filename;
-        }
+        $item->image = '/assets/img/items/' . $filename;
 
         if ($request->is_recommended == 'true') {
             $item->is_recommended = true;
@@ -710,14 +669,11 @@ class RestaurantOwnerController extends Controller
             $item->is_new = false;
         }
 
-        if ($request->is_veg == 'veg') {
+        if ($request->is_veg == 'true') {
             $item->is_veg = true;
-        } elseif ($request->is_veg == 'nonveg') {
-            $item->is_veg = false;
         } else {
-            $item->is_veg = null;
+            $item->is_veg = false;
         }
-
         $item->desc = $request->desc;
         try {
             $item->save();
@@ -750,7 +706,8 @@ class RestaurantOwnerController extends Controller
 
         if ($item) {
             $restaurants = $user->restaurants;
-            $itemCategories = ItemCategory::where('user_id', Auth::user()->id)
+            $itemCategories = ItemCategory::where('is_enabled', '1')
+                ->where('user_id', Auth::user()->id)
                 ->get();
 
             return view('restaurantowner.editItem', array(
@@ -811,7 +768,7 @@ class RestaurantOwnerController extends Controller
                 $filename = $rand_name . '.jpg';
                 Image::make($image)
                     ->resize(486, 355)
-                    ->save(base_path('assets/img/items/' . $filename), config('setting.uploadImageQuality '), 'jpg');
+                    ->save(base_path('assets/img/items/' . $filename), config('settings.uploadImageQuality '), 'jpg');
                 $item->image = '/assets/img/items/' . $filename;
             }
 
@@ -836,12 +793,10 @@ class RestaurantOwnerController extends Controller
                 $item->is_new = false;
             }
 
-            if ($request->is_veg == 'veg') {
+            if ($request->is_veg == 'true') {
                 $item->is_veg = true;
-            } elseif ($request->is_veg == 'nonveg') {
-                $item->is_veg = false;
             } else {
-                $item->is_veg = null;
+                $item->is_veg = false;
             }
 
             $item->desc = $request->desc;
@@ -850,10 +805,6 @@ class RestaurantOwnerController extends Controller
                 if (isset($request->addon_category_item)) {
                     $item->addon_categories()->sync($request->addon_category_item);
                 }
-                if ($request->addon_category_item == null) {
-                    $item->addon_categories()->sync($request->addon_category_item);
-                }
-
                 if ($request->remove_all_addons == '1') {
                     $item->addon_categories()->sync($request->addon_category_item);
                 }
@@ -866,18 +817,6 @@ class RestaurantOwnerController extends Controller
                 return redirect()->back()->with(['message' => $th]);
             }
         }
-    }
-
-    public function removeItemImage($id)
-    {
-        $user = Auth::user();
-        $restaurantIds = $user->restaurants->pluck('id')->toArray();
-
-        $item = Item::where('id', $id)->whereIn('restaurant_id', $restaurantIds)->firstOrFail();
-
-        $item->image = null;
-        $item->save();
-        return redirect()->back()->with(['success' => 'Item image removed']);
     }
 
     public function addonCategories()
@@ -927,7 +866,6 @@ class RestaurantOwnerController extends Controller
         $addonCategory->type = $request->type;
         $addonCategory->description = $request->description;
         $addonCategory->user_id = Auth::user()->id;
-        $addonCategory->addon_limit = $request->addon_limit ? $request->addon_limit : 0;
 
         try {
             $addonCategory->save();
@@ -992,7 +930,6 @@ class RestaurantOwnerController extends Controller
             $addonCategory->name = $request->name;
             $addonCategory->type = $request->type;
             $addonCategory->description = $request->description;
-            $addonCategory->addon_limit = $request->addon_limit ? $request->addon_limit : 0;
 
             try {
                 $addonCategory->save();
@@ -1177,7 +1114,7 @@ class RestaurantOwnerController extends Controller
         $restaurantIds = $user->restaurants->pluck('id')->toArray();
 
         $orders = Order::orderBy('id', 'DESC')
-            ->whereIn('orderstatus_id', ['1', '2', '3', '4', '5', '6', '7', '10', '11'])
+            ->whereIn('orderstatus_id', ['1', '2', '3', '4', '5', '6', '7'])
             ->whereIn('restaurant_id', $restaurantIds)
             ->with('accept_delivery.user', 'restaurant')
             ->paginate('20');
@@ -1226,14 +1163,12 @@ class RestaurantOwnerController extends Controller
             ->with('orderitems.order_item_addons')
             ->first();
 
-        $notConfirmedOrderStatusIds = ['8', '9']; //awaiting payment, payment failed and scheduled order
-
-        if ($order && !in_array($order->orderstatus_id, $notConfirmedOrderStatusIds)) {
+        if ($order) {
             return view('restaurantowner.viewOrder', array(
                 'order' => $order,
             ));
         } else {
-            return redirect()->route('restaurant.orders')->with(array('message' => 'Access Denied'));
+            return redirect()->route('restaurantowner.orders');
         }
     }
 
@@ -1364,8 +1299,6 @@ class RestaurantOwnerController extends Controller
             $payoutRequest->restaurant_earning_id = $earning->id;
             $payoutRequest->amount = $balanceAfterCommission;
             $payoutRequest->status = 'PENDING';
-            $payoutRequest->zone_id = $restaurant->zone_id ? $restaurant->zone_id : null;
-
             try {
                 $payoutRequest->save();
                 $earning->is_requested = 1;
@@ -1399,13 +1332,20 @@ class RestaurantOwnerController extends Controller
         $order = Order::where('id', $id)->whereIn('restaurant_id', $restaurantIds)->first();
 
         $customer = User::where('id', $order->user_id)->first();
-        $storeOwner = Auth::user();
 
         if ($order && $user) {
             if ($order->orderstatus_id == '1') {
                 //change order status to 6 (Canceled)
                 $order->orderstatus_id = 6;
                 $order->save();
+                //refund money if paid online
+                // if (!$order->payment_mode == 'COD') {
+                //     //paid online or paid fully with wallet (Give full refund)
+                //     $customer = User::where('id', $order->user_id)->first();
+                //     if ($customer) {
+                //         $customer->deposit($order->total * 100, ['description' => $translationData->orderRefundWalletComment . $order->unique_order_id]);
+                //     }
+                // }
 
                 //if COD, then check if wallet is present
                 if ($order->payment_mode == 'COD') {
@@ -1413,21 +1353,13 @@ class RestaurantOwnerController extends Controller
                         //refund wallet amount
                         $customer->deposit($order->wallet_amount * 100, ['description' => $translationData->orderPartialRefundWalletComment . $order->unique_order_id]);
                     }
-                    activity()
-                        ->performedOn($order)
-                        ->causedBy($storeOwner)
-                        ->withProperties(['type' => 'Order_Canceled_Store'])->log('Order canceled');
                 } else {
                     //if online payment, refund the total to wallet
                     $customer->deposit(($order->total) * 100, ['description' => $translationData->orderRefundWalletComment . $order->unique_order_id]);
-                    activity()
-                        ->performedOn($order)
-                        ->causedBy($storeOwner)
-                        ->withProperties(['type' => 'Order_Canceled_Store'])->log('Order canceled with Full Refund');
                 }
 
                 //show notification to user
-                if (config('setting.enablePushNotificationOrders') == 'true') {
+                if (config('settings.enablePushNotificationOrders') == 'true') {
                     //to user
                     $notify = new PushNotify();
                     $notify->sendPushNotification('6', $order->user_id, $order->unique_order_id);
@@ -1436,14 +1368,14 @@ class RestaurantOwnerController extends Controller
                 if (\Illuminate\Support\Facades\Request::ajax()) {
                     return response()->json(['success' => true]);
                 } else {
-                    return redirect()->back()->with(array('success' => __('storeDashboard.orderCanceledNotification')));
+                    return redirect()->back()->with(array('success' => 'Order Canceled'));
                 }
             }
         } else {
             if (\Illuminate\Support\Facades\Request::ajax()) {
                 return response()->json(['success' => false], 406);
             } else {
-                return redirect()->back()->with(array('message' => __('storeDashboard.orderSomethingWentWrongNotification')));
+                return redirect()->back()->with(array('message' => 'Something went wrong.'));
             }
         }
     }
@@ -1453,13 +1385,6 @@ class RestaurantOwnerController extends Controller
      */
     public function updateRestaurantScheduleData(Request $request)
     {
-
-        $user = Auth::user();
-        $restaurantIds = $user->restaurants->pluck('id')->toArray();
-        if (!in_array($request->restaurant_id, $restaurantIds)) {
-            abort(404);
-        }
-
         $data = $request->except(['_token', 'restaurant_id']);
 
         $i = 0;
@@ -1510,9 +1435,6 @@ class RestaurantOwnerController extends Controller
         return redirect()->back()->with(['success' => 'Scheduling data saved successfully']);
     }
 
-    /**
-     * @param Request $request
-     */
     public function checkOrderStatusNewOrder(Request $request)
     {
         $order = Order::where('unique_order_id', $request->order_id)->firstOrFail();
@@ -1529,9 +1451,6 @@ class RestaurantOwnerController extends Controller
         return response()->json($data);
     }
 
-    /**
-     * @param Request $request
-     */
     public function checkOrderStatusSelfPickupOrder(Request $request)
     {
         $order = Order::where('unique_order_id', $request->order_id)->firstOrFail();
@@ -1560,10 +1479,6 @@ class RestaurantOwnerController extends Controller
         return response()->json($data);
     }
 
-    /**
-     * @param $order_id
-     * @param $printerSetting
-     */
     private function printInvoice($order_id, $printerSetting = null)
     {
         if (Module::find('ThermalPrinter') && Module::find('ThermalPrinter')->isEnabled()) {
@@ -1576,17 +1491,8 @@ class RestaurantOwnerController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
     public function updateStorePayoutDetails(Request $request)
     {
-        $user = Auth::user();
-        $restaurantIds = $user->restaurants->pluck('id')->toArray();
-        if (!in_array($request->restaurant_id, $restaurantIds)) {
-            abort(404);
-        }
-
         $storePayoutDetail = StorePayoutDetail::where('restaurant_id', $request->restaurant_id)->first();
         if ($storePayoutDetail) {
             $storePayoutDetail->data = json_encode($request->except(['restaurant_id', '_token']));
@@ -1605,131 +1511,6 @@ class RestaurantOwnerController extends Controller
         } catch (\Throwable $th) {
             return redirect()->back()->with(['message' => $th]);
         }
-    }
 
-    /**
-     * @param $restaurant_id
-     * @return mixed
-     */
-    public function sortMenusAndItems($restaurant_id)
-    {
-        $user = Auth::user();
-        $restaurantIds = $user->restaurants->pluck('id')->toArray();
-
-        $restaurant = Restaurant::where('id', $restaurant_id)->whereIn('id', $restaurantIds)->firstOrFail();
-
-        $items = Item::where('restaurant_id', $restaurant_id)
-            ->join('item_categories', function ($join) {
-                $join->on('items.item_category_id', '=', 'item_categories.id');
-            })
-            ->orderBy('item_categories.order_column', 'asc')
-            ->with('addon_categories')
-            ->ordered()
-            ->get(array('items.*', 'item_categories.name as category_name'));
-
-        $itemsArr = [];
-        foreach ($items as $item) {
-            $itemsArr[$item['category_name']][] = $item;
-        }
-
-        // dd($itemsArr);
-        $itemCategories = ItemCategory::whereHas('items', function ($query) use ($restaurant_id) {
-            return $query->where('restaurant_id', $restaurant_id);
-        })->ordered()->get();
-
-        $count = 0;
-
-        return view('restaurantowner.sortMenusAndItemsForStore', array(
-            'restaurant' => $restaurant,
-            'items' => $itemsArr,
-            'itemCategories' => $itemCategories,
-            'count' => $count,
-        ));
-    }
-
-    /**
-     * @param Request $request
-     */
-    public function updateItemPositionForStore(Request $request)
-    {
-        Item::setNewOrder($request->newOrder);
-        Artisan::call('cache:clear');
-        return response()->json(['success' => true]);
-    }
-
-    /**
-     * @param Request $request
-     */
-    public function updateMenuCategoriesPositionForStore(Request $request)
-    {
-        ItemCategory::setNewOrder($request->newOrder);
-        Artisan::call('cache:clear');
-        return response()->json(['success' => true]);
-    }
-
-    /**
-     * @param $restaurant_id
-     */
-    public function ratings($restaurant_id = null)
-    {
-        $user = Auth::user();
-        if ($restaurant_id) {
-
-            $restaurant = $user->restaurants;
-            $restaurantIds = $user->restaurants->pluck('id')->toArray();
-
-            $restaurant = Restaurant::whereIn('id', $restaurantIds)
-                ->where('id', $restaurant_id)
-                ->with(array('ratings' => function ($query) {
-                    $query->orderBy('id', 'DESC');
-                }))->firstOrFail();
-            $averageRating = number_format((float) $restaurant->ratings->avg('rating_store'), 1, '.', '');
-
-            return view('restaurantowner.ratings', array(
-                'restaurant' => $restaurant,
-                'reviews' => $restaurant->ratings,
-                'averageRating' => $averageRating,
-            ));
-        } else {
-
-            $restaurants = $user->restaurants;
-
-            return view('restaurantowner.ratings', array(
-                'restaurants' => $restaurants,
-            ));
-        }
-    }
-
-    /**
-     * @param $id
-     */
-    public function confirmScheduledOrder($id)
-    {
-        $user = Auth::user();
-        $restaurantIds = $user->restaurants->pluck('id')->toArray();
-
-        $order = Order::where('id', $id)->whereIn('restaurant_id', $restaurantIds)->first();
-
-        if ($order->orderstatus_id == '10') {
-            $order->orderstatus_id = 11;
-            $order->save();
-
-            activity()
-                ->performedOn($order)
-                ->causedBy($user)
-                ->withProperties(['type' => 'Confirm_Scheduled_Order_Store'])->log('Scheduled order confirmed');
-
-            if (\Illuminate\Support\Facades\Request::ajax()) {
-                return response()->json(['success' => true]);
-            } else {
-                return redirect()->back()->with(array('success' => __('orderScheduleLang.scheduledOrderConfirmedNotification')));
-            }
-        } else {
-            if (\Illuminate\Support\Facades\Request::ajax()) {
-                return response()->json(['success' => false], 406);
-            } else {
-                return redirect()->back()->with(array('message' => __('storeDashboard.orderSomethingWentWrongNotification')));
-            }
-        }
     }
 };

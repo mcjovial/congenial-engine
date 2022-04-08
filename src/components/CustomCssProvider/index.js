@@ -8,14 +8,6 @@ class CustomCssProvider extends Component {
 			<React.Fragment>
 				{localStorage.getItem("customCSS") !== null && (
 					<Helmet>
-						{/* load light mode css for delivery app */}
-						{localStorage.getItem("deliveryAppLightMode") === "true" && (
-							<link
-								rel="stylesheet"
-								type="text/css"
-								href="/assets/css/delivery-app-light.css?v=2.9.1-BUILD-01"
-							/>
-						)}
 						<style type="text/css">{localStorage.getItem("customCSS")}</style>
 					</Helmet>
 				)}

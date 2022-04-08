@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use Hashids;
-use App\Item;
-use App\User;
 use App\Addon;
-use App\Order;
 use App\Coupon;
+use App\Helpers\TranslationHelper;
+use App\Item;
+use App\Order;
 use App\Orderitem;
+use App\OrderItemAddon;
+use App\Orderstatus;
 use App\PushNotify;
 use App\Restaurant;
-use App\OrderItemAddon;
+use App\Sms;
+use App\User;
+use Hashids;
 use Illuminate\Http\Request;
-use App\Helpers\TranslationHelper;
-use Nwidart\Modules\Facades\Module;
+use Omnipay\Omnipay;
+use OneSignal;
 
 class OrderController extends Controller
 {
@@ -30,6 +33,8 @@ class OrderController extends Controller
             $translationData = $translationHelper->getDefaultLanguageValuesForKeys($keys);
 
             $newOrder = new Order();
+
+            $checkingIfEmpty = Order::count();
 
             $lastOrder = Order::orderBy('id', 'desc')->first();
 
@@ -51,58 +56,23 @@ class OrderController extends Controller
 
             $newOrder->user_id = $user->id;
 
-            $newOrder->zone_id = $restaurant->zone_id ? $restaurant->zone_id : null;
-
-            if ($request['pending_payment'] || $request['method'] == 'MERCADOPAGO' || $request['method'] == 'PAYTM' || $request['method'] == 'RAZORPAY') {
+            if ($request['pending_payment'] || $request['method'] == 'MERCADOPAGO' || $request['method'] == 'PAYTM') {
                 $newOrder->orderstatus_id = '8';
-
-                if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled()) {
-                    if (isset($request->schedule_date) && $request->schedule_date != null && isset($request->schedule_slot) && $request->schedule_slot != null) {
-                        $newOrder->is_scheduled = true;
-                        $newOrder->schedule_date = json_encode($request->schedule_date);
-                        $newOrder->schedule_slot = json_encode($request->schedule_slot);
-                    }
-                }
             } elseif ($restaurant->auto_acceptable) {
                 $newOrder->orderstatus_id = '2';
-
-                if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled()) {
-                    if (isset($request->schedule_date) && $request->schedule_date != null && isset($request->schedule_slot) && $request->schedule_slot != null) {
-                        $newOrder->orderstatus_id = '10';
-                        $newOrder->is_scheduled = true;
-                        $newOrder->schedule_date = json_encode($request->schedule_date);
-                        $newOrder->schedule_slot = json_encode($request->schedule_slot);
-                    }
-                }
-
-                if ($request->delivery_type == 1) {
-                    sendSmsToDelivery($restaurant_id);
-                }
-                if (config('setting.enablePushNotificationOrders') == 'true') {
+                $this->smsToDelivery($restaurant_id);
+                if (config('settings.enablePushNotificationOrders') == 'true') {
                     //to user
                     $notify = new PushNotify();
                     $notify->sendPushNotification('2', $newOrder->user_id, $newOrder->unique_order_id);
                 }
             } else {
                 $newOrder->orderstatus_id = '1';
-
-                if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled()) {
-                    if (isset($request->schedule_date) && $request->schedule_date != null && isset($request->schedule_slot) && $request->schedule_slot != null) {
-                        $newOrder->orderstatus_id = '10';
-                        $newOrder->is_scheduled = true;
-                        $newOrder->schedule_date = json_encode($request->schedule_date);
-                        $newOrder->schedule_slot = json_encode($request->schedule_slot);
-                    }
-                }
             }
 
             $newOrder->location = json_encode($request['location']);
 
-            if ($request->delivery_type == 2) {
-                $full_address = "NA";
-            } else {
-                $full_address = $request['user']['data']['default_address']['house'] . ', ' . $request['user']['data']['default_address']['address'];
-            }
+            $full_address = $request['user']['data']['default_address']['house'] . ', ' . $request['user']['data']['default_address']['address'];
             $newOrder->address = $full_address;
 
             //get restaurant charges
@@ -150,57 +120,45 @@ class OrderController extends Controller
             }
 
             if ($request->delivery_type == 1) {
-                if (config('setting.enGDMA') == 'true') {
-                    $distance = (float) $request->dis;
-                } else {
-                    $distance = getDistance($request['user']['data']['default_address']['latitude'], $request['user']['data']['default_address']['longitude'], $restaurant->latitude, $restaurant->longitude);
-                }
-
                 if ($restaurant->delivery_charge_type == 'DYNAMIC') {
                     //get distance between user and restaurant,
+                    if (config('settings.enGDMA') == 'true') {
+                        $distance = (float) $request->dis;
+                    } else {
+                        $distance = $this->getDistance($request['user']['data']['default_address']['latitude'], $request['user']['data']['default_address']['longitude'], $restaurant->latitude, $restaurant->longitude);
+                    }
 
                     if ($distance > $restaurant->base_delivery_distance) {
                         $extraDistance = $distance - $restaurant->base_delivery_distance;
                         $extraCharge = ($extraDistance / $restaurant->extra_delivery_distance) * $restaurant->extra_delivery_charge;
                         $dynamicDeliveryCharge = $restaurant->base_delivery_charge + $extraCharge;
 
-                        if (config('setting.enDelChrRnd') == 'true') {
+                        if (config('settings.enDelChrRnd') == 'true') {
                             $dynamicDeliveryCharge = ceil($dynamicDeliveryCharge);
                         }
 
                         $newOrder->delivery_charge = $dynamicDeliveryCharge;
-                        $newOrder->actual_delivery_charge = $dynamicDeliveryCharge;
+                        $orderTotal = $orderTotal + $dynamicDeliveryCharge;
                     } else {
                         $newOrder->delivery_charge = $restaurant->base_delivery_charge;
-                        $newOrder->actual_delivery_charge = $restaurant->base_delivery_charge;
+                        $orderTotal = $orderTotal + $restaurant->base_delivery_charge;
                     }
+
                 } else {
                     $newOrder->delivery_charge = $restaurant->delivery_charges;
-                    $newOrder->actual_delivery_charge = $restaurant->delivery_charges;
+                    $orderTotal = $orderTotal + $restaurant->delivery_charges;
                 }
 
-                $newOrder->distance = $distance;
             } else {
-                //for selfpickup...
                 $newOrder->delivery_charge = 0;
-                $newOrder->actual_delivery_charge = 0;
             }
-
-            //for free delivery above x subtotal
-            if ($restaurant->free_delivery_subtotal > 0) {
-                if ($newOrder->sub_total >= $restaurant->free_delivery_subtotal) {
-                    $newOrder->delivery_charge = 0;
-                }
-            }
-
-            $orderTotal = $orderTotal + $newOrder->delivery_charge;
 
             $orderTotal = $orderTotal + $restaurant->restaurant_charges;
 
-            if (config('setting.taxApplicable') == 'true') {
-                $newOrder->tax = config('setting.taxPercentage');
+            if (config('settings.taxApplicable') == 'true') {
+                $newOrder->tax = config('settings.taxPercentage');
 
-                $taxAmount = (float) (((float) config('setting.taxPercentage') / 100) * $orderTotal);
+                $taxAmount = (float) (((float) config('settings.taxPercentage') / 100) * $orderTotal);
             } else {
                 $taxAmount = 0;
             }
@@ -243,12 +201,10 @@ class OrderController extends Controller
                 $newOrder->delivery_type = 2;
             }
 
-            $newOrder->cash_change_amount = $request['cash_change_amount'] ? $request['cash_change_amount'] : null;
-
-            $newOrder->delivery_pin = substr(str_shuffle('123456789'), 0, 5);
-
+            $user->delivery_pin = strtoupper(str_random(5));
+            $user->save();
             //process paypal payment
-            if ($request['method'] == 'PAYPAL' || $request['method'] == 'PAYSTACK' || $request['method'] == 'RAZORPAY' || $request['method'] == 'STRIPE' || $request['method'] == 'PAYMONGO' || $request['method'] == 'MERCADOPAGO' || $request['method'] == 'PAYTM' || $request['method'] == 'FLUTTERWAVE' || $request['method'] == 'KHALTI') {
+            if ($request['method'] == 'PAYPAL' || $request['method'] == 'PAYSTACK' || $request['method'] == 'RAZORPAY' || $request['method'] == 'STRIPE' || $request['method'] == 'PAYMONGO' || $request['method'] == 'MERCADOPAGO' || $request['method'] == 'PAYTM') {
                 //successfuly received payment
                 $newOrder->save();
                 if ($request->partial_wallet == true) {
@@ -279,42 +235,46 @@ class OrderController extends Controller
                     }
                 }
 
-                //sms to Store Owner
-                if (!$restaurant->auto_acceptable && $newOrder->orderstatus_id == '1' && config('setting.smsRestaurantNotify') == 'true') {
-                    $restaurant_id = $request['order'][0]['restaurant_id'];
-                    sendSmsToStoreOwner($restaurant_id, $orderTotal);
-                }
-
-                //push notification to Delivery Guy
-                if ($restaurant->auto_acceptable && config('setting.enablePushNotification') && config('setting.enablePushNotificationOrders') == 'true') {
-                    $restaurant_id = $request['order'][0]['restaurant_id'];
-                    sendPushNotificationToDelivery($restaurant_id, $newOrder);
-                }
-
-                //push notification to Store Owner
-                if (in_array($newOrder->orderstatus_id, ['1', '10'])) {
-                    sendPushNotificationToStoreOwner($restaurant_id, $unique_order_id);
-                }
-
-                activity()
-                    ->performedOn($newOrder)
-                    ->causedBy($user)
-                    ->withProperties(['type' => 'Order_Placed'])->log('Order placed');
-
-                if ($newOrder->orderstatus_id == '2') {
-                    activity()
-                        ->performedOn($newOrder)
-                        ->causedBy(User::find(1))
-                        ->withProperties(['type' => 'Order_Accepted_Auto'])->log('Order auto accepted');
-                }
-
                 $response = [
                     'success' => true,
                     'data' => $newOrder,
                 ];
 
+                // Send SMS to restaurant owner only if not configured for auto acceptance, and order staus ID is 1 and sms notify is On by Admin
+                if (!$restaurant->auto_acceptable && $newOrder->orderstatus_id == '1' && config('settings.smsRestaurantNotify') == 'true') {
+
+                    $restaurant_id = $request['order'][0]['restaurant_id'];
+                    $this->smsToRestaurant($restaurant_id, $orderTotal);
+                }
+                // END SMS
+
+                if ($restaurant->auto_acceptable && config('settings.enablePushNotification') && config('settings.enablePushNotificationOrders') == 'true') {
+
+                    //get all pivot users of restaurant (delivery guy/ res owners)
+                    $pivotUsers = $restaurant->users()
+                        ->wherePivot('restaurant_id', $restaurant->id)
+                        ->get();
+                    //filter only res owner and send notification.
+                    foreach ($pivotUsers as $pU) {
+                        if ($pU->hasRole('Delivery Guy')) {
+                            //send Notification to Res Owner
+                            $notify = new PushNotify();
+                            $notify->sendPushNotification('TO_DELIVERY', $pU->id, $newOrder->unique_order_id);
+                        }
+                    }
+
+                }
+
+                /* OneSignal Push Notification to Store Owner */
+                if ($newOrder->orderstatus_id == '1' && config('settings.oneSignalAppId') != null && config('settings.oneSignalRestApiKey') != null) {
+                    $this->sendPushNotificationStoreOwner($restaurant_id);
+                }
+                /* END OneSignal Push Notification to Store Owner */
+
                 return response()->json($response);
-            } else {
+            }
+            //if new payment gateway is added, write elseif here
+            else {
                 $newOrder->save();
                 if ($request['method'] == 'COD') {
                     if ($request->partial_wallet == true) {
@@ -354,42 +314,45 @@ class OrderController extends Controller
                     }
                 }
 
-                //sms to Store Owner
-                if (!$restaurant->auto_acceptable && $newOrder->orderstatus_id == '1' && config('setting.smsRestaurantNotify') == 'true') {
-                    $restaurant_id = $request['order'][0]['restaurant_id'];
-                    sendSmsToStoreOwner($restaurant_id, $orderTotal);
-                }
-
-                //push notification to Delivery Guy
-                if ($restaurant->auto_acceptable && config('setting.enablePushNotification') && config('setting.enablePushNotificationOrders') == 'true') {
-                    $restaurant_id = $request['order'][0]['restaurant_id'];
-                    sendPushNotificationToDelivery($restaurant_id, $newOrder);
-                }
-
-                //push notification to Store Owner
-                if (in_array($newOrder->orderstatus_id, ['1', '10'])) {
-                    sendPushNotificationToStoreOwner($restaurant_id, $unique_order_id);
-                }
-
-                activity()
-                    ->performedOn($newOrder)
-                    ->causedBy($user)
-                    ->withProperties(['type' => 'Order_Placed'])->log('Order placed');
-
-                if ($newOrder->orderstatus_id == '2') {
-                    activity()
-                        ->performedOn($newOrder)
-                        ->causedBy(User::find(1))
-                        ->withProperties(['type' => 'Order_Accepted_Auto'])->log('Order auto accepted');
-                }
-
                 $response = [
                     'success' => true,
                     'data' => $newOrder,
                 ];
 
+                // Send SMS
+                if (!$restaurant->auto_acceptable && $newOrder->orderstatus_id == '1' && config('settings.smsRestaurantNotify') == 'true') {
+
+                    $restaurant_id = $request['order'][0]['restaurant_id'];
+                    $this->smsToRestaurant($restaurant_id, $orderTotal);
+
+                }
+                // END SMS
+
+                if ($restaurant->auto_acceptable && config('settings.enablePushNotification') && config('settings.enablePushNotificationOrders') == 'true') {
+                    //get all pivot users of restaurant (delivery guy/ res owners)
+                    $pivotUsers = $restaurant->users()
+                        ->wherePivot('restaurant_id', $restaurant->id)
+                        ->get();
+                    //filter only res owner and send notification.
+                    foreach ($pivotUsers as $pU) {
+                        if ($pU->hasRole('Delivery Guy')) {
+                            //send Notification to Res Owner
+                            $notify = new PushNotify();
+                            $notify->sendPushNotification('TO_DELIVERY', $pU->id, $newOrder->unique_order_id);
+                        }
+                    }
+
+                }
+
+                /* OneSignal Push Notification to Store Owner */
+                if ($newOrder->orderstatus_id == '1' && config('settings.oneSignalAppId') != null && config('settings.oneSignalRestApiKey') != null) {
+                    $this->sendPushNotificationStoreOwner($restaurant_id);
+                }
+                /* END OneSignal Push Notification to Store Owner */
+
                 return response()->json($response);
             }
+
         }
     }
 
@@ -400,17 +363,7 @@ class OrderController extends Controller
     {
         $user = auth()->user();
         if ($user) {
-            $orders = Order::where('user_id', $user->id)->with('orderitems', 'orderitems.order_item_addons', 'restaurant', 'rating')->orderBy('id', 'DESC')->paginate(10);
-
-            foreach ($orders as $order) {
-                $ratable = false;
-                if ($order->orderstatus_id == 5 && !$order->rating) {
-                    $ratable = true;
-                }
-                $order->is_ratable = $ratable;
-                $order->makeHidden(['reviews']);
-            }
-
+            $orders = Order::where('user_id', $user->id)->with('orderitems', 'orderitems.order_item_addons', 'restaurant')->orderBy('id', 'DESC')->get();
             return response()->json($orders);
         }
         return response()->json(['success' => false], 401);
@@ -428,6 +381,7 @@ class OrderController extends Controller
             return response()->json($items);
         }
         return response()->json(['success' => false], 401);
+
     }
 
     /**
@@ -445,7 +399,7 @@ class OrderController extends Controller
         $user = auth()->user();
 
         //check if user is cancelling their own order...
-        if ($order->user_id == $user->id && ($order->orderstatus_id == 1 || $order->orderstatus_id == 10)) {
+        if ($order->user_id == $user->id && $order->orderstatus_id == 1) {
 
             //if payment method is not COD, and order status is 1 (Order placed) then refund to wallet
             $refund = false;
@@ -468,15 +422,10 @@ class OrderController extends Controller
             $order->save();
 
             //throw notification to user
-            if (config('setting.enablePushNotificationOrders') == 'true') {
+            if (config('settings.enablePushNotificationOrders') == 'true') {
                 $notify = new PushNotify();
                 $notify->sendPushNotification('6', $order->user_id);
             }
-
-            activity()
-                ->performedOn($order)
-                ->causedBy($user)
-                ->withProperties(['type' => 'Order_Canceled'])->log('Order canceled');
 
             $response = [
                 'success' => true,
@@ -484,6 +433,7 @@ class OrderController extends Controller
             ];
 
             return response()->json($response);
+
         } else {
             $response = [
                 'success' => false,
@@ -491,5 +441,117 @@ class OrderController extends Controller
             ];
             return response()->json($response);
         }
+
     }
-};
+
+    /**
+     * @param $latitudeFrom
+     * @param $longitudeFrom
+     * @param $latitudeTo
+     * @param $longitudeTo
+     * @return mixed
+     */
+    private function getDistance($latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo)
+    {
+        $latFrom = deg2rad($latitudeFrom);
+        $lonFrom = deg2rad($longitudeFrom);
+        $latTo = deg2rad($latitudeTo);
+        $lonTo = deg2rad($longitudeTo);
+
+        $latDelta = $latTo - $latFrom;
+        $lonDelta = $lonTo - $lonFrom;
+
+        $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
+            cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+        return $angle * 6371;
+    }
+
+    /**
+     * @param $restaurant_id
+     * @param $orderTotal
+     */
+    private function smsToRestaurant($restaurant_id, $orderTotal)
+    {
+        //get restaurant
+        $restaurant = Restaurant::where('id', $restaurant_id)->first();
+        if ($restaurant) {
+            if ($restaurant->is_notifiable) {
+                //get all pivot users of restaurant (Store Ownerowners)
+                $pivotUsers = $restaurant->users()
+                    ->wherePivot('restaurant_id', $restaurant_id)
+                    ->get();
+                //filter only res owner and send notification.
+                foreach ($pivotUsers as $pU) {
+                    if ($pU->hasRole('Store Owner')) {
+                        // Include Order orderTotal or not ?
+                        switch (config('settings.smsRestOrderValue')) {
+                            case 'true':
+                                $message = config('settings.defaultSmsRestaurantMsg') . round($orderTotal);
+                                break;
+                            case 'false':
+                                $message = config('settings.defaultSmsRestaurantMsg');
+                                break;
+                        }
+                        // As its not an OTP based message Nulling OTP
+                        $otp = null;
+                        $smsnotify = new Sms();
+                        $smsnotify->processSmsAction('OD_NOTIFY', $pU->phone, $otp, $message);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param $restaurant_id
+     */
+    private function smsToDelivery($restaurant_id)
+    {
+        //get restaurant
+        $restaurant = Restaurant::where('id', $restaurant_id)->first();
+        if ($restaurant) {
+            //get all pivot users of restaurant (Store Ownerowners)
+            $pivotUsers = $restaurant->users()
+                ->wherePivot('restaurant_id', $restaurant_id)
+                ->get();
+            //filter only res owner and send notification.
+            foreach ($pivotUsers as $pU) {
+                if ($pU->hasRole('Delivery Guy')) {
+                    if ($pU->delivery_guy_detail->is_notifiable) {
+                        $message = config('settings.defaultSmsDeliveryMsg');
+                        // As its not an OTP based message Nulling OTP
+                        $otp = null;
+                        $smsnotify = new Sms();
+                        $smsnotify->processSmsAction('OD_NOTIFY', $pU->phone, $otp, $message);
+                    }
+                }
+            }
+        }
+    }
+
+    private function sendPushNotificationStoreOwner($restaurant_id)
+    {
+        $restaurant = Restaurant::where('id', $restaurant_id)->first();
+        if ($restaurant) {
+            //get all pivot users of restaurant (Store Ownerowners)
+            $pivotUsers = $restaurant->users()
+                ->wherePivot('restaurant_id', $restaurant_id)
+                ->get();
+            //filter only res owner and send notification.
+            foreach ($pivotUsers as $pU) {
+                if ($pU->hasRole('Store Owner')) {
+                    // \Log::info('Send Push notification to store owner');
+                    $message = config('settings.restaurantNewOrderNotificationMsg');
+                    OneSignal::sendNotificationToExternalUser(
+                        $message,
+                        $pU->id,
+                        $url = null,
+                        $data = null,
+                        $buttons = null,
+                        $schedule = null
+                    );
+                }
+            }
+        }
+    }
+}

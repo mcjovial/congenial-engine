@@ -90,11 +90,8 @@ class Account extends Component {
 					updateUserInfo={this.updateUserInfo}
 					avatarPopup={this.state.avatarPopup}
 				/>
-
 				<UserMenu pages={pages} />
-
 				<Logout />
-
 				<Footer active_account={true} />
 
 				{languages && languages.length > 1 && (
@@ -117,7 +114,6 @@ class Account extends Component {
 						</select>
 					</div>
 				)}
-				<div className="mb-100" />
 			</React.Fragment>
 		);
 	}

@@ -20,7 +20,7 @@ class Orders extends Component {
 		play: false,
 		tabIndex: 0,
 	};
-	audio = new Audio("/assets/audio/delivery-notification.mp3");
+	audio = new Audio("/assets/audio/notification1.mp3");
 
 	componentDidMount() {
 		if (this.props.delivery_user.success) {
@@ -33,9 +33,7 @@ class Orders extends Component {
 	}
 
 	__refreshOrders = () => {
-		const { delivery_user } = this.props;
-		if (delivery_user.success && delivery_user.data.status) {
-			console.log("refresh orders called");
+		if (this.props.delivery_user.success) {
 			this.props.getDeliveryOrders(this.props.delivery_user.data.auth_token);
 		}
 	};
@@ -45,11 +43,9 @@ class Orders extends Component {
 		if (delivery_orders.new_orders) {
 			if (newProps.delivery_orders.new_orders.length > delivery_orders.new_orders.length) {
 				//new orders received,
-				if (navigator.userAgent !== "FoodomaaAndroidWebViewUA") {
-					this.audio.play();
-					if ("vibrate" in navigator) {
-						navigator.vibrate(["100", "150", "100", "100", "150", "100"]);
-					}
+				this.audio.play();
+				if ("vibrate" in navigator) {
+					navigator.vibrate(["100", "150", "100", "100", "150", "100"]);
 				}
 			}
 		}
@@ -80,7 +76,6 @@ class Orders extends Component {
 		if (window.innerWidth > 768) {
 			return <Redirect to="/" />;
 		}
-		const { accepted_orders, new_orders, pickedup_orders } = this.props.delivery_orders;
 
 		return (
 			<React.Fragment>
@@ -110,12 +105,6 @@ class Orders extends Component {
 						<TabList>
 							<Tab>
 								<div className="text-center">
-									<span
-										className="cart-quantity-badge"
-										style={{ backgroundColor: "#f44336", top: "2px", left: "45px" }}
-									>
-										{new_orders && new_orders.length}
-									</span>
 									<i className="si si-bell fa-2x" /> <br />
 									{localStorage.getItem("deliveryFooterNewTitle")}
 									<Ink duration="500" hasTouch="true" />
@@ -123,12 +112,6 @@ class Orders extends Component {
 							</Tab>
 							<Tab>
 								<div className="text-center">
-									<span
-										className="cart-quantity-badge"
-										style={{ backgroundColor: "#f44336", top: "2px", left: "45px" }}
-									>
-										{accepted_orders && accepted_orders.length}
-									</span>
 									<i className="si si-grid fa-2x" /> <br />
 									{localStorage.getItem("deliveryFooterAcceptedTitle")}
 									<Ink duration="500" hasTouch="true" />
@@ -136,12 +119,6 @@ class Orders extends Component {
 							</Tab>
 							<Tab>
 								<div className="text-center">
-									<span
-										className="cart-quantity-badge"
-										style={{ backgroundColor: "#f44336", top: "2px", left: "45px" }}
-									>
-										{pickedup_orders && pickedup_orders.length}
-									</span>
 									<i className="si si-bag fa-2x" /> <br />
 									{localStorage.getItem("deliveryFooterPickedup")}
 									<Ink duration="500" hasTouch="true" />
@@ -163,12 +140,8 @@ class Orders extends Component {
 									height={window.innerHeight}
 									width={window.innerWidth}
 									speed={1.2}
-									primaryColor={
-										localStorage.getItem("deliveryAppLightMode") === "true" ? "#E0E0E0" : "#161b31"
-									}
-									secondaryColor={
-										localStorage.getItem("deliveryAppLightMode") === "true" ? "#fefefe" : "#222b45"
-									}
+									primaryColor="#161b31"
+									secondaryColor="#222b45"
 								>
 									<rect x="15" y="30" rx="0" ry="0" width="150" height="30" />
 									<rect x="283" y="30" rx="0" ry="0" width="75" height="30" />
@@ -188,7 +161,6 @@ class Orders extends Component {
 								refreshOrders={this.__refreshOrders}
 								getLocationName={this.getLocationName}
 								new_orders={this.props.delivery_orders.new_orders}
-								delivery_user={this.props.delivery_user}
 							/>
 						)}
 					</TabPanel>

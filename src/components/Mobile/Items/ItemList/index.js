@@ -17,7 +17,6 @@ import { searchItem, clearSearch } from "../../../../services/items/actions";
 
 import ProgressiveImage from "react-progressive-image";
 import LazyLoad from "react-lazyload";
-import { debounce } from "../../../helpers/debounce";
 
 class ItemList extends Component {
 	state = {
@@ -27,14 +26,11 @@ class ItemList extends Component {
 		data: [],
 		filterText: null,
 		filter_items: [],
-		items: [],
-		queryLengthError: false,
 	};
 
 	componentDidMount() {
 		document.addEventListener("mousedown", this.handleClickOutside);
 	}
-
 	forceStateUpdate = () => {
 		setTimeout(() => {
 			this.forceUpdate();
@@ -46,36 +42,46 @@ class ItemList extends Component {
 		}, 100);
 	};
 
-	searchForItem = (e) => {
-		this.searchItem(e.target.value);
-	};
-
-	searchItem = debounce((event) => {
-		if (event.length >= 3) {
-			this.setState({ filterText: event });
+	searchItem = (event) => {
+		if (event.target.value.length > 0) {
+			this.setState({ filterText: event.target.value });
 			this.props.searchItem(
-				this.state.items,
-				event,
+				this.state.filter_items,
+				event.target.value,
 				localStorage.getItem("itemSearchText"),
 				localStorage.getItem("itemSearchNoResultText")
 			);
-			this.setState({ searching: true, queryLengthError: false });
-		} else {
-			this.setState({ queryLengthError: true });
+			this.setState({ searching: true });
 		}
-		if (event.length === 0) {
-			this.setState({ filterText: null, queryLengthError: false });
+		if (event.target.value.length === 0) {
+			this.setState({ filterText: null });
 			// console.log("Cleared");
 
 			this.props.clearSearch(this.state.items_backup);
 			this.setState({ searching: false });
 		}
-	}, 500);
+	};
+
+	static getDerivedStateFromProps(props, state) {
+		if (props.data !== state.data) {
+			if (state.filterText !== null) {
+				return {
+					data: props.data,
+				};
+			} else {
+				return {
+					items_backup: props.data,
+					data: props.data,
+					filter_items: props.data.items,
+				};
+			}
+		}
+		return null;
+	}
 
 	inputFocus = () => {
 		this.refs.searchGroup.classList.add("search-shadow-light");
 	};
-
 	handleClickOutside = (event) => {
 		if (this.refs.searchGroup && !this.refs.searchGroup.contains(event.target)) {
 			this.refs.searchGroup.classList.remove("search-shadow-light");
@@ -85,43 +91,6 @@ class ItemList extends Component {
 	componentWillUnmount() {
 		document.removeEventListener("mousedown", this.handleClickOutside);
 	}
-
-	static getDerivedStateFromProps(props, state) {
-		if (props.data !== state.data) {
-			if (state.filterText !== null) {
-				return {
-					data: props.data,
-				};
-			} else if (state.filterText === null) {
-				return {
-					items_backup: props.data,
-					data: props.data,
-					filter_items: props.data.items,
-				};
-			}
-		}
-		if (props.restaurant_backup_items && state.items >= 0) {
-			let arr = [];
-			if (props.restaurant_backup_items.hasOwnProperty("items")) {
-				Object.keys(props.restaurant_backup_items.items).forEach((keys) => {
-					props.restaurant_backup_items.items[keys].forEach((itemsList) => {
-						arr.push(itemsList);
-					});
-				});
-			}
-			return { items: arr };
-		}
-		return null;
-	}
-
-	shouldComponentUpdate(nextProps, nextState) {
-		if (nextState !== this.state.data) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	render() {
 		const { addProduct, removeProduct, cartProducts, restaurant } = this.props;
 		const { data } = this.state;
@@ -133,7 +102,7 @@ class ItemList extends Component {
 							type="text"
 							className="form-control items-search-box"
 							placeholder={localStorage.getItem("itemSearchPlaceholder")}
-							onChange={this.searchForItem}
+							onChange={this.searchItem}
 						/>
 						<div className="input-group-append">
 							<span className="input-group-text items-search-box-icon">
@@ -142,14 +111,6 @@ class ItemList extends Component {
 						</div>
 					</div>
 				</div>
-				<div>
-					{this.state.queryLengthError && (
-						<div className="auth-error">
-							<div className="">{localStorage.getItem("searchAtleastThreeCharsMsg")}</div>
-						</div>
-					)}
-				</div>
-
 				<div className={`bg-grey-light mt-20 ${restaurant && !restaurant.certificate ? "mb-100" : null}`}>
 					{!this.state.searching && (
 						<div className="px-5">
@@ -210,6 +171,7 @@ class ItemList extends Component {
 					{data.items &&
 						Object.keys(data.items).map((category, index) => (
 							<div key={category} id={category + index}>
+								{/* <Collapsible trigger={category} open={true}> */}
 								<Collapsible
 									trigger={category}
 									open={
@@ -230,40 +192,14 @@ class ItemList extends Component {
 													justifyContent: "space-between",
 												}}
 											>
-												{item.image !== null && (
+												{item.image !== "" && (
 													<React.Fragment>
 														<Link to={restaurant.slug + "/" + item.id}>
 															<React.Fragment>
-																{this.state.searching ? (
-																	<img
-																		src={item.image}
-																		alt={item.name}
-																		className="flex-item-image"
-																	/>
-																) : (
-																	<LazyLoad>
-																		<ProgressiveImage
-																			src={item.image}
-																			placeholder="/assets/img/various/blank-white.jpg"
-																		>
-																			{(src, loading) => (
-																				<img
-																					style={{
-																						opacity: loading ? "0.5" : "1",
-																					}}
-																					src={src}
-																					alt={item.name}
-																					className="flex-item-image"
-																				/>
-																			)}
-																		</ProgressiveImage>
-																	</LazyLoad>
-																)}
-
 																{cartProducts.find((cp) => cp.id === item.id) !==
 																	undefined && (
 																	<React.Fragment>
-																		<div style={{ position: "absolute", top: "0" }}>
+																		<div className="position-relative">
 																			<div
 																				className="quantity-badge-list"
 																				style={{
@@ -299,101 +235,72 @@ class ItemList extends Component {
 																		</div>
 																	</React.Fragment>
 																)}
-															</React.Fragment>
-															{localStorage.getItem("showVegNonVegBadge") === "true" &&
-																item.is_veg !== null && (
-																	<React.Fragment>
-																		{item.is_veg ? (
+																<LazyLoad>
+																	<ProgressiveImage
+																		src={item.image}
+																		placeholder="/assets/img/various/blank-white.jpg"
+																	>
+																		{(src, loading) => (
 																			<img
-																				src="/assets/img/various/veg-icon-bg.png"
-																				alt="Veg"
-																				className="mr-1 veg-non-veg-badge"
-																			/>
-																		) : (
-																			<img
-																				src="/assets/img/various/non-veg-icon-bg.png"
-																				alt="Non-Veg"
-																				className="mr-1 veg-non-veg-badge"
+																				style={{
+																					opacity: loading ? "0.5" : "1",
+																				}}
+																				src={src}
+																				alt={item.name}
+																				className="flex-item-image"
 																			/>
 																		)}
-																	</React.Fragment>
-																)}
+																	</ProgressiveImage>
+																</LazyLoad>
+															</React.Fragment>
 														</Link>
 													</React.Fragment>
 												)}
 												<div
 													className={
-														item.image !== null ? "flex-item-name ml-12" : "flex-item-name"
+														item.image !== "" ? "flex-item-name" : "flex-item-name ml-0"
 													}
 												>
-													{item.image === null && (
-														<React.Fragment>
+													{localStorage.getItem("showVegNonVegBadge") === "true" &&
+														item.is_veg !== null && (
 															<React.Fragment>
-																{cartProducts.find((cp) => cp.id === item.id) !==
-																	undefined && (
-																	<React.Fragment>
-																		<div>
-																			<div
-																				className="quantity-badge-list--no-image"
-																				style={{
-																					backgroundColor: localStorage.getItem(
-																						"storeColor"
-																					),
-																				}}
-																			>
-																				<span>
-																					{item.addon_categories.length ? (
-																						<React.Fragment>
-																							<i
-																								className="si si-check"
-																								style={{
-																									lineHeight:
-																										"1.3rem",
-																								}}
-																							/>
-																						</React.Fragment>
-																					) : (
-																						<React.Fragment>
-																							{
-																								cartProducts.find(
-																									(cp) =>
-																										cp.id ===
-																										item.id
-																								).quantity
-																							}
-																						</React.Fragment>
-																					)}
-																				</span>
-																			</div>
-																		</div>
-																	</React.Fragment>
+																{item.is_veg ? (
+																	<img
+																		src="/assets/img/various/veg-icon.png"
+																		alt="Veg"
+																		style={{ width: "1rem" }}
+																		className="mr-1"
+																	/>
+																) : (
+																	<img
+																		src="/assets/img/various/non-veg-icon.png"
+																		alt="Non-Veg"
+																		style={{ width: "1rem" }}
+																		className="mr-1"
+																	/>
 																)}
 															</React.Fragment>
-															<React.Fragment>
-																{localStorage.getItem("showVegNonVegBadge") ===
-																	"true" &&
-																	item.is_veg !== null && (
-																		<React.Fragment>
-																			{item.is_veg ? (
-																				<img
-																					src="/assets/img/various/veg-icon-bg.png"
-																					alt="Veg"
-																					className="mr-1 veg-non-veg-badge-noimage"
-																				/>
-																			) : (
-																				<img
-																					src="/assets/img/various/non-veg-icon-bg.png"
-																					alt="Non-Veg"
-																					className="mr-1 veg-non-veg-badge-noimage"
-																				/>
-																			)}
-																		</React.Fragment>
-																	)}
-															</React.Fragment>
-														</React.Fragment>
-													)}
+														)}
 													<span className="item-name">{item.name}</span>{" "}
-													<ItemBadge item={item} />
+													{item.desc !== null ? (
+														<React.Fragment>
+															<br />
+															<ShowMore
+																lines={1}
+																more={localStorage.getItem("showMoreButtonText")}
+																less={localStorage.getItem("showLessButtonText")}
+																anchorclassName="show-more ml-1"
+															>
+																<div
+																	dangerouslySetInnerHTML={{
+																		__html: item.desc,
+																	}}
+																/>
+															</ShowMore>
+														</React.Fragment>
+													) : (
+														<br />
+													)}
 													<span className="item-price">
 														{localStorage.getItem("hidePriceWhenZero") === "true" &&
 														item.price === "0.00" ? null : (
@@ -449,26 +356,24 @@ class ItemList extends Component {
 																)}
 															</React.Fragment>
 														)}
-													</span>
-													{item.desc !== null ? (
-														<div className="item-desc-short">
-															<ShowMore
-																lines={1}
-																more={localStorage.getItem("showMoreButtonText")}
-																less={localStorage.getItem("showLessButtonText")}
-																anchorclassName="show-more ml-1"
-															>
-																<div
-																	dangerouslySetInnerHTML={{
-																		__html: item.desc,
+														{item.addon_categories.length > 0 && (
+															<React.Fragment>
+																<span
+																	className="ml-2 customizable-item-text"
+																	style={{
+																		color: localStorage.getItem("storeColor"),
 																	}}
-																/>
-															</ShowMore>
-														</div>
-													) : null}
+																>
+																	{localStorage.getItem("customizableItemText")}
+																</span>
+																<br />
+															</React.Fragment>
+														)}
+													</span>
+													<ItemBadge item={item} />
 												</div>
 
-												<div className="item-actions pull-right pb-0">
+												<div className="item-actions pull-right pb-0 mt-10">
 													<div
 														className="btn-group btn-group-sm"
 														role="group"
@@ -476,8 +381,7 @@ class ItemList extends Component {
 													>
 														{item.is_active ? (
 															<React.Fragment>
-																{item.addon_categories &&
-																item.addon_categories.length ? (
+																{item.addon_categories.length ? (
 																	<button
 																		disabled
 																		type="button"
@@ -507,8 +411,7 @@ class ItemList extends Component {
 																	</button>
 																)}
 
-																{item.addon_categories &&
-																item.addon_categories.length ? (
+																{item.addon_categories.length ? (
 																	<Customization
 																		product={item}
 																		addProduct={addProduct}
@@ -537,19 +440,6 @@ class ItemList extends Component {
 															</div>
 														)}
 													</div>
-													{item.addon_categories && item.addon_categories.length > 0 && (
-														<React.Fragment>
-															<span
-																className="customizable-item-text d-block text-center"
-																style={{
-																	color: localStorage.getItem("storeColor"),
-																}}
-															>
-																{localStorage.getItem("customizableItemText")}
-															</span>
-															<br />
-														</React.Fragment>
-													)}
 												</div>
 											</div>
 										</React.Fragment>

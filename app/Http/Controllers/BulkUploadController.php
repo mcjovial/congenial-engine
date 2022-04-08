@@ -53,7 +53,7 @@ class BulkUploadController extends Controller
                         $filename = $rand_name . '.jpg';
                         Image::make(base_path('assets/img/restaurants/bulk-upload/' . $imageName))
                             ->resize(160, 117)
-                            ->save(base_path('assets/img/restaurants/' . $filename), config('setting.uploadImageQuality '), 'jpg');
+                            ->save(base_path('assets/img/restaurants/' . $filename), config('settings.uploadImageQuality '), 'jpg');
                         $image = '/assets/img/restaurants/' . $filename;
 
                         $placeholder_image = null;
@@ -167,8 +167,8 @@ class BulkUploadController extends Controller
                         'placeholder_image' => $placeholder_image,
                         'sku' => $sku,
                         'is_accepted' => 1,
-                        'created_at' => Carbon::now()->timezone(config('app.timezone'))->format('Y-m-d H:i:s'),
-                        'updated_at' => Carbon::now()->timezone(config('app.timezone'))->format('Y-m-d H:i:s'),
+                        'created_at' => Carbon::now()->format('Y-m-d H:m:s'),
+                        'updated_at' => Carbon::now()->format('Y-m-d H:m:s'),
                     ];
                 }
                 if (!empty($insert)) {
@@ -205,11 +205,9 @@ class BulkUploadController extends Controller
             $allRestaurantIds = Restaurant::all()->pluck('id')->toArray();
             $allItemCategoryIds = ItemCategory::all()->pluck('id')->toArray();
 
-            $restaurantIdsForProcessing = [];
-
             if (!empty($check) && $check->count()) {
                 foreach ($check as $key) {
-                    array_push($restaurantIdsForProcessing, $key['restaurant_id']);
+
                     if (!in_array($key['restaurant_id'], $allRestaurantIds)) {
                         array_push($errors, '"restaurant_id" is invalid for ' . $key['name']);
                     }
@@ -285,7 +283,7 @@ class BulkUploadController extends Controller
 
                         Image::make(base_path('assets/img/items/bulk-upload/' . $imageName))
                             ->resize(486, 355)
-                            ->save(base_path('assets/img/items/' . $filename), config('setting.uploadImageQuality '), 'jpg');
+                            ->save(base_path('assets/img/items/' . $filename), config('settings.uploadImageQuality '), 'jpg');
 
                         $image = '/assets/img/items/' . $filename;
 
@@ -334,14 +332,13 @@ class BulkUploadController extends Controller
                         'is_new' => $is_new,
                         'desc' => $desc,
                         'is_veg' => $is_veg,
-                        'created_at' => Carbon::now()->timezone(config('app.timezone'))->format('Y-m-d H:i:s'),
-                        'updated_at' => Carbon::now()->timezone(config('app.timezone'))->format('Y-m-d H:i:s'),
+                        'created_at' => Carbon::now()->format('Y-m-d H:m:s'),
+                        'updated_at' => Carbon::now()->format('Y-m-d H:m:s'),
                     ];
                 }
                 if (!empty($insert)) {
                     try {
                         DB::table('items')->insert($insert);
-                        syncRestaurantZoneIdToItsProperties(array_unique($restaurantIdsForProcessing));
                         return redirect()->back()->with(['success' => 'Operation Successful']);
                     } catch (\Illuminate\Database\QueryException $qe) {
                         return redirect()->back()->with(['message' => $qe->getMessage()]);
@@ -362,8 +359,6 @@ class BulkUploadController extends Controller
     {
         $user = Auth::user();
         $restaurantIds = $user->restaurants->pluck('id')->toArray();
-        $restaurant_category_id = ItemCategory::where('user_id', Auth::user()->id)->pluck('id')->toArray();
-        $acceptedRestaurantsIds = Restaurant::where('is_accepted', 1)->pluck('id')->toArray();
 
         if ($request->hasFile('item_csv')) {
             $filepath = $request->file('item_csv')->getRealPath();
@@ -378,21 +373,14 @@ class BulkUploadController extends Controller
             $allRestaurantIds = Restaurant::all()->pluck('id')->toArray();
             $allItemCategoryIds = ItemCategory::all()->pluck('id')->toArray();
 
-            $restaurantIdsForProcessing = [];
-
             if (!empty($check) && $check->count()) {
                 foreach ($check as $key) {
 
-                    array_push($restaurantIdsForProcessing, $key['restaurant_id']);
-                    if (!in_array($key['restaurant_id'], $acceptedRestaurantsIds)) {
-                        array_push($errors, 'Store is not approved by Admin');
-                    }
-
-                    if (!in_array($key['restaurant_id'], $restaurantIds)) {
+                    if (!in_array($key['restaurant_id'], $allRestaurantIds)) {
                         array_push($errors, '"restaurant_id" is invalid for ' . $key['name']);
                     }
 
-                    if (!in_array($key['item_category_id'], $restaurant_category_id)) {
+                    if (!in_array($key['item_category_id'], $allItemCategoryIds)) {
                         array_push($errors, '"item_category_id" is invalid for ' . $key['name']);
                     }
 
@@ -401,9 +389,9 @@ class BulkUploadController extends Controller
                             array_push($errors, '"image" filename is invalid for ' . $key['name']);
                         }
                     }
+
                 }
             }
-
 
             //if error,
             if (!empty($errors)) {
@@ -438,9 +426,11 @@ class BulkUploadController extends Controller
                     } else {
                         if (in_array($key['restaurant_id'], $restaurantIds)) {
                             $restaurant_id = $key['restaurant_id'];
+
                         } else {
                             $restaurant_id = null;
                         }
+
                     }
 
                     if ($key['item_category_id'] == 'NULL') {
@@ -467,7 +457,7 @@ class BulkUploadController extends Controller
 
                         Image::make(base_path('assets/img/items/bulk-upload/' . $imageName))
                             ->resize(486, 355)
-                            ->save(base_path('assets/img/items/' . $filename), config('setting.uploadImageQuality '), 'jpg');
+                            ->save(base_path('assets/img/items/' . $filename), config('settings.uploadImageQuality '), 'jpg');
 
                         $image = '/assets/img/items/' . $filename;
 
@@ -516,14 +506,13 @@ class BulkUploadController extends Controller
                         'is_new' => $is_new,
                         'desc' => $desc,
                         'is_veg' => $is_veg,
-                        'created_at' => Carbon::now()->timezone(config('app.timezone'))->format('Y-m-d H:i:s'),
-                        'updated_at' => Carbon::now()->timezone(config('app.timezone'))->format('Y-m-d H:i:s'),
+                        'created_at' => Carbon::now()->format('Y-m-d H:m:s'),
+                        'updated_at' => Carbon::now()->format('Y-m-d H:m:s'),
                     ];
                 }
                 if (!empty($insert)) {
                     try {
                         DB::table('items')->insert($insert);
-                        syncRestaurantZoneIdToItsProperties(array_unique($restaurantIdsForProcessing));
                         return redirect()->back()->with(['success' => 'Operation Successful']);
                     } catch (\Illuminate\Database\QueryException $qe) {
                         return redirect()->back()->with(['message' => $qe->getMessage()]);

@@ -2,7 +2,6 @@ import React, { Component } from "react";
 
 import { NavLink } from "react-router-dom";
 import { connect } from "react-redux";
-import PWAInstallation from "../PWAInstallation";
 
 class Footer extends Component {
 	state = {
@@ -37,8 +36,7 @@ class Footer extends Component {
 
 		return (
 			<React.Fragment>
-				{localStorage.getItem("showPwaInstallPromptFooter") === "true" && <PWAInstallation type={"footer"} />}
-
+				<p>{this.state.active}</p>
 				<div className="d-flex justify-content-center">
 					<div
 						className={`content pt-10 py-5 font-size-xs clearfix ${

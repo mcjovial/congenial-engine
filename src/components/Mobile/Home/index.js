@@ -15,64 +15,68 @@ import messaging from "../../../init-fcm";
 import { saveNotificationToken } from "../../../services/notification/actions";
 import { getSingleLanguageData } from "../../../services/languages/actions";
 import { getUserNotifications } from "../../../services/alert/actions";
-import { resetInfo, resetItems, resetBackup } from "../../../services/items/actions";
+import { resetInfo, resetItems } from "../../../services/items/actions";
 
 import { Link } from "react-router-dom";
-
-import Dialog from "@material-ui/core/Dialog";
-import GpsSelector from "../Location/PopularPlaces/GpsSelector";
-import Ink from "react-ink";
+// import moment from "moment";
 
 class Home extends Component {
 	static contextTypes = {
 		router: () => null,
 	};
 
-	state = {
-		open: false,
-	};
-
 	async componentDidMount() {
 		this.props.resetItems();
 		this.props.resetInfo();
-		this.props.resetBackup();
-
 		const { user } = this.props;
 
-		const userSetAddress = JSON.parse(localStorage.getItem("userSetAddress"));
+		//if currentLocation doesnt exists in localstorage then redirect the user to firstscreen
+		//else make API calls
+		if (localStorage.getItem("userSetAddress") !== null) {
+			// this.context.router.history.push("/search-location");
+			// console.log("Redirect to search location");
+			// return <Redirect to="/search-location" />;
+			if (localStorage.getItem("showPromoSlider") === "true") {
+				this.props.getPromoSlides();
+			}
 
-		this.props.getPromoSlides(userSetAddress.lat, userSetAddress.lng);
+			const { user } = this.props;
 
-		if (user.success) {
-			this.props.getUserNotifications(user.data.id, user.data.auth_token);
+			if (user.success) {
+				this.props.getUserNotifications(user.data.id, user.data.auth_token);
+			}
+		} else {
+			//call to promoSlider API to fetch the slides
 		}
 
 		if (user.success) {
 			if (localStorage.getItem("enablePushNotification") === "true") {
 				if (firebase.messaging.isSupported()) {
+					// const today = moment().toDate();
+
+					// console.log("TODAY", today);
+					// const lastSavedNotificationToken = moment(localStorage.getItem("lastSavedNotificationToken"));
+					// const days = moment(today).diff(lastSavedNotificationToken, "days");
+
+					// console.log("DAYS", days);
+
+					// const callForNotificationToken = isNaN(days) || days >= 5;
+
+					// console.log(callForNotificationToken);
+					// if (callForNotificationToken) {
 					let handler = this.props.saveNotificationToken;
 					messaging
 						.requestPermission()
 						.then(async function() {
 							const push_token = await messaging.getToken();
 							handler(push_token, user.data.id, user.data.auth_token);
+							// localStorage.setItem("lastSavedNotificationToken", today);
 						})
 						.catch(function(err) {
 							console.log("Unable to get permission to notify.", err);
 						});
+					// }
 				}
-			}
-		}
-
-		const userAlreadySelected = !JSON.parse(localStorage.getItem("userSetAddress")).hasOwnProperty(
-			"businessLocation"
-		);
-
-		if (localStorage.getItem("userAlreadySelectedLocation") === null) {
-			if (userAlreadySelected) {
-				this.setState({ open: false });
-			} else {
-				this.setState({ open: true });
 			}
 		}
 	}
@@ -91,27 +95,6 @@ class Home extends Component {
 		}
 	}
 
-	handlePopularLocationClick = (location) => {
-		const userSetAddress = {
-			lat: location.latitude,
-			lng: location.longitude,
-			address: location.name,
-			house: null,
-			tag: null,
-			businessLocation: true,
-		};
-		localStorage.setItem("userSetAddress", JSON.stringify(userSetAddress));
-
-		const saveUserSetAddress = new Promise((resolve) => {
-			localStorage.setItem("userSetAddress", JSON.stringify(userSetAddress));
-			localStorage.setItem("userAlreadySelectedLocation", "true");
-			resolve("Location Saved");
-		});
-		saveUserSetAddress.then(() => {
-			window.location.reload();
-		});
-	};
-
 	componentWillUnmount() {
 		// navigator.serviceWorker.removeEventListener("message", message => console.log(message));
 	}
@@ -121,7 +104,20 @@ class Home extends Component {
 			return <Redirect to="/" />;
 		}
 
-		const { history, user, promo_slides, popular_locations } = this.props;
+		if (localStorage.getItem("userSetAddress") === null) {
+			// this.context.router.history.push("/search-location");
+			// console.log("Redirect to search location");
+			return <Redirect to="/search-location" />;
+		}
+
+		const userSetAddress = JSON.parse(localStorage.getItem("userSetAddress"));
+		if (Object.keys(userSetAddress).length === 0 && userSetAddress.constructor === Object) {
+			return <Redirect to="/search-location" />;
+		}
+
+		const { history, user, promo_slides } = this.props;
+
+		// console.log(promo_slides.mainSlides.length);
 
 		return (
 			<React.Fragment>
@@ -161,11 +157,7 @@ class Home extends Component {
 						<Link to="explore">
 							<div
 								className={`mock-search-block px-15 pb-10 ${
-									localStorage.getItem("showPromoSlider") === "false"
-										? "pt-15"
-										: "" + promo_slides.mainSlides === "null"
-										? "pt-15"
-										: ""
+									localStorage.getItem("showPromoSlider") === "false" ? "pt-15" : ""
 								}`}
 							>
 								<div className="px-15 d-flex justify-content-between">
@@ -180,8 +172,7 @@ class Home extends Component {
 						</Link>
 					)}
 
-					{localStorage.getItem("customHomeMessage") !== "<p></p>" &&
-						localStorage.getItem("customHomeMessage") !== "<p><br></p>" &&
+					{localStorage.getItem("customHomeMessage") !== "<p><br></p>" &&
 						localStorage.getItem("customHomeMessage") !== "null" &&
 						(localStorage.getItem("customHomeMessage") !== "" && (
 							<div
@@ -197,54 +188,6 @@ class Home extends Component {
 					<RestaurantList user={user} slides={promo_slides.otherSlides} />
 					<Footer active_nearme={true} />
 				</div>
-
-				<Dialog
-					maxWidth={false}
-					fullWidth={true}
-					fullScreen={true}
-					open={this.state.open}
-					onClose={this.toggleSchedulePopup}
-					style={{ margin: "auto", position: "absolute", bottom: "0", top: "60%" }}
-					PaperProps={{
-						style: {
-							backgroundColor: "#fff",
-							overflowY: "hidden",
-						},
-					}}
-				>
-					<div>
-						<GpsSelector fetchGpsAutomaticallyAndroid={true} />
-						<div className="p-15 popularLocationPopup">
-							{popular_locations && popular_locations.length > 0 && (
-								<React.Fragment>
-									<h4 className="text-muted h4">{localStorage.getItem("searchPopularPlaces")}</h4>
-
-									<div style={{ overflowY: "scroll", height: "11rem" }}>
-										{popular_locations.map((location) => (
-											<button
-												key={location.id}
-												type="button"
-												className="btn btn-rounded btn-alt-secondary btn-md mb-15 mr-15"
-												style={{
-													position: "relative",
-													backgroundColor:
-														location.is_default && localStorage.getItem("storeColor"),
-													color: location.is_default && "#fff",
-												}}
-												onClick={() => {
-													this.handlePopularLocationClick(location);
-												}}
-											>
-												<Ink duration="500" />
-												{location.name}
-											</button>
-										))}
-									</div>
-								</React.Fragment>
-							)}
-						</div>
-					</div>
-				</Dialog>
 			</React.Fragment>
 		);
 	}
@@ -255,8 +198,6 @@ const mapStateToProps = (state) => ({
 	user: state.user.user,
 	locations: state.locations.locations,
 	languages: state.languages.languages,
-	language: state.languages.language,
-	popular_locations: state.popular_locations.popular_locations,
 });
 
 export default connect(
@@ -268,6 +209,5 @@ export default connect(
 		getUserNotifications,
 		resetInfo,
 		resetItems,
-		resetBackup,
 	}
 )(Home);

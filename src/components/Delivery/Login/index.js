@@ -40,7 +40,7 @@ class Login extends Component {
 	};
 
 	handleInputEmail = (event) => {
-		this.setState({ email: event.target.value.trim() });
+		this.setState({ email: event.target.value });
 	};
 	handleInputPassword = (event) => {
 		this.setState({ password: event.target.value });
@@ -60,16 +60,8 @@ class Login extends Component {
 				this.setState({ error: true });
 			}
 		}
-
 		if (nextProps.delivery_user.success) {
-			if (navigator.userAgent === "FoodomaaAndroidWebViewUA") {
-				if (window.Android !== "undefined") {
-					window.Android.registerFcm(
-						nextProps.delivery_user.data.auth_token,
-						nextProps.delivery_user.data.id
-					);
-				}
-			}
+			// this.context.router.push("/delivery");
 		}
 
 		if (this.props.languages !== nextProps.languages) {
@@ -91,7 +83,10 @@ class Login extends Component {
 		}
 		const { delivery_user } = this.props;
 		if (delivery_user.success) {
-			return <Redirect to={"/delivery"} />;
+			return (
+				//redirect to account page
+				<Redirect to={"/delivery"} />
+			);
 		}
 
 		return (
@@ -119,7 +114,7 @@ class Login extends Component {
 							src="/assets/img/logos/logo.png"
 							alt={localStorage.getItem("storeName")}
 							width="120"
-							className="delivery-login-logo"
+							class="delivery-login-logo"
 						/>
 						<LightSpeed left duration={1000}>
 							<img

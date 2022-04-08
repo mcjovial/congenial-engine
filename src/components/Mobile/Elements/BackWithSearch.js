@@ -2,7 +2,6 @@ import React, { Component } from "react";
 
 import Ink from "react-ink";
 import LightSpeed from "react-reveal/LightSpeed";
-import WebShare from "../WebShare";
 
 class BackWithSearch extends Component {
 	static contextTypes = {
@@ -97,7 +96,7 @@ class BackWithSearch extends Component {
 									{this.props.has_title ? (
 										<React.Fragment>
 											{this.props.from_checkout ? (
-												<span className="nav-page-title" id="checkoutNavPageTitle">
+												<span className="nav-page-title">
 													{localStorage.getItem("cartToPayText")}{" "}
 													<span style={{ color: localStorage.getItem("storeColor") }}>
 														{localStorage.getItem("currencySymbolAlign") === "left" &&
@@ -161,11 +160,10 @@ class BackWithSearch extends Component {
 												}, 200);
 											}}
 										>
-											<i className="si si-home" />
+											<i className="si si-home fa-2x text-muted" />
 											<Ink duration="500" />
 										</button>
 									)}
-									{this.props.shareButton && <WebShare link={window.location.href} />}
 								</div>
 							</div>
 						</div>

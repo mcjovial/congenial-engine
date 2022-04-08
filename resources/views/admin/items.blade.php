@@ -2,62 +2,184 @@
 @section("title") Items - Dashboard
 @endsection
 @section('content')
-
-<style>
-    .item-active {
-        background-color: #2ebf91;
-    }
-
-    .item-inactive {
-        background-color: #f44336;
-    }
-</style>
-
-<div class="content mt-3">
-    <div class="d-flex justify-content-between my-2">
-        <h3><strong>Items Management</strong></h3>
-        <div>
-            <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left mr-2" id="addNewItem"
-                data-toggle="modal" data-target="#addNewItemModal">
-                <b><i class="icon-plus2"></i></b>
-                Add New Item
-            </button>
-            @role('Admin')
-            <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" id="addBulkItem"
-                data-toggle="modal" data-target="#addBulkItemModal">
-                <b><i class="icon-database-insert"></i></b>
-                Bulk CSV Upload
-            </button>
-            @endrole
-            <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" id="clearFilterAndState"> <b><i
-                        class=" icon-reload-alt"></i></b> Reset All Filters</button>
+<div class="page-header">
+    <div class="page-header-content header-elements-md-inline">
+        <div class="page-title d-flex">
+            <h4><i class="icon-circle-right2 mr-2"></i>
+                @if(empty($query))
+                <span class="font-weight-bold mr-2">TOTAL</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $count }}</span>
+                @else
+                <span class="font-weight-bold mr-2">TOTAL</span>
+                <span class="badge badge-primary badge-pill animated flipInX mr-2">{{ $count }}</span>
+                <span class="font-weight-bold mr-2">Results for "{{ $query }}"</span>
+                @endif
+            </h4>
+            <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-datatable" id="itemsDatatable" width="100%">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Image</th>
-                            <th class="text-left">Name</th>
-                            <th class="text-left">Item Store</th>
-                            <th class="text-left">Item Category</th>
-                            <th>Price</th>
-                            <th>Attributes</th>
-                            <th>Created Date</th>
-                            <th class="text-center"><i class="
-                                icon-circle-down2"></i></th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+        <div class="header-elements d-none py-0 mb-3 mb-md-0">
+            <div class="breadcrumb">
+                <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left mr-2" id="addNewItem"
+                    data-toggle="modal" data-target="#addNewItemModal">
+                    <b><i class="icon-plus2"></i></b>
+                    Add New Item
+                </button>
+                <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" id="addBulkItem"
+                    data-toggle="modal" data-target="#addBulkItemModal">
+                    <b><i class="icon-database-insert"></i></b>
+                    Bulk CSV Upload
+                </button>
             </div>
         </div>
     </div>
 </div>
+<div class="content">
+    <form action="{{ route('admin.post.searchItems') }}" method="GET">
+        <div class="form-group form-group-feedback form-group-feedback-right search-box">
+            <input type="text" class="form-control form-control-lg search-input" placeholder="Search with item name"
+                name="query">
+            <div class="form-control-feedback form-control-feedback-lg">
+                <i class="icon-search4"></i>
+            </div>
+        </div>
+        @csrf
+    </form>
+    @if($agent->isDesktop())
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th style="width: 20%">Item's Store</th>
+                            <th>Item's Category</th>
+                            <th>Price</th>
+                            <th>Attributes</th>
+                            <th style="width: 20%">Created At</th>
+                            <th class="text-center" style="width: 10%;"><i class="
+                                icon-circle-down2"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($items as $item)
+                        <tr>
+                            <td><img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}{{ $item->image }}"
+                                    alt="{{ $item->name }}" height="80" width="80" style="border-radius: 0.275rem;">
+                            </td>
+                            <td>{{ $item->name }}</td>
+                            <td>{{ $item->restaurant->name }}</td>
+                            <td>{{ $item->item_category->name }}</td>
+                            <td>{{ config('settings.currencyFormat') }}{{ $item->price }}</td>
+                            <td>
+                                @if($item->is_recommended)
+                                <span class="badge badge-flat border-grey-800 text-danger text-capitalize mr-1">
+                                    Recommended
+                                </span>
+                                @endif
+                                @if($item->is_popular)
+                                <span class="badge badge-flat border-grey-800 text-primary text-capitalize mr-1">
+                                    Popular
+                                </span>
+                                @endif
+                                @if($item->is_new)
+                                <span class="badge badge-flat border-grey-800 text-default text-capitalize mr-1">
+                                    New
+                                </span>
+                                @endif
+                            </td>
+                            <td>{{ $item->created_at->diffForHumans() }}</td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-justified align-items-center">
+                                    <a href="{{ route('admin.get.editItem', $item->id) }}"
+                                        class="badge badge-primary badge-icon"> EDIT <i
+                                            class="icon-database-edit2 ml-1"></i></a>
+                                    <div class="checkbox checkbox-switchery ml-2" style="padding-top: 0.92rem; zoom: 1.2">
+                                        <label>
+                                        <input value="true" type="checkbox" class="action-switch"
+                                        @if($item->is_active) checked="checked" @endif data-id="{{ $item->id }}">
+                                        </label>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <div class="mt-3">
+                    {{ $items->appends($_GET)->links() }}
+                </div>
+            </div>
+        </div>
+    </div>
+    @else
+    
+    @foreach ($items as $item)
+    <div class="card">
+        <div class="card-header pb-0">
+            <div class="d-flex">
+                <div>
+                    <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}{{ $item->image }}" alt="{{ $item->name }}" height="80" width="80" style="border-radius: 0.275rem;">
+                </div>
+                <div class="ml-3">
+                    <h4 class="mb-0"><strong>{{ $item->name }}</strong></h4>
+                    <span>{{ $item->restaurant->name }}</span><br>
+                    <span>{{ $item->item_category->name }}</span>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="card-body pt-0 pb-2">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4 class="mb-0"><strong>{{ config('settings.currencyFormat') }}{{ $item->price }}</strong></h4>
+                </div>
+                <div>
+                    @if($item->is_recommended)
+                    <span class="badge badge-flat border-grey-800 text-danger text-capitalize mr-1">
+                        Recommended
+                    </span>
+                    @endif
+                    @if($item->is_popular)
+                    <span class="badge badge-flat border-grey-800 text-primary text-capitalize mr-1">
+                        Popular
+                    </span>
+                    @endif
+                    @if($item->is_new)
+                    <span class="badge badge-flat border-grey-800 text-default text-capitalize mr-1">
+                        New
+                    </span>
+                    @endif
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <a href="{{ route('admin.get.editItem', $item->id) }}"
+                        class="btn btn-secondary btn-labeled btn-labeled-left">
+                    <b><i class="icon-database-edit2"></i></b>
+                    EDIT
+                    </a>
+                </div>
+                <div>
+                    <div class="checkbox checkbox-switchery" style="padding-top: 0.93rem;">
+                        <label>
+                        <input value="true" type="checkbox" class="action-switch-mobile"
+                        @if($item->is_active) checked="checked" @endif data-id="{{ $item->id }}">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endforeach
 
+    <div class="mt-4">
+        {{ $items->appends($_GET)->links() }}
+    </div>
+       
+    @endif
+</div>
 <div id="addNewItemModal" class="modal fade">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -88,19 +210,19 @@
                                     data-popup="tooltip" title="Make this filed empty or zero if not required"
                                     data-placement="top"></i></label>
                             <input type="text" class="form-control form-control-lg price" name="old_price"
-                                placeholder="Item Price in {{ config('setting.currencyFormat') }}">
+                                placeholder="Item Price in {{ config('settings.currencyFormat') }}">
                         </div>
                         <div class="col-lg-6">
                             <label class="col-form-label"><span class="text-danger">*</span>Selling Price:</label>
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="Item Price in {{ config('setting.currencyFormat') }}" id="newSP">
+                                placeholder="Item Price in {{ config('settings.currencyFormat') }}" id="newSP">
                         </div>
                     </div>
                     <div class="form-group row" id="singlePrice">
                         <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Price:</label>
                         <div class="col-lg-6">
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="Item Price in {{ config('setting.currencyFormat') }}" required id="oldSP">
+                                placeholder="Item Price in {{ config('settings.currencyFormat') }}" required id="oldSP">
                         </div>
                         <div class="col-lg-3">
                             <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left mr-2"
@@ -150,18 +272,17 @@
                                 name="addon_category_item[]">
                                 @foreach($addonCategories as $addonCategory)
                                 <option value="{{ $addonCategory->id }}" class="text-capitalize">
-                                    {{ $addonCategory->name }} @if($addonCategory->description != null)->
-                                    {{ $addonCategory->description }} @endif</option>
+                                    {{ $addonCategory->name }} @if($addonCategory->description != null)-> {{ $addonCategory->description }} @endif</option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label">Image:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Image:</label>
                         <div class="col-lg-9">
                             <img class="slider-preview-image hidden" />
                             <div class="uploader">
-                                <input type="file" class="form-control-lg form-control-uniform" name="image"
+                                <input type="file" class="form-control-lg form-control-uniform" name="image" required
                                     accept="image/x-png,image/gif,image/jpeg" onchange="readURL(this);">
                                 <span class="help-text text-muted">Image dimension 486x355</span>
                             </div>
@@ -201,25 +322,15 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label display-block">Veg/Non-Veg: </label>
-                        <div class="col-lg-9 d-flex align-items-center">
-                            <label class="radio-inline mr-2">
-                                <input type="radio" name="is_veg" value="veg">
-                                Veg
-                            </label>
-
-                            <label class="radio-inline mr-2">
-                                <input type="radio" name="is_veg" value="nonveg">
-                                Non-Veg
-                            </label>
-
-                            <label class="radio-inline mr-2">
-                                <input type="radio" name="is_veg" value="none" checked="checked">
-                                None
-                            </label>
+                        <label class="col-lg-3 col-form-label">Is Veg?</label>
+                        <div class="col-lg-9">
+                            <div class="checkbox checkbox-switchery mt-2">
+                                <label>
+                                    <input value="true" type="checkbox" class="switchery-primary vegitem" name="is_veg">
+                                </label>
+                            </div>
                         </div>
                     </div>
-
                     @csrf
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
@@ -281,71 +392,7 @@
            reader.readAsDataURL(input.files[0]);
        }
     }
-
-    $(function() {
-        $('body').tooltip({selector: '[data-popup="tooltip"]'});
-
-        var datatable = $('#itemsDatatable').DataTable({
-            searchDelay: 1000,
-            processing: true,
-            serverSide: true,
-            stateSave: true,
-            lengthMenu: [ 10, 25, 50, 100, 200, 500 ],
-            order: [[ 0, "desc" ]],
-            ajax: '{{ route('admin.adminItemsDatatable') }}@if($store_id != null)?store_id={{ $store_id }}@endif',
-            columns: [
-                {data: 'id', visible: false, searchable: false},
-                {data: 'image', searchable: false, sortable: false},
-                {data: 'name', searchable: true, sortable: true},
-                {data: 'restaurant_name', searchable: false, sortable: false, name: "restaurant.name"},
-                {data: 'category_name', searchable: false, sortable: false, name: "item_category.name"},
-                {data: 'price', searchable: true},
-                {data: 'attributes', searchable: false, sortable: false,},
-                {data: 'created_at', searchable: true},
-                {data: 'action', sortable: false, searchable: false, reorder: false},
-            ],
-            fixedColumns: {
-                leftColumns: 0,
-                rightColumns: 1
-            },
-            colReorder: false,
-            drawCallback: function(settings) {
-                // $('select').select2({
-                //    minimumResultsForSearch: Infinity,
-                //    width: 'auto'
-                // });
-            },
-
-            scrollX: true,
-            scrollCollapse: true,
-            dom: '<"custom-processing-banner"r>flBtip',
-            language: {
-                search: '_INPUT_',
-                searchPlaceholder: 'Search with anything...',
-                sEmptyTable: "No data found",
-                lengthMenu: '_MENU_',
-                paginate: { 'first': 'First', 'last': 'Last', 'next': '&rarr;', 'previous': '&larr;' },
-                processing: '<i class="icon-spinner2 spinner position-left mr-1"></i>Please wait...'
-            },
-           buttons: {
-                   dom: {
-                       button: {
-                           className: 'btn btn-default'
-                       }
-                   },
-                   buttons: [
-                       {extend: 'csv', filename: 'items-'+ new Date().toISOString().slice(0,10), text: 'Export as CSV'},
-                   ]
-               }
-        });
-    
-         $('#clearFilterAndState').click(function(event) {
-            if (datatable) {
-                datatable.state.clear();
-                window.location.reload();
-            }
-         });
-
+    $(function () {
         $('.summernote-editor').summernote({
                    height: 200,
                    popover: {
@@ -366,6 +413,8 @@
        var newitem = document.querySelector('.newitem');
        new Switchery(newitem, { color: '#333' });
 
+       var vegitem = document.querySelector('.vegitem');
+       new Switchery(vegitem, { color: '#008000' });
        
        $('.form-control-uniform').uniform();
        
@@ -375,9 +424,19 @@
        });
         
          $('.price').numeric({allowThouSep:false, maxDecimalPlaces: 2 });
- 
 
-          $('body').on("click", ".itemAction", function(e) {
+         //Switch Action Function  
+          var elems = document.querySelectorAll('.action-switch');
+          for (var i = 0; i < elems.length; i++) {
+              var switchery = new Switchery(elems[i], { color: '#8360c3' });
+          }
+          var elemsmb = document.querySelectorAll('.action-switch-mobile');
+          for (var i = 0; i < elemsmb.length; i++) {
+              var switchery = new Switchery(elemsmb[i], { color: '#8360c3' });
+          }     
+
+          $('.action-switch, .action-switch-mobile').click(function(event) {
+            console.log("Clicked");
              let id = $(this).attr("data-id")
              let url = "{{ url('/admin/item/disable/') }}/"+id;
              let self = $(this);
@@ -387,29 +446,17 @@
                 dataType: 'JSON',
             })
             .done(function(data) {
-                if (data.currentStatus) {
-                    $.jGrowl("Item Enabled", {
-                        position: 'bottom-center',
-                        header: "",
-                        theme: 'bg-success',
-                        life: '1800'
-                    }); 
-                } else {
-                    $.jGrowl("Item Disabled", {
-                        position: 'bottom-center',
-                        header: "",
-                        theme: 'bg-danger',
-                        life: '1800'
-                    }); 
-                }
-                
-                if(self.hasClass("item-inactive")) {
-                    self.removeClass("item-inactive").addClass("item-active");
-                } else {
-                    self.removeClass("item-active").addClass('item-inactive');
-                }
+                console.log(data);
+                console.log(self);
+                $.jGrowl("", {
+                    position: 'bottom-center',
+                    header: 'Operation Successful ✅',
+                    theme: 'bg-success',
+                    life: '1800'
+                }); 
             })
             .fail(function(data) {
+                console.log(data);
                 $.jGrowl("", {
                     position: 'bottom-center',
                     header: 'Something went wrong, please try again.',

@@ -10,7 +10,6 @@ import SocialButton from "../SocialButton";
 import { connect } from "react-redux";
 import { getSingleLanguageData } from "../../../../services/languages/actions";
 import Loading from "../../../helpers/loading";
-import LightSpeed from "react-reveal/LightSpeed";
 
 class Login extends Component {
 	constructor() {
@@ -28,7 +27,6 @@ class Login extends Component {
 	state = {
 		loading: false,
 		email: "",
-		onlyPhone: "",
 		phone: "",
 		password: "",
 		otp: "",
@@ -39,10 +37,8 @@ class Login extends Component {
 		invalid_otp: false,
 		showResendOtp: false,
 		countdownStart: false,
-		countDownSeconds: 30,
+		countDownSeconds: 15,
 		email_pass_error: false,
-		countryCodeSelect: "",
-		isFoodomaaAndroidWebView: false,
 	};
 
 	static contextTypes = {
@@ -50,10 +46,6 @@ class Login extends Component {
 	};
 
 	componentDidMount() {
-		const countryCode = localStorage.getItem("phoneCountryCode");
-		const countryCodesArr = countryCode.split(",");
-		this.setState({ countryCodeSelect: countryCodesArr[0].replace(/\s/g, "") });
-
 		if (
 			localStorage.getItem("enableFacebookLogin") === "false" &&
 			localStorage.getItem("enableGoogleLogin") === "false"
@@ -76,27 +68,10 @@ class Login extends Component {
 				}
 			}, 0.5 * 1000);
 		}
-
-		if (navigator.userAgent === "FoodomaaAndroidWebViewUA") {
-			if (window.Android !== "undefined") {
-				this.setState({ isFoodomaaAndroidWebView: true });
-			}
-		}
 	}
 
 	handleInputChange = (event) => {
-		if (event.target.name === "phone") {
-			this.setState({ phone: this.state.countryCodeSelect + event.target.value.replace(/^0+/, "") });
-			this.setState({ onlyPhone: event.target.value.replace(/^0+/, "") });
-		} else {
-			this.setState({ [event.target.name]: event.target.value.trim() });
-		}
-	};
-	handleCountryCodeChange = (event) => {
-		const { target } = event;
-		this.setState({ countryCodeSelect: target.value }, () => {
-			this.setState({ phone: target.value + this.state.onlyPhone });
-		});
+		this.setState({ [event.target.name]: event.target.value });
 	};
 
 	handleLogin = (event) => {
@@ -110,8 +85,7 @@ class Login extends Component {
 				null,
 				null,
 				null,
-				this.getLocationFromLocalStorage(),
-				this.state.otp
+				JSON.parse(localStorage.getItem("userSetAddress"))
 			);
 		} else {
 			console.log("validation failed");
@@ -138,8 +112,7 @@ class Login extends Component {
 					this.state.accessToken,
 					this.state.phone,
 					this.state.provider,
-					this.getLocationFromLocalStorage(),
-					this.state.otp
+					JSON.parse(localStorage.getItem("userSetAddress"))
 				);
 			}
 		} else {
@@ -170,6 +143,7 @@ class Login extends Component {
 	};
 
 	handleOnChange = (event) => {
+		// console.log(event.target.value);
 		this.props.getSingleLanguageData(event.target.value);
 		localStorage.setItem("userPreferedLanguage", event.target.value);
 	};
@@ -190,11 +164,6 @@ class Login extends Component {
 				localStorage.setItem("userSetAddress", JSON.stringify(userSetAddress));
 			}
 			// this.context.router.history.goBack();
-			if (navigator.userAgent === "FoodomaaAndroidWebViewUA") {
-				if (window.Android !== "undefined") {
-					window.Android.registerFcm(nextProps.user.data.auth_token);
-				}
-			}
 		}
 		if (nextProps.user.email_phone_already_used) {
 			this.setState({ email_phone_already_used: true });
@@ -224,8 +193,7 @@ class Login extends Component {
 					this.state.accessToken,
 					this.state.phone,
 					this.state.provider,
-					this.getLocationFromLocalStorage(),
-					this.state.otp
+					JSON.parse(localStorage.getItem("userSetAddress"))
 				);
 			} else {
 				this.props.registerUser(
@@ -233,8 +201,7 @@ class Login extends Component {
 					this.state.email,
 					this.state.phone,
 					this.state.password,
-					this.getLocationFromLocalStorage(),
-					this.state.otp
+					JSON.parse(localStorage.getItem("userSetAddress"))
 				);
 			}
 
@@ -262,8 +229,7 @@ class Login extends Component {
 				this.state.accessToken,
 				null,
 				this.state.provider,
-				this.getLocationFromLocalStorage(),
-				this.state.otp
+				JSON.parse(localStorage.getItem("userSetAddress"))
 			);
 		}
 
@@ -333,8 +299,7 @@ class Login extends Component {
 				user._token.accessToken,
 				null,
 				user._provider,
-				this.getLocationFromLocalStorage(),
-				this.state.otp
+				JSON.parse(localStorage.getItem("userSetAddress"))
 			);
 		}
 	};
@@ -348,7 +313,7 @@ class Login extends Component {
 		setTimeout(() => {
 			this.setState({ showResendOtp: true });
 			clearInterval(this.intervalID);
-		}, 30000 + 1000);
+		}, 15000 + 1000);
 		this.intervalID = setInterval(() => {
 			console.log("interval going on");
 			this.setState({
@@ -357,50 +322,11 @@ class Login extends Component {
 		}, 1000);
 	};
 
-	processDefaultCountryCode = () => {
-		const countryCode = localStorage.getItem("phoneCountryCode");
-		const countryCodesArr = countryCode.split(",");
-		if (countryCodesArr.length === 0) {
-			return <span className="country-code" />;
-		}
-		if (countryCodesArr.length === 1) {
-			return <span className="country-code">{countryCodesArr[0].replace(/\s/g, "")}</span>;
-		}
-		if (countryCodesArr.length > 1) {
-			return (
-				<select
-					name="countryCodeSelect"
-					onChange={this.handleCountryCodeChange}
-					className="country-code--dropdown"
-				>
-					{countryCodesArr.map((countryCode) => (
-						<option key={countryCode} value={countryCode.replace(/\s/g, "")}>
-							{countryCode.replace(/\s/g, "")}
-						</option>
-					))}
-				</select>
-			);
-		}
-	};
-
 	componentWillUnmount() {
 		//clear countdown
+		console.log("Countdown cleared");
 		clearInterval(this.intervalID);
 	}
-
-	getLocationFromLocalStorage = () => {
-		const userSetAddress = JSON.parse(localStorage.getItem("userSetAddress"));
-
-		if (userSetAddress === null) {
-			return null;
-		} else {
-			if (userSetAddress.hasOwnProperty("businessLocation")) {
-				return null;
-			} else {
-				return userSetAddress;
-			}
-		}
-	};
 
 	render() {
 		// console.log("Langugaes", this.props.languages);
@@ -411,7 +337,6 @@ class Login extends Component {
 		if (localStorage.getItem("storeColor") === null) {
 			return <Redirect to={"/"} />;
 		}
-
 		const { user } = this.props;
 		if (user.success) {
 			if (localStorage.getItem("fromCartToLogin") === "1") {
@@ -433,7 +358,6 @@ class Login extends Component {
 
 		const languages = this.props.languages;
 
-		console.log(this.state.phone);
 		return (
 			<React.Fragment>
 				{this.state.error && (
@@ -459,77 +383,77 @@ class Login extends Component {
 
 				{this.state.loading && <Loading />}
 
-				<div className="cust-auth-header">
+				<div className="auth-header">
 					<div className="input-group">
 						<div className="input-group-prepend">
 							<BackButton history={this.props.history} />
 						</div>
 					</div>
-					<LightSpeed right delay={500}>
-						<img
-							src="/assets/img/various/login-illustration.png"
-							className="login-image pull-right"
-							alt="login-header"
-						/>
-					</LightSpeed>
-					<div className="login-texts px-15 mt-30 pb-20">
+					<img
+						src="/assets/img/login-header.png"
+						className="login-image pull-right mr-15"
+						alt="login-header"
+					/>
+					<div className="login-texts px-15 mt-50 pb-20">
 						<span className="login-title">{localStorage.getItem("loginLoginTitle")}</span>
 						<br />
 						<span className="login-subtitle">{localStorage.getItem("loginLoginSubTitle")}</span>
 					</div>
 				</div>
-
 				<div className="bg-white">
 					<form onSubmit={this.handleLogin} id="loginForm">
 						<div className="form-group px-15 pt-30">
+							<label className="col-12 edit-address-input-label">
+								{localStorage.getItem("loginLoginEmailLabel")}{" "}
+								{this.validator.message("email", this.state.email, "required|email")}
+							</label>
 							<div className="col-md-9 pb-5">
 								<input
 									type="text"
 									name="email"
 									onChange={this.handleInputChange}
-									className="form-control auth-input"
-									placeholder={localStorage.getItem("loginLoginEmailLabel")}
+									className="form-control edit-address-input"
 								/>
-								{this.validator.message("email", this.state.email, "required|email")}
 							</div>
-
+							<label className="col-12 edit-address-input-label">
+								{localStorage.getItem("loginLoginPasswordLabel")}{" "}
+								{this.validator.message("password", this.state.password, "required")}
+							</label>
 							<div className="col-md-9">
 								<input
 									type="password"
 									name="password"
 									onChange={this.handleInputChange}
-									className="form-control auth-input"
-									placeholder={localStorage.getItem("loginLoginPasswordLabel")}
+									className="form-control edit-address-input"
 								/>
-								{this.validator.message("password", this.state.password, "required")}
 							</div>
 						</div>
-						<div className="mt-20 mx-15 d-flex justify-content-center">
+						<div className="mt-20 px-15 pt-15 button-block">
 							<button
 								type="submit"
 								className="btn btn-main"
 								style={{
 									backgroundColor: localStorage.getItem("storeColor"),
-									width: "90%",
-									borderRadius: "4px",
 								}}
 							>
-								{localStorage.getItem("firstScreenLoginBtn")}
+								{localStorage.getItem("loginLoginTitle")}
 							</button>
 						</div>
 					</form>
 					<form onSubmit={this.handleVerifyOtp} id="otpForm" className="hidden">
 						<div className="form-group px-15 pt-30">
+							<label className="col-12 edit-address-input-label">
+								{localStorage.getItem("otpSentMsg")} {this.state.phone}
+								{this.validator.message("otp", this.state.otp, "required|numeric|min:4|max:6")}
+							</label>
 							<div className="col-md-9">
 								<input
 									name="otp"
 									type="tel"
 									onChange={this.handleInputChange}
-									className="form-control auth-input"
+									className="form-control edit-address-input"
 									required
-									placeholder={localStorage.getItem("otpSentMsg")}
 								/>
-								{this.validator.message("otp", this.state.otp, "required|numeric|min:4|max:6")}
 							</div>
 
 							<button
@@ -563,168 +487,136 @@ class Login extends Component {
 						className="hidden"
 					>
 						<div className="form-group px-15 pt-30">
-							<label className="col-12 auth-input-label">
+							<label className="col-12 edit-address-input-label">
 								{localStorage.getItem("socialWelcomeText")} {this.state.name},
 							</label>
-							<label className="col-12 auth-input-label">
+							<label className="col-12 edit-address-input-label">
 								{localStorage.getItem("enterPhoneToVerify")}{" "}
+								{this.validator.message("phone", this.state.phone, [
+									"required",
+									{ regex: ["^\\+[1-9]\\d{1,14}$"] },
+									{ min: ["8"] },
+								])}
 							</label>
 							<div className="col-md-9 pb-5">
-								<div>
-									{this.processDefaultCountryCode()}
-									<span>
-										<input
-											name="phone"
-											type="tel"
-											onChange={this.handleInputChange}
-											className="form-control phone-number-country-code auth-input"
-										/>
-
-										{this.validator.message("phone", this.state.phone, [
-											"required",
-											{ regex: ["^\\+[1-9]\\d{1,14}$"] },
-											{ min: ["8"] },
-										])}
-									</span>
-								</div>
+								<input
+									defaultValue={
+										localStorage.getItem("phoneCountryCode") === null
+											? ""
+											: localStorage.getItem("phoneCountryCode")
+									}
+									name="phone"
+									type="tel"
+									onChange={this.handleInputChange}
+									className="form-control edit-address-input"
+								/>
 							</div>
 							<button
 								type="submit"
 								className="btn btn-main"
-								style={{ backgroundColor: localStorage.getItem("storeColor") }}
+								style={{
+									backgroundColor: localStorage.getItem("storeColor"),
+								}}
 							>
 								{localStorage.getItem("registerRegisterTitle")}
 							</button>
 						</div>
 					</form>
-
-					{!this.state.isFoodomaaAndroidWebView && (
-						<div className="text-center mt-3 mb-20" id="socialLoginDiv">
-							<p className="login-or mt-4"> {localStorage.getItem("socialLoginOrText")} </p>
-							<div ref="socialLoginLoader">
-								<ContentLoader
-									height={60}
-									width={400}
-									speed={1.2}
-									primaryColor="#f3f3f3"
-									secondaryColor="#ecebeb"
-								>
-									<rect x="28" y="0" rx="0" ry="0" width="165" height="45" />
-									<rect x="210" y="0" rx="0" ry="0" width="165" height="45" />
-								</ContentLoader>
-							</div>
-							<div ref="socialLogin" className="hidden d-flex justify-content-center align-items-center">
-								{localStorage.getItem("enableFacebookLogin") === "true" && (
-									<SocialButton
-										provider="facebook"
-										appId={localStorage.getItem("facebookAppId")}
-										onLoginSuccess={this.handleSocialLogin}
-										onLoginFailure={this.handleSocialLoginFailure}
-										className="facebook-login-button mr-3"
-									>
-										<div className="d-flex justify-content-between align-items-center">
-											<div>
-												<img
-													src="/assets/img/various/facebook.png"
-													alt="Facebook Login"
-													className="img-fluid"
-													style={{ width: "18px", marginRight: "10px" }}
-												/>
-											</div>
-											<div style={{ fontSize: "14px" }}>
-												{localStorage.getItem("facebookLoginButtonText")}
-											</div>
-										</div>
-									</SocialButton>
-								)}
-								{localStorage.getItem("enableGoogleLogin") === "true" && (
-									<SocialButton
-										provider="google"
-										appId={localStorage.getItem("googleAppId")}
-										onLoginSuccess={this.handleSocialLogin}
-										onLoginFailure={this.handleSocialLoginFailure}
-										className="google-login-button"
-									>
-										<div className="d-flex justify-content-between align-items-center">
-											<div>
-												<img
-													src="/assets/img/various/google.png"
-													alt="Google Login"
-													className="img-fluid"
-													style={{ width: "18px", marginRight: "10px" }}
-												/>
-											</div>
-											<div style={{ fontSize: "14px" }}>
-												{localStorage.getItem("googleLoginButtonText")}
-											</div>
-										</div>
-									</SocialButton>
-								)}
-							</div>
+					<div className="text-center mt-3 mb-20" id="socialLoginDiv">
+						<p className="login-or mt-2">{localStorage.getItem("socialLoginOrText")}</p>
+						<div ref="socialLoginLoader">
+							<ContentLoader
+								height={60}
+								width={400}
+								speed={1.2}
+								primaryColor="#f3f3f3"
+								secondaryColor="#ecebeb"
+							>
+								<rect x="28" y="0" rx="0" ry="0" width="165" height="45" />
+								<rect x="210" y="0" rx="0" ry="0" width="165" height="45" />
+							</ContentLoader>
 						</div>
-					)}
-
-					<div>
-						<div className="wave-container login-bottom-wave">
-							<svg viewBox="0 0 120 28" className="wave-svg">
-								<defs>
-									<filter id="goo">
-										<feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
-										<feColorMatrix
-											in="blur"
-											mode="matrix"
-											values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 13 -9"
-											result="goo"
-										/>
-										<xfeBlend in="SourceGraphic" in2="goo" />
-									</filter>
-									<path
-										id="wave"
-										d="M 0,10 C 30,10 30,15 60,15 90,15 90,10 120,10 150,10 150,15 180,15 210,15 210,10 240,10 v 28 h -240 z"
-									/>
-								</defs>
-
-								<use id="wave3" className="wave" xlinkHref="#wave" x="0" y="-2" />
-								<use id="wave2" className="wave" xlinkHref="#wave" x="0" y="0" />
-							</svg>
+						<div ref="socialLogin" className="hidden d-flex justify-content-center align-items-center">
+							{localStorage.getItem("enableFacebookLogin") === "true" && (
+								<SocialButton
+									provider="facebook"
+									appId={localStorage.getItem("facebookAppId")}
+									onLoginSuccess={this.handleSocialLogin}
+									onLoginFailure={this.handleSocialLoginFailure}
+									className="facebook-login-button mr-3"
+								>
+									<div className="d-flex justify-content-between align-items-center">
+										<div>
+											<img
+												src="/assets/img/various/facebook.png"
+												alt="Facebook Login"
+												className="img-fluid"
+												style={{ width: "18px", marginRight: "10px" }}
+											/>
+										</div>
+										<div style={{ fontSize: "14px" }}>
+											{localStorage.getItem("facebookLoginButtonText")}
+										</div>
+									</div>
+								</SocialButton>
+							)}
+							{localStorage.getItem("enableGoogleLogin") === "true" && (
+								<SocialButton
+									provider="google"
+									appId={localStorage.getItem("googleAppId")}
+									onLoginSuccess={this.handleSocialLogin}
+									onLoginFailure={this.handleSocialLoginFailure}
+									className="google-login-button"
+								>
+									<div className="d-flex justify-content-between align-items-center">
+										<div>
+											<img
+												src="/assets/img/various/google.png"
+												alt="Google Login"
+												className="img-fluid"
+												style={{ width: "18px", marginRight: "10px" }}
+											/>
+										</div>
+										<div style={{ fontSize: "14px" }}>
+											{localStorage.getItem("googleLoginButtonText")}
+										</div>
+									</div>
+								</SocialButton>
+							)}
 						</div>
 					</div>
-					<div className="text-center mt-50 mb-20 auth-reg-text-block">
+					<div className="text-center mt-50 mb-20">
 						{localStorage.getItem("loginDontHaveAccount")}{" "}
 						<NavLink
 							to="/register"
 							style={{
 								color: localStorage.getItem("storeColor"),
 							}}
-							className="auth-reg-link"
 						>
 							{localStorage.getItem("firstScreenRegisterBtn")}
 						</NavLink>
 					</div>
 				</div>
 				{localStorage.getItem("enPassResetEmail") === "true" && (
-					<div className="mt-4 d-flex align-items-center justify-content-center">
+					<div className="mt-4 d-flex align-items-center justify-content-center mb-100">
 						<NavLink
 							to="/login/forgot-password"
 							style={{
 								color: localStorage.getItem("storeColor"),
 							}}
-							className="auth-forgot-password-btn"
 						>
 							{localStorage.getItem("forgotPasswordLinkText")}
 						</NavLink>
 					</div>
 				)}
 
-				{localStorage.getItem("registrationPolicyMessage") !== "null" ? (
+				{localStorage.getItem("registrationPolicyMessage") !== "null" && (
 					<div
-						className="mt-20 mb-20 d-flex align-items-center justify-content-center auth-custom-msg-block"
+						className="mt-20 mb-20 d-flex align-items-center justify-content-center"
 						dangerouslySetInnerHTML={{
 							__html: localStorage.getItem("registrationPolicyMessage"),
 						}}
 					/>
-				) : (
-					<div className="mb-100" />
 				)}
 
 				{languages && languages.length > 1 && (

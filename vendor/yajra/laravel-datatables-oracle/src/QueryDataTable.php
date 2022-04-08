@@ -210,7 +210,12 @@ class QueryDataTable extends DataTableAbstract
      */
     public function count()
     {
-        return $this->prepareCountQuery()->count();
+        $builder = $this->prepareCountQuery();
+        $table   = $this->connection->raw('(' . $builder->toSql() . ') count_row_table');
+
+        return $this->connection->table($table)
+                                ->setBindings($builder->getBindings())
+                                ->count();
     }
 
     /**
@@ -218,21 +223,16 @@ class QueryDataTable extends DataTableAbstract
      *
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
-    public function prepareCountQuery()
+    protected function prepareCountQuery()
     {
         $builder = clone $this->query;
 
-        if ($this->isComplexQuery($builder)) {
-            $table = $this->connection->raw('('.$builder->toSql().') count_row_table');
-
-            return $this->connection->table($table)
-                ->setBindings($builder->getBindings());
-        }
-
-        $row_count = $this->wrap('row_count');
-        $builder->select($this->connection->raw("'1' as {$row_count}"));
-        if (! $this->keepSelectBindings) {
-            $builder->setBindings([], 'select');
+        if (! $this->isComplexQuery($builder)) {
+            $row_count = $this->wrap('row_count');
+            $builder->select($this->connection->raw("'1' as {$row_count}"));
+            if (! $this->keepSelectBindings) {
+                $builder->setBindings([], 'select');
+            }
         }
 
         return $builder;
@@ -309,7 +309,7 @@ class QueryDataTable extends DataTableAbstract
             }
 
             if ($this->hasFilterColumn($column)) {
-                $keyword = $this->getColumnSearchKeyword($index, true);
+                $keyword = $this->getColumnSearchKeyword($index, $raw = true);
                 $this->applyFilterColumn($this->getBaseQueryBuilder(), $column, $keyword);
             } else {
                 $column  = $this->resolveRelationColumn($column);
@@ -413,6 +413,7 @@ class QueryDataTable extends DataTableAbstract
     protected function compileColumnSearch($i, $column, $keyword)
     {
         if ($this->request->isRegex($i)) {
+            $column = strstr($column, '(') ? $this->connection->raw($column) : $column;
             $this->regexColumnSearch($column, $keyword);
         } else {
             $this->compileQuerySearch($this->query, $column, $keyword, '');
@@ -427,8 +428,6 @@ class QueryDataTable extends DataTableAbstract
      */
     protected function regexColumnSearch($column, $keyword)
     {
-        $column = $this->wrap($column);
-
         switch ($this->connection->getDriverName()) {
             case 'oracle':
                 $sql = ! $this->config->isCaseInsensitive()
@@ -572,7 +571,7 @@ class QueryDataTable extends DataTableAbstract
      * Override default column ordering.
      *
      * @param string $column
-     * @param string|\Closure $sql
+     * @param string $sql
      * @param array  $bindings
      * @return $this
      * @internal string $1 Special variable that returns the requested order direction of the column.
@@ -766,7 +765,7 @@ class QueryDataTable extends DataTableAbstract
     protected function showDebugger(array $output)
     {
         $query_log = $this->connection->getQueryLog();
-        array_walk_recursive($query_log, function (&$item) {
+        array_walk_recursive($query_log, function (&$item, $key) {
             $item = utf8_encode($item);
         });
 

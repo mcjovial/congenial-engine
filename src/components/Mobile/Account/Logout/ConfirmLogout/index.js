@@ -27,11 +27,11 @@ class ConfirmLogout extends Component {
 					open={this.state.open}
 					onClose={this.handleClose}
 					style={{ width: "200px", margin: "auto" }}
-					PaperProps={{ style: { backgroundColor: "#fff", borderRadius: "10px" } }}
+					PaperProps={{ style: { backgroundColor: "#fff", borderRadius: "42px" } }}
 				>
-					<div className="container" style={{ borderRadius: "10px" }} onClick={this.props.handleLogout}>
+					<div className="container" style={{ borderRadius: "45px" }} onClick={this.props.handleLogout}>
 						<div className="row d-flex justify-content-center mt-30 mb-10 align-items-center flex-column">
-							<i className="si si-power logout-icon" style={{ fontSize: "3.2rem" }} />
+							<i className="si si-power logout-icon" style={{ fontSize: "3.6rem" }} />
 							<div className="d-flex justify-content-center my-10 text-uppercase font-w700">
 								{localStorage.getItem("accountLogout")}
 							</div>

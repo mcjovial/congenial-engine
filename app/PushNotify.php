@@ -3,8 +3,10 @@
 namespace App;
 
 use App\Alert;
+use App\Orderstatus;
 use App\PushToken;
 use App\Translation;
+use Carbon\Carbon;
 use Ixudra\Curl\Facades\Curl;
 
 class PushNotify
@@ -28,78 +30,78 @@ class PushNotify
             $runningOrderDeliveryAssignedSub = $translation->runningOrderDeliveryAssignedSub;
             $runningOrderOnwayTitle = $translation->runningOrderOnwayTitle;
             $runningOrderOnwaySub = $translation->runningOrderOnwaySub;
-            $runningOrderDelivered = !empty($translation->runningOrderDelivered) ? $translation->runningOrderDelivered : config('setting.runningOrderDelivered');
-            $runningOrderDeliveredSub = !empty($translation->runningOrderDeliveredSub) ? $translation->runningOrderDeliveredSub : config('setting.runningOrderDeliveredSub');
+            $runningOrderDelivered = !empty($translation->runningOrderDelivered) ? $translation->runningOrderDelivered : config('settings.runningOrderDelivered');
+            $runningOrderDeliveredSub = !empty($translation->runningOrderDeliveredSub) ? $translation->runningOrderDelivered : config('settings.runningOrderDeliveredSub');
             $runningOrderCanceledTitle = $translation->runningOrderCanceledTitle;
             $runningOrderCanceledSub = $translation->runningOrderCanceledSub;
             $runningOrderReadyForPickup = $translation->runningOrderReadyForPickup;
             $runningOrderReadyForPickupSub = $translation->runningOrderReadyForPickupSub;
             $deliveryGuyNewOrderNotificationMsg = $translation->deliveryGuyNewOrderNotificationMsg;
             $deliveryGuyNewOrderNotificationMsgSub = $translation->deliveryGuyNewOrderNotificationMsgSub;
+
         } else {
             //else use from config
-            $runningOrderPreparingTitle = config('setting.runningOrderPreparingTitle');
-            $runningOrderPreparingSub = config('setting.runningOrderPreparingSub');
-            $runningOrderDeliveryAssignedTitle = config('setting.runningOrderDeliveryAssignedTitle');
-            $runningOrderDeliveryAssignedSub = config('setting.runningOrderDeliveryAssignedSub');
-            $runningOrderOnwayTitle = config('setting.runningOrderOnwayTitle');
-            $runningOrderOnwaySub = config('setting.runningOrderOnwaySub');
-            $runningOrderDelivered = config('setting.runningOrderDelivered');
-            $runningOrderDeliveredSub = config('setting.runningOrderDeliveredSub');
-            $runningOrderCanceledTitle = config('setting.runningOrderCanceledTitle');
-            $runningOrderCanceledSub = config('setting.runningOrderCanceledSub');
-            $runningOrderReadyForPickup = config('setting.runningOrderReadyForPickup');
-            $runningOrderReadyForPickupSub = config('setting.runningOrderReadyForPickupSub');
-            $deliveryGuyNewOrderNotificationMsg = config('setting.deliveryGuyNewOrderNotificationMsg');
-            $deliveryGuyNewOrderNotificationMsgSub = config('setting.deliveryGuyNewOrderNotificationMsgSub');
+            $runningOrderPreparingTitle = config('settings.runningOrderPreparingTitle');
+            $runningOrderPreparingSub = config('settings.runningOrderPreparingSub');
+            $runningOrderDeliveryAssignedTitle = config('settings.runningOrderDeliveryAssignedTitle');
+            $runningOrderDeliveryAssignedSub = config('settings.runningOrderDeliveryAssignedSub');
+            $runningOrderOnwayTitle = config('settings.runningOrderOnwayTitle');
+            $runningOrderOnwaySub = config('settings.runningOrderOnwaySub');
+            $runningOrderDelivered = config('settings.runningOrderDelivered');
+            $runningOrderDeliveredSub = config('settings.runningOrderDeliveredSub');
+            $runningOrderCanceledTitle = config('settings.runningOrderCanceledTitle');
+            $runningOrderCanceledSub = config('settings.runningOrderCanceledSub');
+            $runningOrderReadyForPickup = config('settings.runningOrderReadyForPickup');
+            $runningOrderReadyForPickupSub = config('settings.runningOrderReadyForPickupSub');
+            $deliveryGuyNewOrderNotificationMsg = config('settings.deliveryGuyNewOrderNotificationMsg');
+            $deliveryGuyNewOrderNotificationMsgSub = config('settings.deliveryGuyNewOrderNotificationMsgSub');
         }
 
-        $secretKey = 'key=' . config('setting.firebaseSecret');
+        $secretKey = 'key=' . config('settings.firebaseSecret');
 
-        $pushTokens = PushToken::where('user_id', $user_id)->get();
+        $token = PushToken::where('user_id', $user_id)->first();
 
-        if (count($pushTokens) > 0) {
+        if ($token) {
             if ($orderstatus_id == '2') {
                 $msgTitle = $runningOrderPreparingTitle;
                 $msgMessage = $runningOrderPreparingSub;
-                $click_action = config('setting.storeUrl') . '/running-order/' . $unique_order_id;
+                $click_action = config('settings.storeUrl') . '/running-order/' . $unique_order_id;
             }
             if ($orderstatus_id == '3') {
                 $msgTitle = $runningOrderDeliveryAssignedTitle;
                 $msgMessage = $runningOrderDeliveryAssignedSub;
-                $click_action = config('setting.storeUrl') . '/running-order/' . $unique_order_id;
+                $click_action = config('settings.storeUrl') . '/running-order/' . $unique_order_id;
             }
             if ($orderstatus_id == '4') {
                 $msgTitle = $runningOrderOnwayTitle;
                 $msgMessage = $runningOrderOnwaySub;
-                $click_action = config('setting.storeUrl') . '/running-order/' . $unique_order_id;
+                $click_action = config('settings.storeUrl') . '/running-order/' . $unique_order_id;
             }
             if ($orderstatus_id == '5') {
                 $msgTitle = $runningOrderDelivered;
                 $msgMessage = $runningOrderDeliveredSub;
-                $click_action = config('setting.storeUrl') . '/my-orders/';
+                $click_action = config('settings.storeUrl') . '/my-orders/';
             }
             if ($orderstatus_id == '6') {
                 $msgTitle = $runningOrderCanceledTitle;
                 $msgMessage = $runningOrderCanceledSub;
-                $click_action = config('setting.storeUrl') . '/my-orders/';
+                $click_action = config('settings.storeUrl') . '/my-orders/';
             }
             if ($orderstatus_id == '7') {
                 $msgTitle = $runningOrderReadyForPickup;
                 $msgMessage = $runningOrderReadyForPickupSub;
-                $click_action = config('setting.storeUrl') . '/running-order/' . $unique_order_id;
+                $click_action = config('settings.storeUrl') . '/running-order/' . $unique_order_id;
+            }
+            if ($orderstatus_id == 'TO_RESTAURANT') {
+                $msgTitle = $restaurantNewOrderNotificationMsg;
+                $msgMessage = $restaurantNewOrderNotificationMsgSub;
+                $click_action = config('settings.storeUrl') . '/public/restaurant-owner/dashboard';
             }
             if ($orderstatus_id == 'TO_DELIVERY') {
                 $msgTitle = $deliveryGuyNewOrderNotificationMsg;
                 $msgMessage = $deliveryGuyNewOrderNotificationMsgSub;
-                $click_action = config('setting.storeUrl') . '/delivery/orders/' . $unique_order_id;
+                $click_action = config('settings.storeUrl') . '/delivery/orders/' . $unique_order_id;
             }
-            if ($orderstatus_id == 'TO_STOREOWNER') {
-                $msgTitle = config('setting.restaurantNewOrderNotificationMsg');
-                $msgMessage = "";
-                $click_action = null;
-            }
-
             $msg = array(
                 'title' => $msgTitle,
                 'message' => $msgMessage,
@@ -115,14 +117,12 @@ class PushNotify
             $alert->is_read = 0;
             $alert->save();
 
-            $tokens = $pushTokens->pluck('token')->toArray();
-
             $fullData = array(
-                'registration_ids' => $tokens,
+                'to' => $token->token,
                 'data' => $msg,
             );
 
-            Curl::to('https://fcm.googleapis.com/fcm/send')
+            $response = Curl::to('https://fcm.googleapis.com/fcm/send')
                 ->withHeader('Content-Type: application/json')
                 ->withHeader("Authorization: $secretKey")
                 ->withData(json_encode($fullData))
@@ -139,10 +139,10 @@ class PushNotify
     public function sendWalletAlert($user_id, $amount, $message, $type)
     {
 
-        $amountWithCurrency = config('setting.currencySymbolAlign') == 'left' ? config('setting.currencyFormat') . $amount : $amount . config('setting.currencyFormat');
+        $amountWithCurrency = config('settings.currencySymbolAlign') == 'left' ? config('settings.currencyFormat') . $amount : $amount . config('settings.currencyFormat');
 
         $msg = array(
-            'title' => config('setting.walletName'),
+            'title' => config('settings.walletName'),
             'message' => $amountWithCurrency . ' ' . $message,
             'is_wallet_alert' => true,
             'transaction_type' => $type,
@@ -153,65 +153,7 @@ class PushNotify
         $alert->user_id = $user_id;
         $alert->is_read = 0;
         $alert->save();
+
     }
 
-    public function stopPlayingNotificationSoundDeliveryApp($unique_order_id)
-    {
-        $secretKey = 'key=' . config('setting.firebaseSecret');
-
-        $deliveryGuys = User::role('Delivery Guy')->get(['id'])->pluck('id')->toArray();
-        $tokens = PushToken::whereIn('user_id', $deliveryGuys)->get(['token'])->pluck('token')->toArray();
-
-        $msg = array(
-            'title' => "Order Missed",
-            'message' => "Order already accepted by other delivery guy.",
-            'badge' => '/assets/img/favicons/favicon-96x96.png',
-            'icon' => '/assets/img/favicons/favicon-512x512.png',
-            'click_action' => null,
-            'unique_order_id' => $unique_order_id,
-            'stop_playing' => "yes",
-        );
-
-
-        $fullData = array(
-            'registration_ids' => $tokens,
-            'data' => $msg,
-        );
-
-        Curl::to('https://fcm.googleapis.com/fcm/send')
-            ->withHeader('Content-Type: application/json')
-            ->withHeader("Authorization: $secretKey")
-            ->withData(json_encode($fullData))
-            ->post();
-    }
-
-    public function stopPlayingNotificationSoundStoreApp($order_id)
-    {
-        $secretKey = 'key=' . config('setting.firebaseSecret');
-
-        $storeOwners = User::role('Store Owner')->get(['id'])->pluck('id')->toArray();
-        $tokens = PushToken::whereIn('user_id', $storeOwners)->get(['token'])->pluck('token')->toArray();
-
-        $msg = array(
-            'title' => "Order Notification",
-            'message' => "Order already accepted or cancelled",
-            'badge' => '/assets/img/favicons/favicon-96x96.png',
-            'icon' => '/assets/img/favicons/favicon-512x512.png',
-            'click_action' => null,
-            'unique_order_id' => $order_id,
-            'stop_playing' => "yes",
-        );
-
-
-        $fullData = array(
-            'registration_ids' => $tokens,
-            'data' => $msg,
-        );
-
-        Curl::to('https://fcm.googleapis.com/fcm/send')
-            ->withHeader('Content-Type: application/json')
-            ->withHeader("Authorization: $secretKey")
-            ->withData(json_encode($fullData))
-            ->post();
-    }
 }

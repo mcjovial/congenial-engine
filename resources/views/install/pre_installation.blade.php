@@ -27,9 +27,9 @@ Pre-Installation
                 <tr>
                     <td>
                         {{ $label }}
-                        @if($label == "PHP Version" && !$satisfied)
+                        @if($label == "PHP = 7.2.x" && !$satisfied)
                             <br>
-                            <span class="text-danger"><b>PHP Version must be greater > 7.2 and < or = 7.3
+                            <span class="text-danger"><b>PHP Version must be 7.2 (or 7.2.x)
                             <br>
                             <a href="https://docs.foodomaa.com/installation/installation-on-server#requirements" target="_blank"> Learn More </a></span>
                         @endif

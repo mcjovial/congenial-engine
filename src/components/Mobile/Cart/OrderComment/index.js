@@ -17,13 +17,12 @@ class OrderComment extends Component {
 	render() {
 		return (
 			<React.Fragment>
-				<textarea
+				<input
 					className="form-control order-comment"
 					type="text"
 					placeholder={localStorage.getItem("cartSuggestionPlaceholder")}
 					onChange={this.handleInput}
 					value={this.state.comment || ""}
-					rows="1"
 				/>
 			</React.Fragment>
 		);

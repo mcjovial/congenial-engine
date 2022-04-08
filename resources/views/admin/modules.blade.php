@@ -2,37 +2,6 @@
 @section("title") Modules - Dashboard
 @endsection
 @section('content')
-
-@if(config('setting.moduleRedownloadNotice') == "false")
-<div class="px-3 mt-4 mx-3"
-    style="background: linear-gradient(to right, #f12711, #f5af19); color: #fff; border-radius: 8px" id="modulesNotice">
-    <div class="d-flex justify-content-between align-items-center" style="padding: 1.5rem;">
-        <div>
-            <p class="mb-0">Version 3.0 has many core changes that requires all modules to be updated.</p>
-            <p class="mb-0">Kindly <b>redownload</b> all your modules from CodeCanyon and reupload here.</p>
-        </div>
-        <div>
-            <span class="bannerButton">I
-                Understand</span>
-        </div>
-    </div>
-</div>
-<script>
-    $(".acceptNoticeBtn").click(function (e) { 
-        $.ajax({
-            type: "get",
-            url: "{{ route('admin.acceptNotice') }}",
-            dataType: "json",
-            success: function (response) {
-                if (response.success) {
-                    $('#modulesNotice').remove();
-                }
-            }
-        }); 
-    });
-</script>
-@endif
-
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
@@ -45,8 +14,8 @@
         <div class="header-elements d-none py-0 mb-3 mb-md-0">
             <div class="breadcrumb">
                 <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" id="uploadNewModuleBtn">
-                    <b><i class="icon-plus2"></i></b>
-                    Upload Module
+                <b><i class="icon-plus2"></i></b>
+                Upload New Module
                 </button>
             </div>
         </div>
@@ -59,22 +28,20 @@
     });
 </script>
 <div class="content">
-    @if(!$checkZipExtension)
-    <div class="col-md-12">
-        <p class="text-danger font-weight-bold"><b>Zip PHP Extension</b> is not enabled.
-            <br>
-            Therefore, you will not be able to upload any Premium Modules.
-            <br>
-            <span class="font-weight-normal">Kindly contact your hosting provider to enable the <b>Zip PHP Extension</b>
-                for your server.</span>
-        </p>
-    </div>
-    @else
+  @if(!$checkZipExtension)
+  <div class="col-md-12">
+    <p class="text-danger font-weight-bold"><b>Zip PHP Extension</b> is not enabled.
+      <br>
+      Therefore, you will not be able to upload any Premium Modules.
+      <br>
+      <span class="font-weight-normal">Kindly contact your hosting provider to enable the <b>Zip PHP Extension</b> for your server.</span>
+    </p>
+  </div>
+  @else
     <div class="col-md-12" id="moduleUploadBlock" style="display: none;">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.uploadModuleZipFile') }}" enctype="multipart/form-data"
-                    class="dropzone" id="module_uploader">
+                <form method="POST" action="{{ route('admin.uploadModuleZipFile') }}" enctype="multipart/form-data"  class="dropzone" id="module_uploader">
                     @csrf
                 </form>
             </div>
@@ -101,39 +68,34 @@
                                     <small>{{ $module->getDescription() }}</small>
                                 </td>
                                 <td>
-                                    @if($module->isEnabled())
+                                  @if($module->isEnabled())
                                     <span class="badge badge-flat border-grey-800 text-primary text-capitalize mr-1">
                                         Enabled
                                     </span>
-                                    @else
+                                  @else
                                     <span class="badge badge-flat border-grey-800 text-danger text-capitalize mr-1">
                                         Disabled
                                     </span>
-                                    @endif
+                                  @endif
                                 </td>
                                 <td class="text-center">
-                                    <div class="btn-group btn-group-justified align-items-center" @if(!$module->
-                                        isEnabled()) style="flex-direction: row-reverse;" @endif>
+                                    <div class="btn-group btn-group-justified align-items-center" @if(!$module->isEnabled()) style="flex-direction: row-reverse;" @endif>
                                         @if($module->isEnabled())
                                         <a href="{{ url($module->getLowerName()) }}/settings"
-                                            class="btn btn-secondary btn-labeled btn-labeled-left btn-sm"
-                                            data-placement="left">
-                                            <b><i class="icon-gear ml-1"></i> </b>
-                                            Settings
+                                            class="btn btn-secondary btn-labeled btn-labeled-left btn-sm" data-placement="left">
+                                        <b><i class="icon-gear ml-1"></i>  </b>
+                                        Settings
                                         </a>
                                         <a href="{{ route('admin.disableModule', $module->getStudlyName()) }}"
-                                            class="btn btn-danger btn-labeled btn-labeled-left btn-sm enDisBtn ml-2"
-                                            data-popup="tooltip" title="Double Click to Disable" data-placement="left">
-                                            <b><i class="icon-cross2 ml-1"></i></b>
-                                            Disable
+                                            class="btn btn-danger btn-labeled btn-labeled-left btn-sm enDisBtn ml-2" data-popup="tooltip" title="Double Click to Disable" data-placement="left">
+                                        <b><i class="icon-cross2 ml-1"></i></b>
+                                        Disable
                                         </a>
                                         @else
                                         <a href="{{ route('admin.enableModule', $module->getStudlyName()) }}"
-                                            class="btn btn-primary btn-labeled btn-labeled-left btn-sm enDisBtn"
-                                            data-popup="tooltip" title="Double Click to Enable" data-placement="left"
-                                            style="max-width: 125px;">
-                                            <b><i class="icon-checkmark3 ml-1"></i></b>
-                                            Enable
+                                            class="btn btn-primary btn-labeled btn-labeled-left btn-sm enDisBtn"  data-popup="tooltip" title="Double Click to Enable" data-placement="left" style="max-width: 125px;">
+                                        <b><i class="icon-checkmark3 ml-1"></i></b>
+                                        Enable
                                         </a>
                                         @endif
                                     </div>
@@ -153,8 +115,8 @@
             <div class="modal-header pb-3">
                 <h5 class="modal-title">
                     <span class="font-weight-bold">
-                        <i class="icon-spinner10 spinner mr-1"></i>
-                        Pending Verification
+                    <i class="icon-spinner10 spinner mr-1"></i> 
+                    Pending Verification
                     </span>
                 </h5>
             </div>
@@ -169,8 +131,8 @@
                     </div>
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary" id="verifyInstall">
-                            Verify & Install
-                            <i class="icon-arrow-right8 ml-1"></i>
+                        Verify & Install
+                        <i class="icon-arrow-right8 ml-1"></i>
                         </button>
                     </div>
                 </form>
@@ -218,30 +180,10 @@
                dropzone.on("success", function(file) {
                    setTimeout(function() {
                        dropzone.removeFile(file);
-                       var token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                       $.ajax({
-                         url: '{{ route('admin.installModule') }}',
-                         type: 'POST',
-                         dataType: 'JSON',
-                         data: {_token: token},
-                       })
-                       .done(function(data) {
-                         if (data.success) {
-                       
-                           console.log(data.message)
-                       
-                           $.jGrowl("Module installation was successful", {
-                               position: 'bottom-center',
-                               header: 'Success ✅',
-                               theme: 'bg-success',
-                               life: '1800'
-                           }); 
-                       
-                           setTimeout(function() {
-                              window.location.reload();
-                           }, 600);
-                         }
-                       })
+                       $('#installingModule').modal({
+                           backdrop: 'static',
+                           keyboard: false
+                       });
                    }, 500);
                });
     

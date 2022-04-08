@@ -16,16 +16,7 @@ class BillDetails extends Component {
 		if (localStorage.getItem("userSelected") === "SELFPICKUP") {
 			this.setState({ delivery_charges: 0 });
 		} else {
-			if (parseFloat(this.props.restaurant_info.free_delivery_subtotal) > 0) {
-				if (parseFloat(this.props.total) >= parseFloat(this.props.restaurant_info.free_delivery_subtotal)) {
-					console.log("Free Delivery 😍");
-					this.setState({ delivery_charges: 0 });
-				} else {
-					this.setState({ delivery_charges: this.props.restaurant_info.delivery_charges });
-				}
-			} else {
-				this.setState({ delivery_charges: this.props.restaurant_info.delivery_charges });
-			}
+			this.setState({ delivery_charges: this.props.restaurant_info.delivery_charges });
 		}
 	}
 
@@ -34,50 +25,18 @@ class BillDetails extends Component {
 			if (this.props.restaurant_info.delivery_charges !== nextProps.restaurant_info.delivery_charges) {
 				this.setState({ delivery_charges: nextProps.restaurant_info.delivery_charges });
 			}
+		}
 
-			if (this.props.total !== nextProps.total) {
-				if (nextProps.restaurant_info.delivery_charge_type !== "DYNAMIC") {
-					if (parseFloat(nextProps.restaurant_info.free_delivery_subtotal) > 0) {
-						if (
-							parseFloat(nextProps.total) >= parseFloat(nextProps.restaurant_info.free_delivery_subtotal)
-						) {
-							console.log("Free Delivery 😍");
-							this.setState({ delivery_charges: 0 });
-						} else {
-							this.setState({ delivery_charges: nextProps.restaurant_info.delivery_charges });
-						}
-					} else {
-						this.setState({ delivery_charges: nextProps.restaurant_info.delivery_charges });
-					}
-					return;
+		if (nextProps.distance) {
+			if (localStorage.getItem("userSelected") === "DELIVERY") {
+				if (nextProps.restaurant_info.delivery_charge_type === "DYNAMIC") {
+					this.setState({ distance: nextProps.distance }, () => {
+						//check if restaurant has dynamic delivery charge..
+						this.calculateDynamicDeliveryCharge();
+					});
 				}
 			}
 		}
-
-		// if (nextProps.distance) {
-		if (localStorage.getItem("userSelected") === "DELIVERY") {
-			if (nextProps.restaurant_info.delivery_charge_type === "DYNAMIC") {
-				this.setState({ distance: nextProps.distance }, () => {
-					if (parseFloat(nextProps.restaurant_info.free_delivery_subtotal) > 0) {
-						if (
-							parseFloat(nextProps.total) >= parseFloat(nextProps.restaurant_info.free_delivery_subtotal)
-						) {
-							console.log("Free Delivery 😍");
-							this.setState({ delivery_charges: 0 });
-						} else {
-							//check if restaurant has dynamic delivery charge..
-							this.calculateDynamicDeliveryCharge();
-						}
-					} else {
-						//check if restaurant has dynamic delivery charge..
-						this.calculateDynamicDeliveryCharge();
-					}
-				});
-			} else {
-				this.setState({ distance: nextProps.distance });
-			}
-		}
-		// }
 	}
 
 	calculateDynamicDeliveryCharge = () => {
@@ -265,31 +224,7 @@ class BillDetails extends Component {
 							) : (
 								<React.Fragment>
 									<div className="display-flex">
-										<div className="flex-auto">
-											{localStorage.getItem("cartDeliveryCharges")}{" "}
-											<span className="cart-delivery-distance">
-												({parseFloat(this.state.distance).toFixed(1)}km)
-											</span>
-											{this.props.restaurant_info.free_delivery_subtotal > 0 &&
-												this.state.delivery_charges > 0 && (
-													<React.Fragment>
-														<br />
-														<div class="freeDeliveryMessageBlock">
-															{localStorage.getItem("freeDeliveryPrefixText")}{" "}
-															<b>
-																{localStorage.getItem("currencySymbolAlign") ===
-																	"left" && localStorage.getItem("currencyFormat")}
-																{parseFloat(
-																	this.props.restaurant_info.free_delivery_subtotal
-																) - parseFloat(this.props.total)}
-																{localStorage.getItem("currencySymbolAlign") ===
-																	"right" && localStorage.getItem("currencyFormat")}
-															</b>{" "}
-															{localStorage.getItem("freeDeliverySuffixText")}
-														</div>
-													</React.Fragment>
-												)}
-										</div>
+										<div className="flex-auto">{localStorage.getItem("cartDeliveryCharges")}</div>
 										<div className="flex-auto text-right">
 											{localStorage.getItem("currencySymbolAlign") === "left" &&
 												localStorage.getItem("currencyFormat")}
@@ -298,7 +233,6 @@ class BillDetails extends Component {
 												localStorage.getItem("currencyFormat")}
 										</div>
 									</div>
-
 									<hr />
 								</React.Fragment>
 							)}

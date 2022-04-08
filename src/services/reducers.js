@@ -10,7 +10,7 @@ import totalReducer from "./total/reducer";
 import couponReducer from "./coupon/reducer";
 import userReducer from "./user/reducer";
 import pagesReducer from "./pages/reducer";
-import searchReducer from "./searchRestaurants/reducer";
+import restaurantSearchReducer from "./searchRestaurants/reducer";
 import addressesReducer from "./addresses/reducer";
 import checkoutReducer from "./checkout/reducer";
 import confirmCartReducer from "./confirmCart/reducer";
@@ -42,7 +42,7 @@ export default combineReducers({
 	coupon: couponReducer,
 	user: userReducer,
 	pages: pagesReducer,
-	searches: searchReducer,
+	restaurants: restaurantSearchReducer,
 	addresses: addressesReducer,
 	checkout: checkoutReducer,
 	confirmCart: confirmCartReducer,

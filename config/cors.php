@@ -21,13 +21,7 @@ return [
      * You can enable CORS for 1 or multiple paths.
      * Example: ['api/*']
      */
-    'paths' => [
-        'api/*',
-        'callandorder/login-as-customer',
-        'callandorder/login-as-customer/*',
-        'callandorder/register-guest-user',
-        'callandorder/register-guest-user/*',
-    ],
+    'paths' => ['api/*'],
 
     /*
      * Matches the request method. `[*]` allows all methods.
@@ -62,5 +56,5 @@ return [
     /*
      * Sets the Access-Control-Allow-Credentials header.
      */
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 ];

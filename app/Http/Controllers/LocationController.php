@@ -13,8 +13,8 @@ class LocationController extends Controller
     public function popularGeoLocations(Request $request)
     {
         $locations = PopularGeoPlace::where('is_active', '1')
-            ->orderBy('is_default', "DESC")
-            ->get();
+            ->get()
+            ->take(20);
 
         // sleep(5);
         return response()->json($locations);

@@ -3,8 +3,8 @@
 namespace App;
 
 use Event;
-use Spatie\EloquentSortable\Sortable;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
 
 class Slide extends Model implements Sortable
@@ -51,15 +51,5 @@ class Slide extends Model implements Sortable
     {
         $this->is_active = !$this->is_active;
         return $this;
-    }
-
-    public function restaurant()
-    {
-        return $this->belongsTo('App\Restaurant');
-    }
-
-    public function item()
-    {
-        return $this->belongsTo('App\Item');
     }
 }

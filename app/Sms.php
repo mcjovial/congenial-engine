@@ -22,16 +22,16 @@ class Sms
      * @param null $message
      * @return mixed
      */
-    public function processSmsAction($actionType, $phone, $otp = null, $message = null, $smsForDelivery = null)
+    public function processSmsAction($actionType, $phone, $otp = null, $message = null)
     {
         // Selects Default Gateway
-        $gateway = config('setting.defaultSmsGateway');
+        $gateway = config('settings.defaultSmsGateway');
 
         switch ($gateway) {
 
             case '1':
                 try {
-                    $response = $this->msg91($actionType, $phone, $otp, $message, $smsForDelivery);
+                    $response = $this->msg91($actionType, $phone, $otp, $message);
                 } catch (Exception $e) {
                     $response = [
                         'success' => false,
@@ -52,8 +52,10 @@ class Sms
                 }
 
                 break;
+
         }
         return $response;
+
     }
 
     /**
@@ -63,24 +65,17 @@ class Sms
      * @param $message
      * @return mixed
      */
-    private function msg91($actionType, $phone, $otp, $message, $smsForDelivery = null)
+    private function msg91($actionType, $phone, $otp, $message)
     {
-        $authkey = config('setting.msg91AuthKey');
-        $sender_id = config('setting.msg91SenderId');
+        $authkey = config('settings.msg91AuthKey');
+        $sender_id = config('settings.msg91SenderId');
 
         switch ($actionType) {
 
             case 'OTP':
-                $otp = rand(111111, 999999);
-                $message = config('setting.otpMessage') . ' ' . $otp;
+                $otp = rand(11111, 99999);
+                $message = config('settings.otpMessage') . ' ' . $otp;
                 $this->saveOtp($phone, $otp);
-
-                $msg_dlt_template_id = config('setting.msg91OtpDltTemplateId');
-                if ($msg_dlt_template_id == null) {
-                    $curlPost = "{ \"sender\": \"$sender_id\", \"route\": \"4\", \"sms\": [ { \"message\": \"$message\", \"to\": [ \"$phone\" ] } ] }";
-                } else {
-                    $curlPost = "{ \"DLT_TE_ID\": \"$msg_dlt_template_id\", \"sender\": \"$sender_id\", \"route\": \"4\", \"sms\": [ { \"message\": \"$message\", \"to\": [ \"$phone\" ] } ] }";
-                }
 
                 break;
 
@@ -90,20 +85,9 @@ class Sms
                 break;
 
             case 'OD_NOTIFY':
-
-                if ($smsForDelivery) {
-                    $msg_dlt_template_id = config('setting.msg91NewOrderDeliveryDltTemplateId');
-                } else {
-                    $msg_dlt_template_id = config('setting.msg91NewOrderDltTemplateId');
-                }
-
-                if ($msg_dlt_template_id == null) {
-                    $curlPost = "{ \"sender\": \"$sender_id\", \"route\": \"4\", \"sms\": [ { \"message\": \"$message\", \"to\": [ \"$phone\" ] } ] }";
-                } else {
-                    $curlPost = "{ \"DLT_TE_ID\": \"$msg_dlt_template_id\", \"sender\": \"$sender_id\", \"route\": \"4\", \"sms\": [ { \"message\": \"$message\", \"to\": [ \"$phone\" ] } ] }";
-                }
-
+                // Do Nothing Just Send
                 break;
+
         }
 
         $phone = preg_replace('/[^0-9]/', '', $phone);
@@ -117,7 +101,7 @@ class Sms
             CURLOPT_TIMEOUT => 30,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => $curlPost,
+            CURLOPT_POSTFIELDS => "{ \"sender\": \"$sender_id\", \"route\": \"4\", \"sms\": [ { \"message\": \"$message\", \"to\": [ \"$phone\" ] } ] }",
             CURLOPT_SSL_VERIFYHOST => 0,
             CURLOPT_SSL_VERIFYPEER => 0,
             CURLOPT_HTTPHEADER => array(
@@ -135,6 +119,7 @@ class Sms
         } else {
             return true;
         }
+
     }
 
     /**
@@ -146,15 +131,15 @@ class Sms
      */
     private function twilio($actionType, $phone, $otp, $message)
     {
-        $sid = config('setting.twilioSid');
-        $token = config('setting.twilioAccessToken');
-        $from = config('setting.twilioFromPhone');
+        $sid = config('settings.twilioSid');
+        $token = config('settings.twilioAccessToken');
+        $from = config('settings.twilioFromPhone');
 
         switch ($actionType) {
 
             case 'OTP':
-                $otp = rand(111111, 999999);
-                $message = config('setting.otpMessage') . ' ' . $otp;
+                $otp = rand(11111, 99999);
+                $message = config('settings.otpMessage') . ' ' . $otp;
                 $this->saveOtp($phone, $otp);
 
                 break;
@@ -233,6 +218,7 @@ class Sms
                 $response = [
                     'valid_otp' => true,
                 ];
+
             } else {
                 $response = [
                     'valid_otp' => false,
@@ -242,7 +228,9 @@ class Sms
             $response = [
                 'valid_otp' => false,
             ];
+
         }
         return $response;
     }
+
 }

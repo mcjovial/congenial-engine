@@ -5,10 +5,10 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
-                <span class="font-weight-bold mr-2">Total</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ count($pages) }} Pages</span>
+            <h4><i class="icon-circle-right2 mr-2"></i>
+                <span class="font-weight-bold mr-2">TOTAL</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ count($pages) }}</span>
+                <br>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
@@ -48,7 +48,8 @@
                             <td class="text-center">
                                 <div class="btn-group btn-group-justified">
                                     <a href="{{ route('admin.getEditPage', $page->id) }}"
-                                        class="btn btn-sm btn-primary"> Edit</a>
+                                        class="badge badge-primary badge-icon"> EDIT <i
+                                            class="icon-database-edit2 ml-1"></i></a>
                                 </div>
                             </td>
                         </tr>

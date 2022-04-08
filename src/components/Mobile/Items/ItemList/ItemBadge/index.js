@@ -4,7 +4,7 @@ class ItemBadge extends Component {
 	render() {
 		return (
 			<React.Fragment>
-				<span className="item-badge-collection">
+				<span>
 					{this.props.item.is_recommended === 1 ? (
 						<span
 							className="item-badge"

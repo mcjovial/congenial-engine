@@ -6,15 +6,12 @@
     @if(!empty($restaurants))
     <div class="row">
         <div class="form-group row mt-5">
-            <label class="col-lg-12 col-form-label"><span
-                    class="text-danger">*</span>{{__('storeDashboard.epSelectStore')}}:</label>
+            <label class="col-lg-12 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.epSelectStore')}}:</label>
             <div class="col-lg-12">
-                <select class="form-control select-search select" name="restaurant_id" required id="dynamic_select"
-                    style="height: 2.5rem;">
+                <select class="form-control select-search select" name="restaurant_id" required id="dynamic_select" style="height: 2.5rem;">
                     <option value="">{{__('storeDashboard.epSelect')}} </option>
                     @foreach ($restaurants as $restaurant)
-                    <option value="{{ route('restaurant.earnings') }}/{{ $restaurant->id }}" class="text-capitalize">
-                        {{ $restaurant->name }}</option>
+                    <option value="{{ route('restaurant.earnings') }}/{{ $restaurant->id }}" class="text-capitalize">{{ $restaurant->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -40,10 +37,8 @@
             <div class="col-xl-12 dashboard-display p-3">
                 <a class="block block-link-shadow text-right" href="javascript:void(0)">
                     <div class="block-content block-content-full clearfix">
-                        <div class="text-center" style="color: #717171; font-weight: 500;">
-                            {{__('storeDashboard.epNetEarningsBeforeCommission')}}</div>
-                        <div class="dashboard-display-number text-center">
-                            {{ config('setting.currencyFormat') }}{{ $balanceBeforeCommission }}</div>
+                        <div class="text-center" style="color: #717171; font-weight: 500;">{{__('storeDashboard.epNetEarningsBeforeCommission')}}</div>
+                        <div class="dashboard-display-number text-center">{{ config('settings.currencyFormat') }}{{ $balanceBeforeCommission }}</div>
                     </div>
                 </a>
             </div>
@@ -52,11 +47,8 @@
             <div class="col-xl-12 dashboard-display p-3">
                 <a class="block block-link-shadow text-right" href="javascript:void(0)">
                     <div class="block-content block-content-full clearfix">
-                        <div class="text-center" style="color: #717171; font-weight: 500;">
-                            {{__('storeDashboard.epYourBalanceAfterCommission')}}
-                            <strong>{{ $restaurant->commission_rate }}%)</strong></div>
-                        <div class="dashboard-display-number text-center">
-                            {{ config('setting.currencyFormat') }}{{ $balanceAfterCommission }}</div>
+                        <div class="text-center" style="color: #717171; font-weight: 500;">{{__('storeDashboard.epYourBalanceAfterCommission')}}  <strong>{{ $restaurant->commission_rate }}%)</strong></div>
+                        <div class="dashboard-display-number text-center">{{ config('settings.currencyFormat') }}{{ $balanceAfterCommission }}</div>
                     </div>
                 </a>
             </div>
@@ -65,10 +57,8 @@
             <div class="col-xl-12 dashboard-display p-3">
                 <a class="block block-link-shadow text-right" href="javascript:void(0)">
                     <div class="block-content block-content-full clearfix">
-                        <div class="text-center" style="color: #717171; font-weight: 500;">
-                            {{__('storeDashboard.epTotalValueBeforeCommission')}}</div>
-                        <div class="dashboard-display-number text-center">
-                            {{ config('setting.currencyFormat') }}{{ $totalEarning }}</div>
+                        <div class="text-center" style="color: #717171; font-weight: 500;">{{__('storeDashboard.epTotalValueBeforeCommission')}}</div>
+                        <div class="dashboard-display-number text-center">{{ config('settings.currencyFormat') }}{{ $totalEarning }}</div>
                     </div>
                 </a>
             </div>
@@ -87,48 +77,37 @@
     </div>
     <div class="container">
         <div class="row mt-5">
-            <div class="col-xl-12 p-3"
-                style="border-radius: 4px; background-color: #fff; box-shadow: 0 1px 6px 1px rgba(0, 0, 0, 0.05);">
+            <div class="col-xl-12 p-3" style="border-radius: 4px; background-color: #fff; box-shadow: 0 1px 6px 1px rgba(0, 0, 0, 0.05);">
                 <h4>
                     <strong>{{__('storeDashboard.epRequestPayout')}}</strong>
                 </h4>
 
-                @if(!((double)$balanceAfterCommission > (double)config('setting.minPayout')))
+                @if(!((double)$balanceAfterCommission > (double)config('settings.minPayout')))
                 <p>
-                    {{__('storeDashboard.epYourCurrentBalance')}}
-                    <strong>{{ config('setting.currencyFormat') }}{{$balanceAfterCommission}}</strong>.
-                    {{__('storeDashboard.epReqPayoutMessage')}}<strong>
-                        {{ config('setting.currencyFormat') }}{{ config('setting.minPayout') }}</strong>.
+                {{__('storeDashboard.epYourCurrentBalance')}} <strong>{{ config('settings.currencyFormat') }}{{$balanceAfterCommission}}</strong>. {{__('storeDashboard.epReqPayoutMessage')}}<strong> {{ config('settings.currencyFormat') }}{{ config('settings.minPayout') }}</strong>.
                 </p>
-                <i class="icon-exclamation"
-                    style="position: absolute; font-size: 5rem; color: #FF5722; right: 15px; top: 15px; opacity: 0.1;"></i>
+                <i class="icon-exclamation" style="position: absolute; font-size: 5rem; color: #FF5722; right: 15px; top: 15px; opacity: 0.1;"></i>
                 @else
-                <button class="btn btn-primary btn-lg" data-toggle="modal"
-                    data-target="#sendPayoutRequest">{{__('storeDashboard.epRequestPayout')}}</button>
-                <i class="icon-piggy-bank"
-                    style="position: absolute; font-size: 5rem; color: #FF5722; right: 15px; top: 15px; opacity: 0.1;"></i>
+                <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#sendPayoutRequest">{{__('storeDashboard.epRequestPayout')}}</button>
+                <i class="icon-piggy-bank" style="position: absolute; font-size: 5rem; color: #FF5722; right: 15px; top: 15px; opacity: 0.1;"></i>
 
                 <div id="sendPayoutRequest" class="modal fade mt-5" tabindex="-1">
                     <div class="modal-dialog modal-sm">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title"><span
-                                        class="font-weight-bold">{{__('storeDashboard.epRequestPayout')}}</span></h5>
+                                <h5 class="modal-title"><span class="font-weight-bold">{{__('storeDashboard.epRequestPayout')}}</span></h5>
                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                             </div>
                             <div class="modal-body">
                                 <span class="help-text">
-                                    {{__('storeDashboard.epYourRequest')}}
-                                    <strong>{{ config('setting.currencyFormat') }}{{$balanceAfterCommission}}</strong>
+                                {{__('storeDashboard.epYourRequest')}} <strong>{{ config('settings.currencyFormat') }}{{$balanceAfterCommission}}</strong>
                                 </span>
                                 <div class="modal-footer mt-4">
                                     <form method="POST" action="{{ route('restaurant.sendPayoutRequest') }}">
                                         <input type="hidden" name="restaurant_id" value={{$restaurant->id}}>
                                         @csrf
-                                        <button type="submit"
-                                            class="btn btn-primary">{{__('storeDashboard.epSendRequest')}}</button>
-                                        <button type="button" class="btn btn-danger"
-                                            data-dismiss="modal">{{__('storeDashboard.epCancelReq')}}</button>
+                                    <button type="submit" class="btn btn-primary">{{__('storeDashboard.epSendRequest')}}</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal">{{__('storeDashboard.epCancelReq')}}</button>
                                     </form>
                                 </div>
                             </div>
@@ -139,40 +118,39 @@
             </div>
         </div>
     </div>
-
+    
     @if(!empty($payoutRequests))
     <div class="container">
-        <div class="row mt-5 mb-5"
-            style="border-radius: 4px; background-color: #fff; box-shadow: 0 1px 6px 1px rgba(0, 0, 0, 0.05);">
+        <div class="row mt-5 mb-5" style="border-radius: 4px; background-color: #fff; box-shadow: 0 1px 6px 1px rgba(0, 0, 0, 0.05);">
             <div class="col-xl-12">
                 <h4 class="p-3">
                     <strong>
-                        {{ __('storeDashboard.epRequestPayouts') }}
+                        
                     </strong>
                 </h4>
-                <div class="table-responsive">
+                <div class="table-responsive" style="height: auto; min-height: 10rem;">
                     <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>
-                                    {{__('storeDashboard.epTableAmount')}}
+                                {{__('storeDashboard.epTableAmount')}}
                                 </th>
                                 <th>
-                                    {{__('storeDashboard.epTableStatus')}}
+                                {{__('storeDashboard.epTableStatus')}}
                                 </th>
                                 <th>
-                                    {{__('storeDashboard.epTableTransactionMode')}} </th>
+                                {{__('storeDashboard.epTableTransactionMode')}}                                </th>
                                 <th>
-                                    {{__('storeDashboard.epTableTransactionID')}}
+                                {{__('storeDashboard.epTableTransactionID')}}
                                 </th>
                                 <th>
-                                    {{__('storeDashboard.epTableMessage')}}
+                                {{__('storeDashboard.epTableMessage')}}
                                 </th>
                                 <th>
-                                    {{__('storeDashboard.epTableCreated')}}
+                                {{__('storeDashboard.epTableCreated')}}
                                 </th>
                                 <th>
-                                    {{__('storeDashboard.epTableUpdated')}}
+                                {{__('storeDashboard.epTableUpdated')}}
                                 </th>
                             </tr>
                         </thead>
@@ -180,9 +158,7 @@
                             @foreach($payoutRequests as $payoutRequest)
                             <tr>
                                 <td>{{ $payoutRequest->amount }}</td>
-                                <td><span
-                                        class="badge badge-flat border-grey-800 text-default text-capitalize">{{ $payoutRequest->status }}</span>
-                                </td>
+                                <td><span class="badge badge-flat border-grey-800 text-default text-capitalize">{{ $payoutRequest->status }}</span></td>
                                 <td>
                                     @if($payoutRequest->transaction_mode != NULL)
                                     {{ $payoutRequest->transaction_mode }}
@@ -197,17 +173,17 @@
                                     ----
                                     @endif
                                 </td>
-                                <td>
+                                 <td>
                                     @if($payoutRequest->message != NULL)
                                     {{ $payoutRequest->message }}
                                     @else
                                     ----
                                     @endif
                                 </td>
-                                <td>{{ $payoutRequest->created_at->format('Y-m-d  - h:i A') }}</td>
+                                <td>{{ $payoutRequest->created_at->diffForHumans() }}</td>
                                 <td>
                                     @if($payoutRequest->updated_at != NULL)
-                                    {{ $payoutRequest->updated_at->format('Y-m-d  - h:i A') }}
+                                    {{ $payoutRequest->updated_at->diffForHumans() }}
                                     @else
                                     ----
                                     @endif
@@ -271,7 +247,7 @@
         
                             // Vertical axis
                             yAxis: [{
-                                name: "{{__('storeDashboard.epChartEarningsIn')}} {{ config('setting.currencyFormat') }}",
+                                name: "{{__('storeDashboard.epChartEarningsIn')}} {{ config('settings.currencyFormat') }}",
                                 nameLocation: "end",
                                 type: 'value'
                             }],
@@ -279,7 +255,7 @@
                             // Add series
                             series: [
                                 {
-                                    name: "{{__('storeDashboard.epChartSalesIn')}} {{ config('setting.currencyFormat') }}",
+                                    name: "{{__('storeDashboard.epChartSalesIn')}} {{ config('settings.currencyFormat') }}",
                                     type: 'line',
                                     smooth: true,
                                     itemStyle: {normal: {areaStyle: {type: 'default'}}},

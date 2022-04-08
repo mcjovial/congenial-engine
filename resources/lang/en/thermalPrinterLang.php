@@ -18,8 +18,6 @@ return [
 
     'invoiceSettingsTitle' => 'Invoice Settings',
 
-    'printKotLabel' => 'Enable Kitchen Order Ticket Printing',
-
     /* Admin Only Strings */
     'adminInvoiceTitleLabel' => 'Invoice Title',
     'adminInvoiceSubTitleLabel' => 'Invoice Subtitle',
@@ -30,10 +28,6 @@ return [
 
     /* StoreOwner and Admin Strings */
     'automaticPrintingLabel' => 'Automatic Printing',
-    'automaticPrintingInfo' => 'Automatic Printing is only triggred while accepting a new order.',
-    'automaticPrintingDisabled' => 'Disabled',
-    'automaticPrintingOnlyInvoice' => 'Only Invoice',
-    'automaticPrintingBothInvoiceAndKot' => 'Both Invoice and KOT',
     'showStoreNameLabel' => 'Show Store Name',
     'showStoreAddressLabel' => 'Show Store Address',
     'showOrderIdLabel' => 'Show Order ID',
@@ -60,15 +54,7 @@ return [
     'customFooterTitleLabel' => 'Custom Footer Title',
     'customFooterSubTitleLabel' => 'Custom Footer SubTitle',
     'customFooterSubTitlePlaceholder' => 'Hit Enter to break into multiple lines',
-
-    'saveSettings' => 'Save Settings',
     /* END StoreOwner and Admin Strings */
 
-    'printInvoiceWithThermalPrinter' => 'Print Invoice',
-    'printKotWithThermalPrinter' => 'Print KOT',
-
-    'printCommandSentMessage' => 'Print command sent to the printer.',
-    'connectingToPrinterMessage' => 'Connecting to the local thermal printer server.',
-    'connectingToPrinterFailedMessage' => 'Could not connect to the local server for printing. Make sure the local thermal printer server is running.',
-    'connectionSuccessToLocalServer' => 'Thermal Printer Connection Successful',
+    'printWithThermalPrinter' => 'Print with Thermal Printer',
 ];

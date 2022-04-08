@@ -55,46 +55,33 @@ class CartCheckoutBlock extends Component {
 		checkCartItemsAvailability(cartProducts).then((response) => {
 			handleProcessCartLoading(false);
 			this.setState({ process_cart_loading: false });
-
 			if (response && response.length) {
-				let isSomeInactive = false;
-				response.map((arrItem) => {
-					//find the item in the cart
-					let item = cartProducts.find((item) => item.id === arrItem.id);
-					//get new price and is_active status and set it.
-					item.is_active = arrItem.is_active;
-					item.price = arrItem.price;
+				cartProducts
+					.filter(({ id }) => response.includes(id))
+					.map((item) => {
+						item.is_active = 0;
+						addProduct(item);
+						return item;
+					});
+				updateCart(this.props.cartProducts);
+				handleItemsAvailability(false); //all items not available
+			} else {
+				cartProducts.map((item) => {
+					item.is_active = 1;
 					addProduct(item);
-
-					if (!isSomeInactive) {
-						if (!arrItem.is_active) {
-							isSomeInactive = true;
-						}
-					}
 					return item;
 				});
-				if (isSomeInactive) {
-					updateCart(this.props.cartProducts);
-					handleItemsAvailability(false);
-				} else {
-					updateCart(this.props.cartProducts);
-					checkConfirmCart();
-					this.context.router.history.push("/checkout");
-				}
+				updateCart(this.props.cartProducts);
+				checkConfirmCart();
+				this.context.router.history.push("/checkout");
 			}
 		});
 	};
 
 	gotoNewAddressPage = () => {
-		const saveFromCart = new Promise((resolve) => {
-			localStorage.setItem("fromCart", 1);
-			resolve("Saved");
-		});
-		saveFromCart.then(() => {
-			this.context.router.history.push("/search-location");
-		});
+		localStorage.setItem("fromCart", 1);
+		this.context.router.history.push("/search-location");
 	};
-
 	gotoMyAddressPage = () => {
 		localStorage.setItem("fromCart", 1);
 		this.context.router.history.push("/my-addresses");
@@ -118,42 +105,22 @@ class CartCheckoutBlock extends Component {
 				>
 					{user.success ? (
 						user.data.default_address == null ? (
-							<React.Fragment>
-								{localStorage.getItem("userSelected") === "SELFPICKUP" && (
-									<div style={{ marginTop: "1.6rem" }}>
-										<div
-											onClick={this.processCart}
-											className="btn btn-lg btn-make-payment"
-											style={{
-												backgroundColor: localStorage.getItem("cartColorBg"),
-												color: localStorage.getItem("cartColorText"),
-												position: "relative",
-											}}
-										>
-											{localStorage.getItem("checkoutSelectPayment")}
-											<Ink duration={400} />
-										</div>
-									</div>
-								)}
-								{localStorage.getItem("userSelected") === "DELIVERY" && (
-									<div className="p-15">
-										<h2 className="almost-there-text m-0 pb-5">
-											{localStorage.getItem("cartSetYourAddress")}
-										</h2>
-										<button
-											onClick={this.gotoNewAddressPage}
-											className="btn btn-lg btn-continue"
-											style={{
-												position: "relative",
-												backgroundColor: localStorage.getItem("storeColor"),
-											}}
-										>
-											{localStorage.getItem("buttonNewAddress")}
-											<Ink duration={500} />
-										</button>
-									</div>
-								)}
-							</React.Fragment>
+							<div className="p-15">
+								<h2 className="almost-there-text m-0 pb-5">
+									{localStorage.getItem("cartSetYourAddress")}
+								</h2>
+								<button
+									onClick={this.gotoNewAddressPage}
+									className="btn btn-lg btn-continue"
+									style={{
+										position: "relative",
+										backgroundColor: localStorage.getItem("storeColor"),
+									}}
+								>
+									{localStorage.getItem("buttonNewAddress")}
+									<Ink duration={500} />
+								</button>
+							</div>
 						) : (
 							<React.Fragment>
 								{(localStorage.getItem("userSelected") === "DELIVERY" ||
@@ -182,7 +149,6 @@ class CartCheckoutBlock extends Component {
 										</div>
 									</React.Fragment>
 								)}
-
 								<React.Fragment>
 									{this.props.is_operational ? (
 										<div style={{ marginTop: "1.6rem" }}>

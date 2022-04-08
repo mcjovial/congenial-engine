@@ -13,12 +13,6 @@ class DeliveryGuyDetail extends Model
     protected $hidden = ['id', 'created_at', 'updated_at', 'gender'];
 
     /**
-     * @var array
-     */
-    protected $casts = [
-        'status' => 'integer',
-    ];
-    /**
      * @return mixed
      */
     public function users()

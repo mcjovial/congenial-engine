@@ -175,7 +175,6 @@ return [
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
-        App\Providers\RouterServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         // Tymon\JWTAuth\Providers\JWTAuthServiceProvider::class,
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
@@ -187,7 +186,6 @@ return [
         Lab404\Impersonate\ImpersonateServiceProvider::class,
         App\Providers\AgentServiceProvider::class,
         Anand\LaravelPaytmWallet\PaytmWalletServiceProvider::class,
-        App\Providers\ViewServiceProvider::class,
     ],
 
     /*
@@ -249,7 +247,6 @@ return [
             'APP_KEY',
             'DB_HOST',
             'DB_PORT',
-            'DB_DATABASE',
             'DB_USERNAME',
             'DB_PASSWORD',
             'REDIS_PASSWORD',

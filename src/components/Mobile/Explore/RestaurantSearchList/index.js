@@ -7,6 +7,8 @@ import LazyLoad from "react-lazyload";
 class RestaurantSearchList extends Component {
 	render() {
 		const { restaurants } = this.props;
+		// console.log(restaurants);
+
 		return (
 			<React.Fragment>
 				<div className="bg-white mb-50 mt-30">
@@ -39,7 +41,7 @@ class RestaurantSearchList extends Component {
 										</span>
 									)}
 									<div className="text-center restaurant-meta mt-5 d-flex align-items-center justify-content-between text-muted">
-										<div className="col-2 p-0 text-left store-rating-block">
+										<div className="col-2 p-0 text-left">
 											<i
 												className={`fa fa-star pr-1 ${!restaurant.is_active &&
 													"restaurant-not-active"}`}
@@ -47,13 +49,13 @@ class RestaurantSearchList extends Component {
 													color: localStorage.getItem("storeColor"),
 												}}
 											/>{" "}
-											{restaurant.avgRating === "0" ? restaurant.rating : restaurant.avgRating}
+											{restaurant.rating}
 										</div>
-										<div className="col-4 p-0 text-center store-distance-block">
+										<div className="col-4 p-0 text-center">
 											<i className="si si-clock" /> {restaurant.delivery_time}{" "}
 											{localStorage.getItem("homePageMinsText")}
 										</div>
-										<div className="col-6 p-0 text-center store-avgprice-block">
+										<div className="col-6 p-0 text-center">
 											<i className="si si-wallet" />{" "}
 											{localStorage.getItem("currencySymbolAlign") === "left" && (
 												<React.Fragment>

@@ -5,10 +5,9 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
+            <h4><i class="icon-circle-right2 mr-2"></i>
                 <span class="font-weight-bold mr-2">Editing</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $coupon->name }} - {{ $coupon->code }}</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $coupon->name }} <i class="icon-circle-right2 mx-1"></i> {{ $coupon->code }}</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
@@ -26,76 +25,65 @@
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon Name:</label>
                         <div class="col-lg-9">
-                            <input value="{{ $coupon->name }}" type="text" class="form-control form-control-lg"
-                                name="name" placeholder="Coupon Name" required>
+                            <input value="{{ $coupon->name }}" type="text" class="form-control form-control-lg" name="name"
+                                placeholder="Coupon Name" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label">Coupon Description:</label>
                         <div class="col-lg-9">
-                            <input value="{{ $coupon->description }}" type="text" class="form-control form-control-lg"
-                                name="description" placeholder="Coupon Description">
+                            <input value="{{ $coupon->description }}" type="text" class="form-control form-control-lg" name="description"
+                                placeholder="Coupon Description">
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon Code:</label>
                         <div class="col-lg-9">
-                            <input value="{{ $coupon->code }}" type="text" class="form-control form-control-lg"
-                                name="code" placeholder="Coupon Code" required>
+                            <input value="{{ $coupon->code }}" type="text" class="form-control form-control-lg" name="code"
+                                placeholder="Coupon Code" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Dicount Type:</label>
                         <div class="col-lg-9">
                             <select class="form-control select-search select" name="discount_type" required>
-                                <option value="AMOUNT" class="text-capitalize" @if($coupon->discount_type == "AMOUNT")
-                                    selected="selected" @endif>
-                                    Fixed Amount Discount
-                                </option>
-                                <option value="PERCENTAGE" class="text-capitalize" @if($coupon->discount_type ==
-                                    "PERCENTAGE") selected="selected" @endif>
-                                    Percentage Discount
-                                </option>
+                            <option value="AMOUNT" class="text-capitalize" @if($coupon->discount_type == "AMOUNT") selected="selected" @endif>
+                            Fixed Amount Discount
+                            </option>
+                            <option value="PERCENTAGE" class="text-capitalize" @if($coupon->discount_type == "PERCENTAGE") selected="selected" @endif>
+                            Percentage Discount
+                            </option>
                             </select>
                         </div>
                     </div>
-                    <div class="form-group row @if($coupon->discount_type ==" AMOUNT") hidden @endif" id="max_discount">
+                    <div class="form-group row @if($coupon->discount_type =="AMOUNT") hidden @endif" id="max_discount">
                         <label class="col-lg-3 col-form-label">Max Discount</label>
                         <div class="col-lg-9">
                             <input type="text" class="form-control form-control-lg max_discount" name="max_discount"
-                                placeholder="Max discount applicable in {{ config('setting.currencyFormat') }}"
-                                value="{{ $coupon->max_discount }}">
+                                placeholder="Max discount applicable in {{ config('settings.currencyFormat') }}" value="{{ $coupon->max_discount }}">
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon
-                            Discount:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon Discount:</label>
                         <div class="col-lg-9">
-                            <input value="{{ $coupon->discount }}" type="text"
-                                class="form-control form-control-lg discount" name="discount"
+                            <input value="{{ $coupon->discount }}" type="text" class="form-control form-control-lg discount" name="discount"
                                 placeholder="Coupon Discount" required>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="row">
-                            <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Expiry
-                                Date:</label>
+                            <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Expiry Date:</label>
                             <div class="col-lg-9">
-                                <input type="text" class="form-control form-control-lg daterange-single"
-                                    value="{!! $coupon->expiry_date->format('m-d-Y') !!}" name="expiry_date">
+                                <input type="text" class="form-control form-control-lg daterange-single" value="{!! $coupon->expiry_date->format('m-d-Y') !!}" name="expiry_date">
                             </div>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon Applicable
-                            Stores:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon Applicable Stores:</label>
                         <div class="col-lg-9">
-                            <select class="form-control select-search couponStoreSelect" name="restaurant_id[]" required
-                                multiple="multiple" id="storeSelect">
+                            <select class="form-control select-search couponStoreSelect" name="restaurant_id[]" required multiple="multiple" id="storeSelect">
                                 @foreach ($restaurants as $restaurant)
-                                <option value="{{ $restaurant->id }}" class="text-capitalize"
-                                    {{ isset($coupon) && in_array($restaurant->id, $couponAssignedRestaurants) ? 'selected' : '' }}>
-                                    {{ $restaurant->name }}</option>
+                                <option value="{{ $restaurant->id }}" class="text-capitalize" {{ isset($coupon) && in_array($restaurant->id, $coupon->restaurants()->pluck('restaurant_id')->toArray()) ? 'selected' : '' }}>{{ $restaurant->name }}</option>
                                 @endforeach
                             </select>
                             <input type="checkbox" id="selectAllStores"><span class="ml-1">Select All Stores</span>
@@ -116,8 +104,7 @@
                         <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Max number of
                             use in total:</label>
                         <div class="col-lg-9">
-                            <input value="{{ $coupon->max_count }}" type="text"
-                                class="form-control form-control-lg max_count" name="max_count"
+                            <input value="{{ $coupon->max_count }}" type="text" class="form-control form-control-lg max_count" name="max_count"
                                 placeholder="Max number of use in total" required>
                         </div>
                     </div>
@@ -125,8 +112,7 @@
                         <label class="col-lg-3 col-form-label">Min Subtotal</label>
                         <div class="col-lg-9">
                             <input type="text" class="form-control form-control-lg min_subtotal" name="min_subtotal"
-                                placeholder="Min subtotal required for coupon in {{ config('setting.currencyFormat') }}"
-                                value="{{ $coupon->min_subtotal }}">
+                                placeholder="Min subtotal required for coupon in {{ config('settings.currencyFormat') }}" value="{{ $coupon->min_subtotal }}">
                         </div>
                     </div>
                     <div class="form-group row">
@@ -137,37 +123,30 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon User
-                            Type</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon User Type</label>
                         <div class="col-lg-9">
-                            <select class="form-control select-search select" name="user_type" required>
-                                <option value="ALL" class="text-capitalize" @if($coupon->user_type == "ALL")
-                                    selected="selected" @endif>
-                                    Unlimited times for all users
-                                </option>
-                                <option value="ONCENEW" class="text-capitalize" @if($coupon->user_type == "ONCENEW")
-                                    selected="selected" @endif>
-                                    Once for new user for first order
-                                </option>
-                                <option value="ONCE" class="text-capitalize" @if($coupon->user_type == "ONCE")
-                                    selected="selected" @endif>
-                                    Once per user
-                                </option>
-                                <option value="CUSTOM" class="text-capitalize" @if($coupon->user_type == "CUSTOM")
-                                    selected="selected" @endif>
-                                    Define custom limit per user
-                                </option>
-                            </select>
-                        </div>
+                        <select class="form-control select-search select" name="user_type" required>
+                            <option value="ALL" class="text-capitalize" @if($coupon->user_type == "ALL") selected="selected" @endif>
+                                Unlimited times for all users
+                            </option>
+                            <option value="ONCENEW" class="text-capitalize" @if($coupon->user_type == "ONCENEW") selected="selected" @endif>
+                                Once for new user for first order
+                            </option>
+                            <option value="ONCE" class="text-capitalize" @if($coupon->user_type == "ONCE") selected="selected" @endif>
+                                Once per user
+                            </option>
+                            <option value="CUSTOM" class="text-capitalize" @if($coupon->user_type == "CUSTOM") selected="selected" @endif>
+                                Define custom limit per user
+                            </option>
+                         </select>
+                     </div>
                     </div>
-                    <div class="form-group row @if($coupon->user_type != " CUSTOM") hidden @endif" id="maxUsePerUser">
+                    <div class="form-group row @if($coupon->user_type != "CUSTOM") hidden @endif" id="maxUsePerUser">
                         <label class="col-lg-3 col-form-label">Max number of
                             use per user:</label>
                         <div class="col-lg-9">
-                            <input type="text" class="form-control form-control-lg max_count_per_user"
-                                name="max_count_per_user" placeholder="Max number of use per user"
-                                @if($coupon->user_type == "CUSTOM") required="required" @endif
-                            value="{{ $coupon->max_count_per_user }}">
+                            <input type="text" class="form-control form-control-lg max_count_per_user" name="max_count_per_user"
+                                placeholder="Max number of use per user" @if($coupon->user_type == "CUSTOM") required="required" @endif value="{{ $coupon->max_count_per_user }}">
                         </div>
                     </div>
                     <script>
@@ -186,23 +165,21 @@
                         <label class="col-lg-3 col-form-label">Is Active?</label>
                         <div class="col-lg-9 d-flex align-items-center">
                             <div class="checkbox checkbox-switchery">
-                                <input value="true" type="checkbox" class="switchery-primary isactive"
-                                    @if($coupon->is_active) checked="checked" @endif name="is_active">
+                                <input value="true" type="checkbox" class="switchery-primary isactive" @if($coupon->is_active) checked="checked" @endif name="is_active">
                             </div>
                         </div>
                     </div>
                     @csrf
                     <div class="text-left">
-                        <a class="btn btn-danger text-white" data-toggle="modal" data-target="#deleteCouponConfirmModal"
-                            id="deleteCouponButton">
-                            DELETE
-                            <i class="icon-trash ml-1"></i>
+                        <a class="btn btn-danger text-white" data-toggle="modal" data-target="#deleteCouponConfirmModal" id="deleteCouponButton">
+                        DELETE
+                        <i class="icon-trash ml-1"></i>
                         </a>
                     </div>
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            UPDATE
-                            <i class="icon-database-insert ml-1"></i>
+                        UPDATE
+                        <i class="icon-database-insert ml-1"></i>
                         </button>
                     </div>
                 </form>

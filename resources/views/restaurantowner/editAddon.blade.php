@@ -5,10 +5,9 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
+            <h4><i class="icon-circle-right2 mr-2"></i>
                 <span class="font-weight-bold mr-2">{{__('storeDashboard.apeTitleEditing')}}</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $addon->name }}</span>
+                <span class="badge badge-primary badge-pill animated flipInX">"{{ $addon->name }}"</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
@@ -20,36 +19,29 @@
             <div class="card-body">
                 <form action="{{ route('restaurant.updateAddon') }}" method="POST" enctype="multipart/form-data">
                     <legend class="font-weight-semibold text-uppercase font-size-sm">
-                        <i class="icon-list2 mr-2"></i> {{__('storeDashboard.apeTitleDetails')}}
+                        <i class="icon-address-book mr-2"></i> {{__('storeDashboard.apeTitleDetails')}}
                     </legend>
                     <input type="hidden" name="id" value="{{ $addon->id }}">
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.apeLabelName')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.apeLabelName')}}:</label>
                         <div class="col-lg-9">
-                            <input value="{{ $addon->name }}" type="text" class="form-control form-control-lg"
-                                name="name" placeholder="{{__('storeDashboard.apePlaceHolderName')}}" required>
+                            <input value="{{ $addon->name }}" type="text" class="form-control form-control-lg" name="name"
+                                placeholder="{{__('storeDashboard.apePlaceHolderName')}}" required>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.apeLabelPrice')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.apeLabelPrice')}}:</label>
                         <div class="col-lg-9">
-                            <input value="{{ $addon->price }}" type="text" class="form-control form-control-lg price"
-                                name="price"
-                                placeholder="{{__('storeDashboard.apePlaceHolderPrice')}} {{ config('setting.currencyFormat') }}"
-                                required>
+                            <input value="{{ $addon->price }}" type="text" class="form-control form-control-lg price" name="price"
+                                placeholder="{{__('storeDashboard.apePlaceHolderPrice')}} {{ config('settings.currencyFormat') }}" required>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.apInputAddonCategory')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.apInputAddonCategory')}}:</label>
                         <div class="col-lg-9">
                             <select class="form-control select-search" name="addon_category_id" required>
                                 @foreach ($addonCategories as $addonCategory)
-                                <option value="{{ $addonCategory->id }}" class="text-capitalize" @if($addon->
-                                    addon_category->id == $addonCategory->id) selected="selected" @endif
-                                    >{{ $addonCategory->name }}</option>
+                                <option value="{{ $addonCategory->id }}" class="text-capitalize" @if($addon->addon_category->id == $addonCategory->id) selected="selected" @endif >{{ $addonCategory->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -57,8 +49,8 @@
                     @csrf
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            {{__('storeDashboard.update')}}
-                            <i class="icon-database-insert ml-1"></i>
+                        {{__('storeDashboard.update')}}
+                        <i class="icon-database-insert ml-1"></i>
                         </button>
                     </div>
                 </form>

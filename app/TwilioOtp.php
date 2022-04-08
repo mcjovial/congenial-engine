@@ -12,9 +12,9 @@ class TwilioOtp
      */
     public function sendOtp($phone)
     {
-        $sid = config('setting.twilioSid');
-        $token = config('setting.twilioAccessToken');
-        $verification_service = config('setting.twilioServiceId');
+        $sid = config('settings.twilioSid');
+        $token = config('settings.twilioAccessToken');
+        $verification_service = config('settings.twilioServiceId');
 
         $twilio = new Client($sid, $token);
 
@@ -37,17 +37,16 @@ class TwilioOtp
      */
     public function verifyOtp($otp, $phone)
     {
-        $sid = config('setting.twilioSid');
-        $token = config('setting.twilioAccessToken');
-        $verification_service = config('setting.twilioServiceId');
+        $sid = config('settings.twilioSid');
+        $token = config('settings.twilioAccessToken');
+        $verification_service = config('settings.twilioServiceId');
 
         $twilio = new Client($sid, $token);
 
         try {
             $verification_check = $twilio->verify->v2->services($verification_service)
                 ->verificationChecks
-                ->create(
-                    $request->otp, // code
+                ->create($request->otp, // code
                     array('to' => $request->phone) //phone number to verify
                 );
 

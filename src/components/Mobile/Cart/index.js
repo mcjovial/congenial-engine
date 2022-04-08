@@ -27,8 +27,6 @@ import { GoogleApiWrapper } from "google-maps-react";
 import Loading from "../../helpers/loading";
 import UserBan from "../UserBan";
 import { removeCoupon } from "../../../services/coupon/actions";
-import Swing from "react-reveal/Swing";
-import OrderScheduling from "../Modules/OrderScheduling";
 
 class Cart extends Component {
 	static contextTypes = {
@@ -83,19 +81,13 @@ class Cart extends Component {
 			});
 
 			this.setState({
-				tips: localStorage.getItem("tips") !== null && localStorage.getItem("tips").split(","),
-				tips_percentage:
-					localStorage.getItem("tips_percentage") !== null &&
-					localStorage.getItem("tips_percentage").split(","),
-				tipsAmountSetting:
-					localStorage.getItem("showTipsAmount") !== null &&
-					JSON.parse(localStorage.getItem("showTipsAmount").toLowerCase()),
-				tipsPercentageSetting:
-					localStorage.getItem("showTipsPercentage") !== null &&
-					JSON.parse(localStorage.getItem("showTipsPercentage").toLowerCase()),
+				tips: localStorage.getItem("tips").split(","),
+				tips_percentage: localStorage.getItem("tips_percentage").split(","),
+				tipsAmountSetting: JSON.parse(localStorage.getItem("showTipsAmount").toLowerCase()),
+				tipsPercentageSetting: JSON.parse(localStorage.getItem("showTipsPercentage").toLowerCase()),
 			});
 
-			// console.log(localStorage.getItem("userSelected"));
+			console.log(localStorage.getItem("userSelected"));
 			if (localStorage.getItem("userSelected") === "SELFPICKUP") {
 				this.setState({ is_tips_show: true });
 			} else {
@@ -127,6 +119,18 @@ class Cart extends Component {
 			this.checkForItemsAvailability();
 		}
 
+		if (localStorage.getItem("activeRestaurant") !== null && this.props.cartProducts.length > 0) {
+			this.props.getRestaurantInfoById(localStorage.getItem("activeRestaurant")).then((response) => {
+				if (response) {
+					if (response.payload.id) {
+						if (!user.success) {
+							this.__doesRestaurantOperatesAtThisLocation(response.payload);
+						}
+					}
+				}
+			});
+		}
+
 		if (user.success) {
 			this.props.checkUserRunningOrder(user.data.id, user.data.auth_token);
 			if (this.props.cartProducts.length > 0) {
@@ -147,10 +151,11 @@ class Cart extends Component {
 								resolve("Address Saved");
 							});
 							saveUserSetAddress.then(() => {
-								this.initRestaurantInfoApi();
+								this.__doesRestaurantOperatesAtThisLocation(this.props.restaurant_info);
 							});
+							// localStorage.setItem("userSetAddress", JSON.stringify(userSetAddress));
 						} else {
-							this.initRestaurantInfoApi();
+							this.__doesRestaurantOperatesAtThisLocation(this.props.restaurant_info);
 						}
 					} else {
 						console.warn("Failed to fetch update user info... Solution: Reload Page");
@@ -158,20 +163,7 @@ class Cart extends Component {
 				});
 			}
 		} else {
-			this.initRestaurantInfoApi();
 			this.setState({ alreadyRunningOrders: false });
-		}
-	};
-
-	initRestaurantInfoApi = () => {
-		if (localStorage.getItem("activeRestaurant") !== null && this.props.cartProducts.length > 0) {
-			this.props.getRestaurantInfoById(localStorage.getItem("activeRestaurant")).then((response) => {
-				if (response) {
-					if (response.payload.id) {
-						this.__doesRestaurantOperatesAtThisLocation(response.payload);
-					}
-				}
-			});
 		}
 	};
 
@@ -272,6 +264,7 @@ class Cart extends Component {
 						console.log("Distance:", distance);
 						self.setState(
 							{ distance: distance, process_distance_calc_loading: false },
+							// self.__processRestaurantOperationalState(distance, restaurant_info)
 							self.__processRestaurantOperationalState(
 								restaurant_info.id,
 								user.data.default_address.latitude,
@@ -346,7 +339,6 @@ class Cart extends Component {
 			console.log("Distance -> ", this.state.distance);
 		}
 	};
-
 	__processRestaurantOperationalState = (id, lat, lng) => {
 		this.props.getRestaurantInfoAndOperationalStatus(id, lat, lng).then((response) => {
 			if (response) {
@@ -364,7 +356,6 @@ class Cart extends Component {
 			}
 		});
 	};
-
 	__isRestaurantActive = (restaurant_info) => {
 		if (restaurant_info.is_active) {
 			this.setState({
@@ -399,28 +390,23 @@ class Cart extends Component {
 			this.handleProcessCartLoading(false);
 			this.setState({ process_cart_loading: false });
 			if (response && response.length) {
-				let isSomeInactive = false;
-				response.map((arrItem) => {
-					//find the item in the cart
-					let item = cartProducts.find((item) => item.id === arrItem.id);
-
-					//get new price and is_active status and set it.
-					item.is_active = arrItem.is_active;
-					item.price = arrItem.price;
+				//get inactive items and mark as is_active 0
+				cartProducts
+					.filter(({ id }) => response.includes(id))
+					.map((item) => {
+						item.is_active = 0;
+						addProduct(item);
+						return item;
+					});
+				this.handleItemsAvailability(false);
+			} else {
+				//if response length is 0 that means all items in cart are available, make all active
+				cartProducts.map((item) => {
+					item.is_active = 1;
 					addProduct(item);
-
-					if (!isSomeInactive) {
-						if (!arrItem.is_active) {
-							isSomeInactive = true;
-						}
-					}
 					return item;
 				});
-				if (isSomeInactive) {
-					this.handleItemsAvailability(false);
-				} else {
-					this.handleItemsAvailability(true);
-				}
+				this.handleItemsAvailability(true);
 			}
 			updateCart(this.props.cartProducts);
 		});
@@ -517,7 +503,7 @@ class Cart extends Component {
 		if (!this.props.cartProducts.length) {
 			document.getElementsByTagName("body")[0].classList.remove("bg-grey");
 		}
-		const { cartTotal, cartProducts, restaurant_info, user } = this.props;
+		const { cartTotal, cartProducts, restaurant_info } = this.props;
 
 		return (
 			<React.Fragment>
@@ -567,14 +553,6 @@ class Cart extends Component {
 									))}
 
 								<RestaurantInfoCart restaurant={restaurant_info} />
-
-								{user.success &&
-									parseInt(restaurant_info.is_schedulable) === 1 &&
-									parseInt(restaurant_info.accept_scheduled_orders) === 1 &&
-									localStorage.getItem("enableOrderSchedulingOnCustomer") === "true" &&
-									restaurant_info.schedule_data !== null &&
-									this.state.is_active && <OrderScheduling restaurant={restaurant_info} />}
-
 								<div className="p-15">
 									<div
 										className="block-content block-content-full bg-white pt-10 pb-5"
@@ -741,18 +719,15 @@ class Cart extends Component {
 										</div>
 									)}
 								</div>
-
-								{Object.keys(this.props.restaurant_info).length > 0 && (
-									<div>
-										<BillDetails
-											total={cartTotal.totalPrice}
-											distance={this.state.distance}
-											alreadyRunningOrders={this.state.alreadyRunningOrders}
-											tips={this.state.selectedTips}
-											removeTip={this.removeTip}
-										/>
-									</div>
-								)}
+								<div>
+									<BillDetails
+										total={cartTotal.totalPrice}
+										distance={this.state.distance}
+										alreadyRunningOrders={this.state.alreadyRunningOrders}
+										tips={this.state.selectedTips}
+										removeTip={this.removeTip}
+									/>
+								</div>
 
 								{this.state.is_operational_loading ? (
 									<Loading />
@@ -804,15 +779,11 @@ class Cart extends Component {
 							</React.Fragment>
 						) : (
 							<div className="bg-white cart-empty-block">
-								<Swing>
-									<div className="d-flex justify-content-center">
-										<img
-											className="cart-empty-img"
-											src="/assets/img/various/cart-empty.png"
-											alt={localStorage.getItem("cartEmptyText")}
-										/>
-									</div>
-								</Swing>
+								<img
+									className="cart-empty-img"
+									src="/assets/img/cart-empty.png"
+									alt={localStorage.getItem("cartEmptyText")}
+								/>
 								<h2 className="cart-empty-text mt-50 text-center">
 									{localStorage.getItem("cartEmptyText")}
 								</h2>
@@ -831,7 +802,6 @@ class Cart extends Component {
 										</DelayLink>
 									</div>
 								)}
-
 								<Footer active_cart={true} />
 							</div>
 						)}

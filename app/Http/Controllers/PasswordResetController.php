@@ -12,8 +12,6 @@ class PasswordResetController extends Controller
     /**
      * @param Request $request
      */
-
-    //for customer application
     public function sendPasswordResetMail(Request $request)
     {
         $user = User::where('email', $request->email)->first();
@@ -34,8 +32,8 @@ class PasswordResetController extends Controller
 
                 //send the mail to the requested user's email
                 Mail::send('emails.passwordReset', ['mailData' => $data], function ($message) use ($data) {
-                    $message->subject(config('setting.passwordResetEmailSubject'));
-                    $message->from(config('setting.sendEmailFromEmailAddress'), config('setting.sendEmailFromEmailName'));
+                    $message->subject(config('settings.passwordResetEmailSubject'));
+                    $message->from(config('settings.sendEmailFromEmailAddress'), config('settings.sendEmailFromEmailName'));
                     $message->to($data['email']);
                 });
 
@@ -66,6 +64,7 @@ class PasswordResetController extends Controller
                 ];
                 return response()->json($response);
             }
+
         }
 
         $response = [
@@ -74,12 +73,12 @@ class PasswordResetController extends Controller
             'error_code' => 'UNF', //User Not Found
         ];
         return response()->json($response);
+
     }
 
     /**
      * @param $value
      */
-    //for customer application
     public function verifyPasswordResetOtp(Request $request)
     {
         //get the user from email
@@ -106,6 +105,7 @@ class PasswordResetController extends Controller
                     ];
                     return response()->json($response);
                 }
+
             } else {
                 $response = [
                     'success' => false,
@@ -121,12 +121,12 @@ class PasswordResetController extends Controller
             'error_code' => 'UNF', //User Not Found
         ];
         return response()->json($response);
+
     }
 
     /**
      * @param Request $request
      */
-    //for customer application
     public function changeUserPassword(Request $request)
     {
 
@@ -153,6 +153,7 @@ class PasswordResetController extends Controller
                         ];
                         return response()->json($response);
                     }
+
                 } else {
                     $response = [
                         'success' => false,
@@ -161,6 +162,7 @@ class PasswordResetController extends Controller
                     ];
                     return response()->json($response);
                 }
+
             } else {
                 $response = [
                     'success' => false,
@@ -177,5 +179,7 @@ class PasswordResetController extends Controller
             ];
             return response()->json($response);
         }
+
     }
+
 }

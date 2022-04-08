@@ -1,5 +1,4 @@
-[
-	{
+[{
 		"key": "storeColor",
 		"value": "#fc8019"
 	},
@@ -1274,6 +1273,58 @@
 		"value": "true"
 	},
 	{
+		"key": "rarModEnHomeBanner",
+		"value": "true"
+	},
+	{
+		"key": "rarModShowBannerRestaurantName",
+		"value": "true"
+	},
+	{
+		"key": "rarModHomeBannerPosition",
+		"value": "2"
+	},
+	{
+		"key": "rarModHomeBannerBgColor",
+		"value": "rgb(255, 235, 59)"
+	},
+	{
+		"key": "rarModHomeBannerTextColor",
+		"value": "rgb(0, 0, 0)"
+	},
+	{
+		"key": "rarModHomeBannerStarsColor",
+		"value": "rgb(255, 162, 0)"
+	},
+	{
+		"key": "rarModHomeBannerText",
+		"value": "Rate and Review"
+	},
+	{
+		"key": "rarModRatingPageTitle",
+		"value": "Rate Your Order"
+	},
+	{
+		"key": "rarModDeliveryRatingTitle",
+		"value": "Rate the Delivery"
+	},
+	{
+		"key": "rarModRestaurantRatingTitle",
+		"value": "Rate the Restaurant"
+	},
+	{
+		"key": "rarReviewBoxTitle",
+		"value": "Your Feedback"
+	},
+	{
+		"key": "rarReviewBoxTextPlaceHolderText",
+		"value": "Write your feedback here (optional)"
+	},
+	{
+		"key": "rarSubmitButtonText",
+		"value": "Submit"
+	},
+	{
 		"key": "showPercentageDiscount",
 		"value": "true"
 	},
@@ -1291,7 +1342,7 @@
 	},
 	{
 		"key": "updatingMessage",
-		"value": "Updating..."
+		"value": "Updating System"
 	},
 	{
 		"key": "userNotFoundErrorMessage",
@@ -1876,381 +1927,5 @@
 	{
 		"key": "deliveryLastSevenDaysEarningTitle",
 		"value": "Last 7 Days Earning"
-	},
-	{
-		"key": "cartRemoveTipText",
-		"value": "Remove Tip"
-	},
-	{
-		"key": "cartTipAmountPlaceholderText",
-		"value": "Tip Amount"
-	},
-	{
-		"key": "cartTipPercentagePlaceholderText",
-		"value": "Tip percentage"
-	},
-	{
-		"key": "showTryItOnPhone",
-		"value": "true"
-	},
-	{
-		"key": "desktopTryItOnPhoneTitle",
-		"value": "Try it on your phone"
-	},
-	{
-		"key": "desktopTryItOnPhoneSubTitle",
-		"value": "to get the ultimate experience."
-	},
-	{
-		"key": "orderAmountPaidWithWallet",
-		"value": "Paid with wallet"
-	},
-	{
-		"key": "orderAmountRemainingToPay",
-		"value": "Amount remaining to pay"
-	},
-	{
-		"key": "deliveryToggleLightDarkMode",
-		"value": "Toggle Light/Dark Mode"
-	},
-	{
-		"key": "flutterwavePublicKey",
-		"value": null
-	},
-	{
-		"key": "checkoutFlutterwaveText",
-		"value": "Flutterwave"
-	},
-	{
-		"key": "checkoutFlutterwaveSubText",
-		"value": "Pay with Flutterwave"
-	},
-	{
-		"key": "cartDeliveryTypeChangeButtonText",
-		"value": "Change"
-	},
-	{
-		"key": "cartChooseDeliveryTypeTitle",
-		"value": "Choose Delivery Type"
-	},
-	{
-		"key": "accountMyFavouriteStores",
-		"value": "My Favourites"
-	},
-	{
-		"key": "favouriteStoresPageTitle",
-		"value": "My Favourite Stores"
-	},
-	{
-		"key": "cartReplaceItemTitle",
-		"value": "Replace items already in the cart?"
-	},
-	{
-		"key": "cartReplaceItemSubTitle",
-		"value": "Your cart contains items from other store. Do you want to discard the selection and add items from this store?"
-	},
-	{
-		"key": "cartReplaceItemActionNo",
-		"value": "No"
-	},
-	{
-		"key": "cartReplaceItemActionYes",
-		"value": "Yes"
-	},
-	{
-		"key": "showAddonPricesOnCart",
-		"value": "false"
-	},
-	{
-		"key": "cartDeliveryTypeOptionAvailableText",
-		"value": "This store provides both Delivery and Self-Pickup options."
-	},
-	{
-		"key": "cartDeliveryTypeSelectedText",
-		"value": "You have selected"
-	},
-	{
-		"key": "showCustomerVatNumber",
-		"value": "false"
-	},
-	{
-		"key": "accountTaxVatText",
-		"value": "Tax/VAT Number"
-	},
-	{
-		"key": "customerVatSave",
-		"value": "Save"
-	},
-	{
-		"key": "showPwaInstallPromptFooter",
-		"value": "true"
-	},
-	{
-		"key": "pwaInstallFooterMessage",
-		"value": "Would you like to install this application on your phone?"
-	},
-	{
-		"key": "pwaInstallFooterInstallText",
-		"value": "Install"
-	},
-	{
-		"key": "msg91OtpDltTemplateId",
-		"value": null
-	},
-	{
-		"key": "msg91NewOrderDltTemplateId",
-		"value": null
-	},
-	{
-		"key": "msg91NewOrderDeliveryDltTemplateId",
-		"value": null
-	},
-	{
-		"key": "reviewsPageTitle",
-		"value": "Reviews"
-	},
-	{
-		"key": "rarModRatingPageTitle",
-		"value": "Rate your order"
-	},
-	{
-		"key": "rarModDeliveryRatingTitle",
-		"value": "Rate the Delivery"
-	},
-	{
-		"key": "rarReviewBoxTitleDeliveryFeedback",
-		"value": "Your Feedback"
-	},
-	{
-		"key": "rarModRestaurantRatingTitle",
-		"value": "Rate the Store"
-	},
-	{
-		"key": "rarReviewBoxTitleStoreFeedback",
-		"value": "Your Feedback"
-	},
-	{
-		"key": "rarReviewBoxTextPlaceHolderText",
-		"value": "Your Feedback"
-	},
-	{
-		"key": "orderRateOrderButton",
-		"value": "Rate Order"
-	},
-	{
-		"key": "ratingsRequiredMessage",
-		"value": "Rating is required"
-	},
-	{
-		"key": "rarSubmitButtonText",
-		"value": "Submit"
-	},
-	{
-		"key": "checkoutKhaltiText",
-		"value": "Pay with Khalti"
-	},
-	{
-		"key": "checkoutKhaltiSubText",
-		"value": "Pay with Credit/Debit Card or Khalti Wallet"
-	},
-	{
-		"key": "cashChangeTitle",
-		"value": "Enter cash change amount"
-	},
-	{
-		"key": "cashChangeInputPlaceholder",
-		"value": "Cash change amount"
-	},
-	{
-		"key": "cashChangeConfirmButton",
-		"value": "Confirm"
-	},
-	{
-		"key": "cashChangeHelpText",
-		"value": "Leave the field empty if you don't require any cash change for Cash On Delivery of your order."
-	},
-	{
-		"key": "showCashChange",
-		"value": "false"
-	},
-	{
-		"key": "khaltiPublicKey",
-		"value": null
-	},
-	{
-		"key": "khaltiSecretKey",
-		"value": null
-	},
-	{
-		"key": "sortDeliveryStoresByDistance",
-		"value": "false"
-	},
-	{
-		"key": "deliveryAppRequestedCashChangeMsg",
-		"value": "Requested cash change:"
-	},
-	{
-		"key": "deliveryAppYouAreOnlineBtn",
-		"value": "You are Online"
-	},
-	{
-		"key": "deliveryAppYouAreOfflineBtn",
-		"value": "You are Offline"
-	},
-	{
-		"key": "checkoutMessageOnProcess",
-		"value": "Please do not close or reload this page"
-	},
-	{
-		"key": "sendOrderInvoiceOverEmail",
-		"value": "false"
-	},
-	{
-		"key": "orderInvoiceEmailSubject",
-		"value": "Invoice for Order: "
-	},
-	{
-		"key": "checkoutMessageOnIdle",
-		"value": null
-	},
-	{
-		"key": "enCODonSF",
-		"value": "false"
-	},
-	{
-		"key": "enableOrderSchedulingOnCustomer",
-		"value": "true"
-	},
-	{
-		"key": "enFixedNumberOfDays",
-		"value": "false"
-	},
-	{
-		"key": "orderSchedulingFutureDays",
-		"value": "7"
-	},
-	{
-		"key": "modOSScheduleThisOrderText",
-		"value": "Schedule this order"
-	},
-	{
-		"key": "modOSScheduleForText",
-		"value": "Schedule for "
-	},
-	{
-		"key": "modOSSelectDateTimeText",
-		"value": "Select Date and Time"
-	},
-	{
-		"key": "modOSDoneBtnText",
-		"value": "Done"
-	},
-	{
-		"key": "modOSRemoveBtnText",
-		"value": "Remove"
-	},
-	{
-		"key": "enOLnR",
-		"value": "false"
-	},
-	{
-		"key": "scheduledOrderStatusText",
-		"value": "Scheduled Order"
-	},
-	{
-		"key": "modOSSlotNotAvalText",
-		"value": "No Slots Available"
-	},
-	{
-		"key": "confirmedOrderStatusText",
-		"value": "Order Confirmed"
-	},
-	{
-		"key": "minsBeforeScheduleOrderProcessed",
-		"value": "30"
-	},
-	{
-		"key": "allowStoreOwnersPlaceLoginOrders",
-		"value": "false"
-	},
-	{
-		"key": "razorpayWebhookSecret",
-		"value": null
-	},
-	{
-		"key": "adminCustomCss",
-		"value": null
-	},
-	{
-		"key": "useGpsMessage",
-		"value": "Turning on Device Location will ensure accurate address and hassle free delivery"
-	},
-	{
-		"key": "useGpsButtonText",
-		"value": "Use GPS"
-	},
-	{
-		"key": "moduleRedownloadNotice",
-		"value": "false"
-	},
-	{
-		"key": "freeDeliveryPrefixText",
-		"value": "Add items worth"
-	},
-	{
-		"key": "freeDeliverySuffixText",
-		"value": "more to avail free delivery 😍"
-	},
-	{
-		"key": "awaitingPaymentThreshold",
-		"value": "15"
-	},
-	{
-		"key": "awaitingPaymentTimerText",
-		"value": "Order will be marked as Payment Failed in: "
-	},
-	{
-		"key": "hideCustomerDetailsFromStoreOwner",
-		"value": "false"
-	},
-	{
-		"key": "adminDailyTargetRevenue",
-		"value": "3500"
-	},
-	{
-		"key": "intentDomains",
-		"value": "api.whatsapp.com, chat.whatsapp.com, wa.me, v.whatsapp.com, youtu.be, m.youtube.com, youtube.com, www.youtube.com, mailto, tel, www.instagram.com, instagram.com, ig.me, applink.instagram.com, maps.google.com, local.google.com, telegram.dog, t.me, telegram.me, m.me, www.m.me, www.msngr.com, msngr.com, www.fb.me, fb.me, play.google.com, market.google.com, assistant.google.com, whatsapp"
-	},
-	{
-		"key": "iHaveFoodomaaAndroidApp",
-		"value": "false"
-	},
-	{
-		"key": "iHaveFoodomaaDeliveryApp",
-		"value": "false"
-	},
-	{
-		"key": "iHaveFoodomaaStoreApp",
-		"value": false
-	},
-	{
-		"key": "razorpayMerchantId",
-		"value": null
-	},
-	{
-		"key": "lastFoodomaaNewsFetchTime",
-		"value": null
-	},
-	{
-		"key": "hasSocketPush",
-		"value": false
-	},
-	{
-		"key": "firebaseRealtimeDatabaseUrl",
-		"value": null
-	},
-	{
-		"key": "storeAppPrimaryColor",
-		"value": "#EC5B23"
 	}
 ]

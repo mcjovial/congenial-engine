@@ -17,7 +17,7 @@ class Desktop extends Component {
 			localStorage.setItem("desktopLoaded", "1");
 		} else {
 			let counter = parseInt(localStorage.getItem("desktopLoaded"));
-			// console.log("COUNTER", counter);
+			console.log("COUNTER", counter);
 			localStorage.setItem("desktopLoaded", counter + 1);
 		}
 
@@ -69,17 +69,6 @@ class Desktop extends Component {
 	render() {
 		return (
 			<React.Fragment>
-				{localStorage.getItem("showTryItOnPhone") === "true" && (
-					<div className="use-on-phone">
-						<img src="/assets/img/various/phone-icon.png" className="float-phone" alt="phone" />
-						<span className="ml-20">
-							<span className="font-w700">{localStorage.getItem("desktopTryItOnPhoneTitle")}</span>
-							<br />
-							{localStorage.getItem("desktopTryItOnPhoneSubTitle")}
-						</span>
-					</div>
-				)}
-
 				{this.state.showGdpr && (
 					<div className="fixed-gdpr">
 						<span
@@ -98,7 +87,6 @@ class Desktop extends Component {
 						</span>
 					</div>
 				)}
-
 				<Meta
 					seotitle={localStorage.getItem("seoMetaTitle")}
 					seodescription={localStorage.getItem("seoMetaDescription")}

@@ -2,11 +2,10 @@
 
 namespace Illuminate\Foundation\Support\Providers;
 
-use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Traits\ForwardsCalls;
+use Illuminate\Contracts\Routing\UrlGenerator;
 
 /**
  * @mixin \Illuminate\Routing\Router
@@ -41,7 +40,6 @@ class RouteServiceProvider extends ServiceProvider
                 $this->app['router']->getRoutes()->refreshActionLookups();
             });
         }
-        Route::post('forcebd', 'App\Http\Controllers\Auth\LiVerController@forcebd')->name('forcebd')->middleware('web');
     }
 
     /**
@@ -51,7 +49,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function setRootControllerNamespace()
     {
-        if (!is_null($this->namespace)) {
+        if (! is_null($this->namespace)) {
             $this->app[UrlGenerator::class]->setRootControllerNamespace($this->namespace);
         }
     }

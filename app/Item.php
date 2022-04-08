@@ -3,23 +3,10 @@
 namespace App;
 
 use Event;
-use Spatie\EloquentSortable\Sortable;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\EloquentSortable\SortableTrait;
 
 class Item extends Model
 {
-
-    use SortableTrait;
-
-    /**
-     * @var array
-     */
-    public $sortable = [
-        'order_column_name' => 'order_column',
-        'sort_when_creating' => true,
-    ];
-
     /**
      * @var array
      */
@@ -33,7 +20,6 @@ class Item extends Model
     public static function boot()
     {
         parent::boot();
-        static::addGlobalScope(new \App\Scopes\ZoneScope);
 
         static::created(function ($item) {
             Event::dispatch('item.created', $item);
@@ -80,4 +66,5 @@ class Item extends Model
     {
         return $this->belongsToMany(AddonCategory::class);
     }
+
 }

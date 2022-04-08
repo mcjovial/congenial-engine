@@ -23,6 +23,16 @@ Configuration
                 <p style="color: #fff"> {{ implode('', $errors->all(':message')) }} </p>
             </div>
         @endif
+        <div class="configure-form">
+            <div class="form-group {{ $errors->has('db.purchase_code') ? 'has-error': '' }}">
+                <label class="control-label col-sm-3" for="host">Purchase Code <span>*</span></label>
+                <div class="col-sm-9">
+                    <input type="text" value="{{ old('db.purchase_code') }}" name="db[purchase_code]" placeholder="You will get a purchase code when you buy from CodeCanyon" id="purchase_code" class="form-control" autofocus /> {!!
+                    $errors->first('db.purchase_code', ' <span class="help-block">:message</span>') !!}
+                    <span class="help-text"><a href="https://help.market.envato.com/hc/en-us/articles/202822600-Where-Is-My-Purchase-Code-" target="_blank">How to get my Purchase Code?</a></p></span>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="box">
         <p>Enter your database connection details.</p>

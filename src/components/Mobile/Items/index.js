@@ -1,10 +1,5 @@
 import React, { Component } from "react";
-import {
-	getRestaurantInfo,
-	getRestaurantItems,
-	getRestaurantInfoForLoggedInUser,
-	resetInfo,
-} from "../../../services/items/actions";
+import { getRestaurantInfo, getRestaurantItems } from "../../../services/items/actions";
 
 import FloatCart from "../FloatCart";
 import ItemList from "./ItemList";
@@ -36,49 +31,44 @@ class Items extends Component {
 
 		//if currentLocation doesnt exists in localstorage then redirect the user to firstscreen
 		//else make API calls
-		const { user } = this.props;
-		let info = user.success
-			? this.props.getRestaurantInfoForLoggedInUser(this.props.restaurant)
-			: this.props.getRestaurantInfo(this.props.restaurant);
-		if (info) {
-			info.then((response) => {
-				if (response) {
-					if (response.payload.id) {
-						//get items
-						this.props.getRestaurantItems(this.props.restaurant);
-					} else {
-						//404, redirect to homepage
-						this.context.router.history.push("/");
-					}
 
-					if (response.payload.delivery_type === 1) {
-						localStorage.setItem("userSelected", "DELIVERY");
-					}
-					if (response.payload.delivery_type === 2) {
-						localStorage.setItem("userSelected", "SELFPICKUP");
-					}
-					if (
-						response.payload.delivery_type === 3 &&
-						localStorage.getItem("userPreferredSelection") === "DELIVERY"
-					) {
-						// localStorage.setItem("userSelected", "DELIVERY");
-					}
-					if (
-						response.payload.delivery_type === 3 &&
-						localStorage.getItem("userPreferredSelection") === "SELFPICKUP"
-					) {
-						// localStorage.setItem("userSelected", "SELFPICKUP");
-					}
-					if (response.payload.is_active === "undefined") {
-						this.setState({ loading: true });
-					}
-					if (response.payload.is_active === 1 || response.payload.is_active === 0) {
-						this.setState({ loading: false });
-						this.setState({ is_active: response.payload.is_active });
-					}
+		this.props.getRestaurantInfo(this.props.restaurant).then((response) => {
+			if (response) {
+				if (response.payload.id) {
+					//get items
+					this.props.getRestaurantItems(this.props.restaurant);
+				} else {
+					//404, redirect to homepage
+					this.context.router.history.push("/");
 				}
-			});
-		}
+
+				if (response.payload.delivery_type === 1) {
+					localStorage.setItem("userSelected", "DELIVERY");
+				}
+				if (response.payload.delivery_type === 2) {
+					localStorage.setItem("userSelected", "SELFPICKUP");
+				}
+				if (
+					response.payload.delivery_type === 3 &&
+					localStorage.getItem("userPreferredSelection") === "DELIVERY"
+				) {
+					localStorage.setItem("userSelected", "DELIVERY");
+				}
+				if (
+					response.payload.delivery_type === 3 &&
+					localStorage.getItem("userPreferredSelection") === "SELFPICKUP"
+				) {
+					localStorage.setItem("userSelected", "SELFPICKUP");
+				}
+				if (response.payload.is_active === "undefined") {
+					this.setState({ loading: true });
+				}
+				if (response.payload.is_active === 1 || response.payload.is_active === 0) {
+					this.setState({ loading: false });
+					this.setState({ is_active: response.payload.is_active });
+				}
+			}
+		});
 
 		if (localStorage.getItem("userSelected") === null) {
 			localStorage.setItem("userSelected", "DELIVERY");
@@ -136,18 +126,14 @@ class Items extends Component {
 	};
 
 	componentWillUnmount() {
-		this.props.resetInfo();
 		document.removeEventListener("mousedown", this.handleClickOutside);
 		document.getElementsByTagName("html")[0].classList.remove("page-inactive");
-		document.getElementsByTagName("html")[0].classList.remove("noscroll");
-		document.getElementsByTagName("body")[0].classList.remove("noscroll");
 	}
 
 	render() {
 		if (window.innerWidth > 768) {
 			return <Redirect to="/" />;
 		}
-
 		// if (localStorage.getItem("storeColor") === null) {
 		// 	return <Redirect to={"/"} />;
 		// }
@@ -174,8 +160,6 @@ class Items extends Component {
 						data={this.props.restaurant_items}
 						restaurant={this.props.restaurant_info}
 						menuClicked={this.state.menuClicked}
-						shouldItemsListUpdate={localStorage.getItem("cleared")}
-						restaurant_backup_items={this.props.restaurant_backup_items}
 					/>
 				</div>
 				{this.props.restaurant_info.certificate && (
@@ -258,8 +242,6 @@ const mapStateToProps = (state) => ({
 	settings: state.settings.settings,
 	languages: state.languages.languages,
 	language: state.languages.language,
-	user: state.user.user,
-	restaurant_backup_items: state.items.restaurant_backup_items,
 });
 
 export default connect(
@@ -270,7 +252,5 @@ export default connect(
 		getSettings,
 		getAllLanguages,
 		getSingleLanguageData,
-		getRestaurantInfoForLoggedInUser,
-		resetInfo,
 	}
 )(Items);

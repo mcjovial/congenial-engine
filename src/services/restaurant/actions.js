@@ -4,7 +4,6 @@ import {
 	GET_RESTAURANTS_CATEGORIES,
 	GET_DELIVERY_RESTAURANTS,
 	GET_SELFPICKUP_RESTAURANTS,
-	GET_FAVORITE_RESTAURANTS,
 } from "./actionTypes";
 import {
 	CHECK_RESTAURANT_OPERATION_SERVICE_URL,
@@ -12,7 +11,6 @@ import {
 	GET_FILTERED_RESTAURANTS_URL,
 	GET_DELIVERY_RESTAURANTS_URL,
 	GET_SELFPICKUP_RESTAURANTS_URL,
-	GET_FAVORITE_RESTAURANTS_URL,
 } from "../../configs";
 import Axios from "axios";
 
@@ -95,30 +93,4 @@ export const getSelfpickupRestaurants = (lat, lng) => (dispatch) => {
 		.catch(function(error) {
 			console.log(error);
 		});
-};
-
-export const getFavoriteRestaurants = (lat, lng) => (dispatch, getState) => {
-	return Axios.post(GET_FAVORITE_RESTAURANTS_URL, {
-		token: getState().user.user.data.auth_token,
-		latitude: lat,
-		longitude: lng,
-	})
-		.then((response) => {
-			const restaurants = response.data;
-			return dispatch({
-				type: GET_FAVORITE_RESTAURANTS,
-				payload: restaurants,
-			});
-		})
-		.catch(function(error) {
-			console.log(error);
-		});
-};
-
-export const clearRestaurantList = () => (dispatch) => {
-	const restaurants = [];
-	return dispatch({
-		type: GET_DELIVERY_RESTAURANTS,
-		payload: restaurants,
-	});
 };

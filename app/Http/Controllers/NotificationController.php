@@ -7,18 +7,26 @@ use App\PushToken;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Image;
 use Ixudra\Curl\Facades\Curl;
 
 class NotificationController extends Controller
 {
+    /**
+     * @param Request $request
+     */
     public function saveToken(Request $request)
     {
         $user = auth()->user();
         if ($user) {
-            $subscriber = PushToken::where('token', $request->push_token)->first();
-            if (!$subscriber) {
+            $pushToken = PushToken::where('user_id', $user->id)->first();
+
+            if ($pushToken) {
+                //update the existing token
+                $pushToken->token = $request->push_token;
+                $pushToken->save();
+            } else {
+                //create new token for user
                 $pushToken = new PushToken();
                 $pushToken->token = $request->push_token;
                 $pushToken->user_id = $user->id;
@@ -29,45 +37,6 @@ class NotificationController extends Controller
         }
         return response()->json(['success' => false], 401);
     }
-
-    public function saveTokenNoUser(Request $request)
-    {
-        $pushToken = new PushToken();
-        $pushToken->token = $request->push_token;
-        $pushToken->save();
-
-        $success = $request->push_token;
-        return response()->json($success);
-    }
-
-    public function updateAppTokenForUser(Request $request)
-    {
-        $user = auth()->user();
-        if ($user) {
-
-            $getAllTokens = PushToken::where('user_id', $user->id)->get();
-            if (count($getAllTokens) > 0) {
-                foreach ($getAllTokens as $userToken) {
-                    $userToken->delete();
-                }
-            }
-
-            $nullToken = PushToken::where('token', $request->push_token)->first();
-            if ($nullToken) {
-                $nullToken->delete();
-            }
-
-            $pushToken = new PushToken();
-            $pushToken->token = $request->push_token;
-            $pushToken->user_id = $user->id;
-            $pushToken->save();
-
-            $success = $request->push_token;
-            return response()->json($success);
-        }
-        return response()->json(['success' => false], 401);
-    }
-
     /**
      * @param Request $request
      */
@@ -97,46 +66,24 @@ class NotificationController extends Controller
 
     public function notifications()
     {
-        $usersCount = User::count();
-        $subscriberCount = PushToken::whereNotNull('user_id')->count();
-        $appUsers = PushToken::whereNull('user_id')->count();
+        $pushTokens = PushToken::all();
+        $count = count($pushTokens);
+        $users = User::all();
 
-        $countJunkData = Alert::whereDate('created_at', '<', Carbon::now()->subDays(7))->count();
+        $countJunkData = Alert::whereDate('created_at', '<', Carbon::now()->subDays(7))->get()->count();
 
         return view('admin.notifications', array(
-            'subscriberCount' => $subscriberCount,
-            'usersCount' => $usersCount,
-            'appUsers' => $appUsers,
+            'count' => $count,
+            'users' => $users,
             'countJunkData' => $countJunkData,
         ));
     }
 
-    public function getUsersToSendNotification(Request $request)
-    {
-        $search = $request->search;
-
-        if ($search == '') {
-            $users = User::orderby('id', 'desc')->select('id', 'name', 'email')->limit(5)->get();
-        } else {
-            $users = User::orderby('name', 'asc')->select('id', 'name', 'email')->where('name', 'like', '%' . $search . '%')->limit(5)->get();
-        }
-
-        $response = array();
-        foreach ($users as $user) {
-            $response[] = array(
-                "id" => $user->id,
-                "text" => $user->name . ' (' . $user->email . ')',
-            );
-        }
-
-        return response()->json($response);
-    }
-
-
     public function deleteAlertsJunk()
     {
-        DB::statement('DELETE FROM alerts WHERE created_at < NOW() - INTERVAL 7 DAY;');
-        DB::statement('OPTIMIZE TABLE alerts;');
+        $junkData = Alert::whereDate('created_at', '<', Carbon::now()->subDays(7))->get()->take('25000')->pluck('id');
+
+        Alert::whereIn('id', $junkData)->delete();
 
         return redirect()->back()->with(['success' => 'Junk data deleted successfully.']);
     }
@@ -145,7 +92,7 @@ class NotificationController extends Controller
      */
     public function sendNotifiaction(Request $request)
     {
-        $secretKey = 'key=' . config('setting.firebaseSecret');
+        $secretKey = 'key=' . config('settings.firebaseSecret');
 
         $data = $request->except(['_token']);
 
@@ -178,13 +125,7 @@ class NotificationController extends Controller
 
         $data = substr($data, 0, -1);
 
-        //get all push tokens excluding delivery guys and store owners...
-        $toExclude = User::role(['Delivery Guy', 'Store Owner'])->pluck('id');
-        $pushTokens = PushToken::where('is_active', '1')
-            ->whereNotIn('user_id', $toExclude)
-            ->get(['token'])
-            ->pluck('token');
-
+        $pushTokens = PushToken::where('is_active', '1')->get(['token'])->pluck('token');
 
         if (count($pushTokens)) {
 
@@ -216,10 +157,12 @@ class NotificationController extends Controller
                     ->withHeader("Authorization: $secretKey")
                     ->withData($fullData)
                     ->post();
+                // $response = json_decode($response);
             }
         }
 
         return redirect()->back()->with(['success' => 'Notifications & Alerts Sent']);
+
     }
 
     /**
@@ -227,7 +170,7 @@ class NotificationController extends Controller
      */
     public function sendNotificationToSelectedUsers(Request $request)
     {
-        $secretKey = 'key=' . config('setting.firebaseSecret');
+        $secretKey = 'key=' . config('settings.firebaseSecret');
 
         $data = $request->except(['_token']);
 
@@ -281,8 +224,6 @@ class NotificationController extends Controller
             }
 
             $fullData = $data . $tokens;
-
-            \Log::info($fullData);
             $response = Curl::to('https://fcm.googleapis.com/fcm/send')
                 ->withHeader('Content-Type: application/json')
                 ->withHeader("Authorization: $secretKey")
@@ -294,54 +235,6 @@ class NotificationController extends Controller
             // return redirect()->back()->with(['success' => 'Success: ' . $response->success . ' & Failed: ' . $response->failure]);
         }
         return redirect()->back()->with(['success' => 'Notifications & Alerts Sent']);
-    }
-
-    public function sendNotificationToNonRegisteredAppUsers(Request $request)
-    {
-        $secretKey = 'key=' . config('setting.firebaseSecret');
-
-        $data = $request->except(['_token']);
-
-        $data = json_encode($data);
-
-        $data = substr($data, 0, -1);
-
-        $pushTokens = PushToken::where('user_id', null)->get(['token'])->pluck('token');
-
-        if (count($pushTokens)) {
-
-            $i = 0;
-            $len = count($pushTokens);
-            $last = $len - 1;
-
-            $chunks = $pushTokens->chunk(900)->toArray();
-            foreach ($chunks as $chunk) {
-
-                $i = 0;
-                $len = count($chunk);
-                $last = $len - 1;
-
-                $tokens = ', "registration_ids": [';
-
-                foreach ($chunk as $key => $value) {
-                    if ($i == $last) {
-                        $tokens .= '"' . $value . '"]}';
-                    } else {
-                        $tokens .= '"' . $value . '",';
-                    }
-                    $i++;
-                }
-                $fullData = $data . $tokens;
-
-                Curl::to('https://fcm.googleapis.com/fcm/send')
-                    ->withHeader('Content-Type: application/json')
-                    ->withHeader("Authorization: $secretKey")
-                    ->withData($fullData)
-                    ->post();
-            }
-        }
-
-        return redirect()->back()->with(['success' => 'Notifications set to Non-Registered App Users']);
     }
 
     /**

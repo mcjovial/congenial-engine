@@ -30,18 +30,18 @@ class PromoSlider extends Component {
 						</ContentLoader>
 					) : (
 						slides.map((slide) =>
-							slide.data.model === "3" ? (
+							slide.url.indexOf("http://") === 0 || slide.url.indexOf("https://") === 0 ? (
 								<a
 									href={slide.url}
 									className="slider-wrapper__img-wrapper"
-									key={slide.data.id}
+									key={slide.id}
 									style={{ position: "relative" }}
 								>
 									{/* if customURL then use anchor tag */}
 									<LazyLoad>
 										<img
-											src={slide.data.image}
-											alt={slide.data.name}
+											src={slide.image}
+											alt={slide.name}
 											className={`slider-wrapper__img slider-cust-img ${!secondarySlider &&
 												"slider-wrapper__img-shadow"} custom-promo-img`}
 											style={{
@@ -56,13 +56,13 @@ class PromoSlider extends Component {
 								<NavLink
 									to={"../" + slide.url}
 									className="slider-wrapper__img-wrapper"
-									key={slide.data.id}
+									key={slide.id}
 									style={{ position: "relative" }}
 								>
 									<LazyLoad>
 										<img
-											src={slide.data.image}
-											alt={slide.data.name}
+											src={slide.image}
+											alt={slide.name}
 											className={`slider-wrapper__img slider-cust-img ${!secondarySlider &&
 												"slider-wrapper__img-shadow"} custom-promo-img`}
 											style={{

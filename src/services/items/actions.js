@@ -4,12 +4,9 @@ import {
 	GET_RESTAURANT_ITEMS,
 	RESET_INFO,
 	RESET_ITEMS,
-	RESET_BACKUP,
 	SINGLE_ITEM,
 	SEARCH_ITEM,
 	CLEAR_SEARCH,
-	SET_FAVORITE_REST,
-	GET_RESTAURANT_INFO_FOR_LOGGED_IN_USER,
 } from "./actionTypes";
 
 import { FORCE_RELOAD } from "../helper/actionTypes";
@@ -20,8 +17,6 @@ import {
 	GET_RESTAURANT_ITEMS_URL,
 	GET_SINGLE_ITEM_URL,
 	GET_RESTAURANT_INFO_AND_OPERATIONAL_STATUS_URL,
-	ADD_TO_FAVORITE_RESTAURANT_URL,
-	GET_FAVORITE_RESTAURANT_FOR_LOGGED_IN_URL,
 } from "../../configs";
 
 import Axios from "axios";
@@ -46,24 +41,11 @@ export const getRestaurantInfoAndOperationalStatus = (id, latitude, longitude) =
 		});
 };
 
-export const getRestaurantInfo = (slug) => (dispatch, getState) => {
+export const getRestaurantInfo = (slug) => (dispatch) => {
 	return Axios.post(GET_RESTAURANT_INFO_URL + "/" + slug)
 		.then((response) => {
 			const restaurant_info = response.data;
 			return dispatch({ type: GET_RESTAURANT_INFO, payload: restaurant_info });
-		})
-		.catch(function(error) {
-			console.log(error);
-		});
-};
-
-export const getRestaurantInfoForLoggedInUser = (slug) => (dispatch, getState) => {
-	return Axios.post(GET_FAVORITE_RESTAURANT_FOR_LOGGED_IN_URL + "/" + slug, {
-		token: getState().user.user.data.auth_token,
-	})
-		.then((response) => {
-			const restaurant_info = response.data;
-			return dispatch({ type: GET_RESTAURANT_INFO_FOR_LOGGED_IN_USER, payload: restaurant_info });
 		})
 		.catch(function(error) {
 			console.log(error);
@@ -112,10 +94,6 @@ export const resetItems = () => (dispatch) => {
 	const empty = [];
 	return dispatch({ type: RESET_ITEMS, payload: empty });
 };
-export const resetBackup = () => (dispatch) => {
-	const empty = [];
-	return dispatch({ type: RESET_BACKUP, payload: empty });
-};
 
 export const resetInfo = () => (dispatch) => {
 	const empty = [];
@@ -125,14 +103,25 @@ export const resetInfo = () => (dispatch) => {
 export const searchItem = (itemList, itemName, searchFoundText, noResultText) => (dispatch, getState) => {
 	const searchResultText = searchFoundText + itemName;
 	const noSearchFoundText = noResultText + itemName;
+	// console.log(JSON.stringify(getState().items.restaurant_items.items));
 
+	// const state = getState().items.restaurant_items.items;
+	let arr = [];
 	let foodItems = [];
-
-	const searcher = new FuzzySearch(itemList, ["name"], {
-		caseSensitive: false,
-	});
-	foodItems = searcher.search(itemName);
-
+	if (itemList && [itemList].length >= 0) {
+		Object.keys(itemList).forEach((keys) => {
+			itemList[keys].forEach((itemsList) => {
+				arr.push(itemsList);
+				// foodItems = arr.filter((product) => {
+				// 	return product.name.toLowerCase().indexOf(itemName.toLowerCase()) !== -1;
+				// });
+				const searcher = new FuzzySearch(arr, ["name"], {
+					caseSensitive: false,
+				});
+				foodItems = searcher.search(itemName);
+			});
+		});
+	}
 	if (foodItems.length > 0) {
 		return dispatch({
 			type: SEARCH_ITEM,
@@ -148,18 +137,4 @@ export const searchItem = (itemList, itemName, searchFoundText, noResultText) =>
 
 export const clearSearch = (data) => (dispatch) => {
 	return dispatch({ type: CLEAR_SEARCH, payload: data });
-};
-
-export const setFavoriteRest = (token, rest_id) => (dispatch) => {
-	return Axios.post(ADD_TO_FAVORITE_RESTAURANT_URL, {
-		token: token,
-		id: rest_id,
-	})
-		.then((response) => {
-			const restaurant = response.data;
-			return dispatch({ type: SET_FAVORITE_REST, payload: restaurant });
-		})
-		.catch(function(error) {
-			console.log(error);
-		});
 };

@@ -9,11 +9,7 @@ class EarningDetails extends Component {
 				<div className="delivery-account-orders-block p-15 mb-20">
 					<div className="d-flex justify-content-between mb-2">
 						<div>
-							<h4
-								className={`mb-0 ${
-									localStorage.getItem("deliveryAppLightMode") === "true" ? "text-dark" : "text-white"
-								}`}
-							>
+							<h4 className="text-white mb-0">
 								{localStorage.getItem("currencySymbolAlign") === "left" &&
 									localStorage.getItem("currencyFormat")}
 								{transaction.amount / 100}

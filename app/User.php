@@ -1,28 +1,27 @@
 <?php
-
 namespace App;
 
 use Bavix\Wallet\Interfaces\Wallet;
 use Bavix\Wallet\Interfaces\WalletFloat;
 use Bavix\Wallet\Traits\HasWalletFloat;
-use ChristianKuri\LaravelFavorite\Traits\Favoriteability;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Lab404\Impersonate\Models\Impersonate;
 use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Database\Eloquent\Builder;
+use willvincent\Rateable\Rateable;
 
 class User extends Authenticatable implements JWTSubject, Wallet, WalletFloat
 {
-    use Notifiable, HasRoles, HasWalletFloat, Impersonate, Favoriteability;
+    use Notifiable, HasRoles, HasWalletFloat, Rateable, Impersonate;
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'auth_token', 'phone', 'default_address_id', 'user_ip',
+        'name', 'email', 'password', 'auth_token', 'phone', 'default_address_id', 'delivery_pin',
     ];
 
     /**
@@ -89,57 +88,9 @@ class User extends Authenticatable implements JWTSubject, Wallet, WalletFloat
     /**
      * @return mixed
      */
-    public function delivery_collections()
-    {
-        return $this->hasMany('App\DeliveryCollection');
-    }
-
-    /**
-     * @return mixed
-     */
     public function toggleActive()
     {
         $this->is_active = !$this->is_active;
         return $this;
-    }
-
-    public function zone()
-    {
-        return $this->belongsTo('App\Zone');
-    }
-
-    public function scopeNotRole(Builder $query, $roles, $guard = null)
-    {
-        if ($roles instanceof Collection) {
-            $roles = $roles->all();
-        }
-
-        if (!is_array($roles)) {
-            $roles = [$roles];
-        }
-
-        $roles = array_map(function ($role) use ($guard) {
-            if ($role instanceof Role) {
-                return $role;
-            }
-
-            $method = is_numeric($role) ? 'findById' : 'findByName';
-            $guard = $guard ?: $this->getDefaultGuardName();
-
-            return $this->getRoleClass()->{$method}($role, $guard);
-        }, $roles);
-
-        return $query->whereHas('roles', function ($query) use ($roles) {
-            $query->where(function ($query) use ($roles) {
-                foreach ($roles as $role) {
-                    $query->where(config('permission.table_names.roles') . '.id', '!=', $role->id);
-                }
-            });
-        });
-    }
-
-    public function todonote()
-    {
-        return $this->hasMany('App\TodoNote');
     }
 }

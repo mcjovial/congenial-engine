@@ -20,29 +20,7 @@ class Order extends Model
         'tax_amount' => 'float',
         'coupon_amount' => 'float',
         'sub_total' => 'float',
-        'is_ratable' => 'boolean',
-        'delivery_type' => 'integer',
-        'operation_areas' => 'array',
     ];
-
-    public static function boot()
-    {
-        parent::boot();
-        static::addGlobalScope(new \App\Scopes\ZoneScope);
-
-        static::updated(function ($order) {
-            if ($order->orderstatus_id == 2 || $order->orderstatus_id == 5 || $order->orderstatus_id == 6) {
-                if (config('setting.iHaveFoodomaaStoreApp') == "true") {
-                    if (config('setting.hasSocketPush') == 'true') {
-                        stopPlayingNotificationSoundStoreAppHelper($order);
-                    } else {
-                        $notify = new \App\PushNotify();
-                        $notify->stopPlayingNotificationSoundStoreApp($order->id);
-                    }
-                }
-            }
-        });
-    }
 
     /**
      * @return mixed
@@ -92,28 +70,4 @@ class Order extends Model
         return $this->hasOne('App\AcceptDelivery');
     }
 
-    public function is_completed()
-    {
-        if ($this->orderstatus_id == '5') {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * @return mixed
-     */
-    public function rating()
-    {
-        return $this->hasOne('App\Rating');
-    }
-
-    /**
-     * @return mixed
-     */
-    public function razorpay_data()
-    {
-        return $this->hasOne('App\RazorpayData');
-    }
 }

@@ -13,7 +13,6 @@ import { getSingleDeliveryOrder } from "../../../services/Delivery/singleorder/a
 import ShareLiveLocation from "../ShareLiveLocation";
 import ReactSwipeButton from "../../helpers/ReactSwipeButton";
 import Flip from "react-reveal/Flip";
-import { formatPrice } from "../../helpers/formatPrice";
 
 class ViewOrder extends Component {
 	static contextTypes = {
@@ -140,11 +139,10 @@ class ViewOrder extends Component {
 		if (order.tip_amount) {
 			total += parseFloat(order.tip_amount);
 		}
-		return formatPrice(total);
+		return total;
 	};
 
 	render() {
-		console.log(this.state);
 		if (window.innerWidth > 768) {
 			return <Redirect to="/" />;
 		}
@@ -177,12 +175,8 @@ class ViewOrder extends Component {
 							height={150}
 							width={400}
 							speed={1.2}
-							primaryColor={
-								localStorage.getItem("deliveryAppLightMode") === "true" ? "#E0E0E0" : "#161b31"
-							}
-							secondaryColor={
-								localStorage.getItem("deliveryAppLightMode") === "true" ? "#fefefe" : "#222b45"
-							}
+							primaryColor="#192038"
+							secondaryColor="#222b45"
 						>
 							<rect x="20" y="70" rx="4" ry="4" width="80" height="78" />
 							<rect x="144" y="85" rx="0" ry="0" width="115" height="18" />
@@ -196,7 +190,6 @@ class ViewOrder extends Component {
 								<div className="spin-load" />
 							</div>
 						)}
-
 						{!this.state.delivered && (
 							<React.Fragment>
 								{this.state.max_order && (
@@ -276,48 +269,7 @@ class ViewOrder extends Component {
 													</div>
 												</div>
 											)}
-
-											{order.cash_change_amount !== null && order.cash_change_amount !== "0" && (
-												<div className="p-15">
-													<div className="single-order-metas d-flex justify-content-between">
-														<div>
-															<i className="si si-calculator mr-5" />
-															{localStorage.getItem(
-																"deliveryAppRequestedCashChangeMsg"
-															)}{" "}
-															<b>
-																<React.Fragment>
-																	{localStorage.getItem("currencySymbolAlign") ===
-																		"left" &&
-																		localStorage.getItem("currencyFormat")}
-																	{order.cash_change_amount}
-																	{localStorage.getItem("currencySymbolAlign") ===
-																		"right" &&
-																		localStorage.getItem("currencyFormat")}
-																</React.Fragment>
-															</b>
-														</div>
-													</div>
-												</div>
 											)}
-											{order.schedule_slot !== null && (
-												<div className="p-15">
-													<div class="d-flex justify-content-between p-15 mb-3 delivery-scheduleSlot-block">
-														<div className="delivery-scheduleSlot-view-title">
-															<b>{localStorage.getItem("scheduledOrderStatusText")}</b>
-														</div>
-														<div className="delivery-scheduleSlot-view-slot">
-															<b>
-																{JSON.parse(order.schedule_date).day},{" "}
-																{JSON.parse(order.schedule_date).date} (
-																{JSON.parse(order.schedule_slot).open} -{" "}
-																{JSON.parse(order.schedule_slot).close})
-															</b>
-														</div>
-													</div>
-												</div>
-											)}
-
 											<div className="p-15">
 												<div className="single-order-metas d-flex justify-content-between">
 													<div>
@@ -404,14 +356,7 @@ class ViewOrder extends Component {
 														"true" && (
 														<React.Fragment>
 															<p>{order.order_comment}</p>
-															<p
-																className={`pull-right font-w700 h4 ${
-																	localStorage.getItem("deliveryAppLightMode") ===
-																	"true"
-																		? "text-dark"
-																		: "text-white"
-																}`}
-															>
+															<p className="pull-right font-w700 h4 text-white">
 																Total:{" "}
 																{localStorage.getItem("currencySymbolAlign") ===
 																	"left" && localStorage.getItem("currencyFormat")}
@@ -449,7 +394,7 @@ class ViewOrder extends Component {
 																<div className="row">
 																	<div className="col-12">
 																		<input
-																			type="tel"
+																			type="text"
 																			className="form-control"
 																			placeholder={localStorage.getItem(
 																				"deliveryDeliveryPinPlaceholder"

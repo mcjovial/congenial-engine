@@ -4,57 +4,35 @@
 @section('content')
 <style>
     #showPassword {
-        cursor: pointer;
-        padding: 5px;
-        border: 1px solid #E0E0E0;
-        border-radius: 0.275rem;
-        color: #9E9E9E;
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid #E0E0E0;
+    border-radius: 0.275rem;
+    color: #9E9E9E;
     }
-
     #showPassword:hover {
-        color: #616161;
+    color: #616161;
     }
 </style>
 
 
-<div class="content mt-3">
+<div class="content mt-2">
     <div class="d-flex justify-content-between my-2">
-        <h3><strong>All Users</strong></h3>
+        <h3><strong>  <i class="icon-users4 mr-1"></i> All Users</strong></h3>
         <div>
-
-            @if(\Nwidart\Modules\Facades\Module::find('CallAndOrder') &&
-            \Nwidart\Modules\Facades\Module::find('CallAndOrder')->isEnabled())
-            @can("login_as_customer")
-            <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left mr-2" id="manualOrderForGuest">
-                <b><i class="icon-clipboard3"></i></b>
-                Order for Guest
-            </button>
-            @endcan
-            @endif
-            @can('all_users_edit')
             <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left mr-2" id="addNewUser"
                 data-toggle="modal" data-target="#addNewUserModal">
-                <b><i class="icon-plus2"></i></b>
-                Add New User
+            <b><i class="icon-plus2"></i></b>
+            Add New User
             </button>
-            @endcan
-            @role('Admin')
-            <a href="{{ route('admin.rolesManagement') }}" class="btn btn-secondary btn-labeled btn-labeled-left mr-2">
-                <b><i class="icon-collaboration"></i></b>
-                Manage Roles and Permissions
-            </a>
-            @endrole
-            <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" id="clearFilterAndState"> <b><i
-                        class=" icon-reload-alt"></i></b> Reset All Filters</button>
+            <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" id="clearFilterAndState"> <b><i class=" icon-reload-alt"></i></b> Reset All Filters</button>
         </div>
     </div>
 
-    @if(Request::is('callandorder/users'))
-    @if(config('setting.allowStoreOwnersPlaceLoginOrders') == "true")
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped" id="usersDatatable" width="100%">
+                    <table class="table table-striped" id="usersDatatable" width="100%">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -62,32 +40,8 @@
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Role</th>
-                            <th>{{ config('setting.walletName') }}</th>
-                            <th>Created Date</th>
-                            <th class="text-center"><i class="
-                                    icon-circle-down2"></i></th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    @endif
-    @else
-    <div class="card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped" id="usersDatatable" width="100%">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Role</th>
-                            <th>{{ config('setting.walletName') }}</th>
-                            <th>Created Date</th>
+                            <th>{{ config('settings.walletName') }}</th>
+                            <th>Created Date</th>                            
                             <th class="text-center"><i class="
                                 icon-circle-down2"></i></th>
                         </tr>
@@ -97,8 +51,6 @@
             </div>
         </div>
     </div>
-    @endif
-
 </div>
 <div id="addNewUserModal" class="modal fade" tabindex="-1">
     <div class="modal-dialog">
@@ -133,9 +85,8 @@
                     <div class="form-group row form-group-feedback form-group-feedback-right">
                         <label class="col-lg-3 col-form-label">Password:</label>
                         <div class="col-lg-9">
-                            <input name="password" type="password" class="form-control form-control-lg"
-                                placeholder="Enter Password (min 6 characters)" required autocomplete="new-password"
-                                id="newUserPassword">
+                            <input name="password" type="password" class="form-control form-control-lg" placeholder="Enter Password (min 6 characters)" required
+                                autocomplete="new-password" id="newUserPassword">
                         </div>
                         <div class="form-control-feedback form-control-feedback-lg">
                             <span id="showPassword"><i class="icon-unlocked2"></i> Show</span>
@@ -145,7 +96,7 @@
                         <label class="col-lg-3 col-form-label">Role:</label>
                         <div class="col-lg-9">
                             <select name="role" class="form-control select" data-fouc>
-                                @foreach ($roles->reverse() as $role)
+                                @foreach ($roles as $role)
                                 <option value="{{ $role->name }}" class="text-capitalize">{{ $role->name }}</option>
                                 @endforeach
                             </select>
@@ -158,18 +109,16 @@
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Name or Nick Name:</label>
                             <div class="col-lg-9">
-                                <input type="text" class="form-control form-control-lg" name="delivery_name"
-                                    placeholder="Enter Name or Nickname of Delivery Guy" autocomplete="new-name">
-                                <span class="help-text text-muted">This name will be displayed to the
-                                    user/customers</span>
+                                <input type="text" class="form-control form-control-lg" name="delivery_name" placeholder="Enter Name or Nickname of Delivery Guy"
+                                    autocomplete="new-name">
+                                    <span class="help-text text-muted">This name will be displayed to the user/customers</span>
                             </div>
-
+                            
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Age</label>
                             <div class="col-lg-9">
-                                <input type="text" class="form-control form-control-lg" name="delivery_age"
-                                    placeholder="Enter Delivery Guy's Age">
+                                <input type="text" class="form-control form-control-lg" name="delivery_age" placeholder="Enter Delivery Guy's Age">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -179,53 +128,35 @@
                                 <span class="help-text text-muted">Image size 250x250</span>
                             </div>
                         </div>
-                        <div class="form-group row">
+                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Description</label>
                             <div class="col-lg-9">
-                                <input type="text" class="form-control form-control-lg" name="delivery_description"
-                                    placeholder="Enter Short Description about this Delivery Guy">
+                                <input type="text" class="form-control form-control-lg" name="delivery_description" placeholder="Enter Short Description about this Delivery Guy">
                             </div>
                         </div>
-                        <div class="form-group row">
+                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Vehicle Number</label>
                             <div class="col-lg-9">
-                                <input type="text" class="form-control form-control-lg" name="delivery_vehicle_number"
-                                    placeholder="Enter Delivery Guy's Vehicle Number">
+                                <input type="text" class="form-control form-control-lg" name="delivery_vehicle_number" placeholder="Enter Delivery Guy's Vehicle Number">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Commission Rate %</label>
                             <div class="col-lg-9">
-                                <input type="text" class="form-control form-control-lg commission_rate"
-                                    name="delivery_commission_rate"
-                                    placeholder="Commission Rate % (By detault, it's set to 5%)" value="5"
-                                    required="required">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-lg-3 col-form-label">Cash Limit
-                                ({{ config('setting.currencyFormat') }})</label>
-                            <div class="col-lg-9">
-                                <input type="text" class="form-control form-control-lg cash_limit" name="cash_limit"
-                                    value="0.00" />
-                                <p>Enter an amount after which you don't want delivery guy to receive any orders.
-                                    <strong><mark>Zero(0) means no limit.</mark></strong></p>
+                                <input type="text" class="form-control form-control-lg commission_rate" name="delivery_commission_rate" placeholder="Commission Rate % (By detault, it's set to 5%)" value="5" required="required">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Tip Commission Rate %</label>
                             <div class="col-lg-9">
-                                <input type="text" class="form-control form-control-lg tip-commission_rate"
-                                    name="tip_commission_rate"
-                                    placeholder="Commission Rate % (By detault, it's set to 5%)" value="100"
-                                    required="required">
+                                <input type="text" class="form-control form-control-lg tip-commission_rate" name="tip_commission_rate" placeholder="Commission Rate % (By detault, it's set to 5%)" value="100" required="required">
                             </div>
                         </div>
                     </div>
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            SAVE
-                            <i class="icon-database-insert ml-1"></i></button>
+                        SAVE
+                        <i class="icon-database-insert ml-1"></i></button>
                     </div>
                     @csrf
                 </form>
@@ -258,7 +189,6 @@
         });
         
         $('.commission_rate').numeric({ allowThouSep:false, maxDecimalPlaces: 2, max: 100, allowMinus: false });
-        $('.cash_limit').numeric({allowThouSep:false, maxDecimalPlaces: 2, allowMinus: false });
 
         $('body').tooltip({selector: '[data-popup="tooltip"]'});
          var datatable = $('#usersDatatable').DataTable({
@@ -267,11 +197,7 @@
             stateSave: true,
             lengthMenu: [ 10, 25, 50, 100, 200, 500 ],
             order: [[ 0, "desc" ]],
-            @if(\Nwidart\Modules\Facades\Module::find('CallAndOrder') && \Nwidart\Modules\Facades\Module::find('CallAndOrder')->isEnabled() && Request::is('callandorder/users'))
-            ajax: '{{ route('cao.usersDatatable') }}',
-            @else
             ajax: '{{ route('admin.usersDatatable') }}',
-            @endif
             columns: [
                 {data: 'id', visible: false, searchable: false},
                 {data: 'name'},
@@ -291,11 +217,7 @@
             },
             scrollX: true,
             scrollCollapse: true,
-            @role('Admin')
             dom: '<"custom-processing-banner"r>flBtip',
-            @else
-            dom: '<"custom-processing-banner"r>fltip',
-            @endrole
             language: {
                 search: '_INPUT_',
                 searchPlaceholder: 'Search with anything...',
@@ -303,7 +225,6 @@
                 paginate: { 'first': 'First', 'last': 'Last', 'next': '&rarr;', 'previous': '&larr;' },
                 processing: '<i class="icon-spinner10 spinner position-left mr-1"></i>Waiting for server response...'
             },
-            
            buttons: {
                    dom: {
                        button: {
@@ -323,11 +244,6 @@
             }
          });
     });
+
 </script>
-
-@if(\Nwidart\Modules\Facades\Module::find('CallAndOrder') &&
-\Nwidart\Modules\Facades\Module::find('CallAndOrder')->isEnabled())
-@include('callandorder::scripts')
-@endif
-
 @endsection

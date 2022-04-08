@@ -50,14 +50,14 @@ class SmsController extends Controller
 
                 $response = $sms->processSmsAction('OTP', $request->phone);
 
-                if (!isset($response['success']) && $response['type'] == 'TWILIO') {
+                if (!$response['success'] && $response['type'] == 'TWILIO') {
                     $response = [
                         'otp' => false,
                         'message' => 'Twilio Error. Check Twilio configurations in Admin Dashboard. Make sure you donot use a Twilio Trial Account. Refer to the documentation for details: https://bit.ly/2KQLfAV',
                     ];
                     return response()->json($response);
                 }
-                if (!isset($response['success']) && $response['type'] == 'MSG91') {
+                if (!$response['success'] && $response['type'] == 'MSG91') {
                     $response = [
                         'otp' => false,
                         'message' => 'Msg91 Error. Check Msg91 configurations in Admin Dashboard. Refer to the documentation for details: https://bit.ly/2KNWcDa ',
@@ -69,7 +69,9 @@ class SmsController extends Controller
                     'otp' => true,
                 ];
                 return response()->json($response);
+
             }
+
         }
 
         if ($userPhone || $userEmail) {
@@ -81,14 +83,14 @@ class SmsController extends Controller
             $sms = new Sms();
             $response = $sms->processSmsAction('OTP', $request->phone);
 
-            if (!isset($response['success']) && $response['type'] == 'TWILIO') {
+            if (!$response['success'] && $response['type'] == 'TWILIO') {
                 $response = [
                     'otp' => false,
                     'message' => 'Twilio Error. Check Twilio configurations in Admin Dashboard. Make sure you donot use a Twilio Trial Account. Refer to the documentation for details: https://bit.ly/2KQLfAV',
                 ];
                 return response()->json($response);
             }
-            if (!isset($response['success']) && $response['type'] == 'MSG91') {
+            if (!$response['success'] && $response['type'] == 'MSG91') {
                 $response = [
                     'otp' => false,
                     'message' => 'Msg91 Error. Check Msg91 configurations in Admin Dashboard. Refer to the documentation for details: https://bit.ly/2KNWcDa ',
@@ -126,12 +128,13 @@ class SmsController extends Controller
             $curl = json_decode($curl);
 
             if (isset($curl->id)) {
-                if ($curl->id == config('setting.facebookAppId')) {
+                if ($curl->id == config('settings.facebookAppId')) {
                     return true;
                 }
                 return false;
             }
             return false;
+
         }
         if ($provider == 'google') {
             // validate google access token
@@ -145,88 +148,6 @@ class SmsController extends Controller
                 return false;
             }
             return false;
-        }
-    }
-
-    /**
-     * @param Request $request
-     */
-    public function generateOtpForLogin(Request $request)
-    {
-        $userPhone = User::where('phone', $request->phone)->first();
-
-        //if user exists, send OTP and send repsonse as OTP sent
-        if ($userPhone) {
-
-            $sms = new Sms();
-
-            $response = $sms->processSmsAction('OTP', $request->phone);
-
-            if (!isset($response['success']) && $response['type'] == 'TWILIO') {
-                $response = [
-                    'otp' => false,
-                    'message' => 'Twilio Error. Check Twilio configurations in Admin Dashboard. Make sure you donot use a Twilio Trial Account. Refer to the documentation for details: https://bit.ly/2KQLfAV',
-                ];
-                return response()->json($response);
-            }
-            if (!isset($response['success']) && $response['type'] == 'MSG91') {
-                $response = [
-                    'otp' => false,
-                    'message' => 'Msg91 Error. Check Msg91 configurations in Admin Dashboard. Refer to the documentation for details: https://bit.ly/2KNWcDa ',
-                ];
-                return response()->json($response);
-            }
-
-            $response = [
-                'otp' => true,
-                'new_user' => false,
-            ];
-            return response()->json($response);
-        } elseif (isset($request->email) && $request->email != null) {
-
-            //check if email exists...
-            $checkEmail = User::where('email', $request->email)->first();
-            if ($checkEmail) {
-                $response = [
-                    'email_phone_already_used' => true,
-                ];
-                return response()->json($response);
-            }
-
-            //email presnet, then send otp...
-            $sms = new Sms();
-
-            $response = $sms->processSmsAction('OTP', $request->phone);
-
-            if (!isset($response['success']) && $response['type'] == 'TWILIO') {
-                $response = [
-                    'otp' => false,
-                    'message' => 'Twilio Error. Check Twilio configurations in Admin Dashboard. Make sure you donot use a Twilio Trial Account. Refer to the documentation for details: https://bit.ly/2KQLfAV',
-                ];
-                return response()->json($response);
-            }
-            if (!isset($response['success']) && $response['type'] == 'MSG91') {
-                $response = [
-                    'otp' => false,
-                    'message' => 'Msg91 Error. Check Msg91 configurations in Admin Dashboard. Refer to the documentation for details: https://bit.ly/2KNWcDa ',
-                ];
-                return response()->json($response);
-            }
-
-            $response = [
-                'otp' => true,
-                'new_user' => true,
-            ];
-            return response()->json($response);
-        } else {
-            //new user
-            //dont send OTP and send response to show the registration form as well...
-
-            $response = [
-                'otp' => false,
-                'new_user' => true,
-            ];
-            return response()->json($response);
         }
     }
 }

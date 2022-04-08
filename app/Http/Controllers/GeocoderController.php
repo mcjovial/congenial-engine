@@ -15,7 +15,9 @@ class GeocoderController extends Controller
         try {
             $response = \Geocoder::getAddressForCoordinates($request->lat, $request->lng);
 
-            if (config('setting.googleFullAddress') == 'false') {
+            return response()->json($response['formatted_address']);
+
+            if (config('settings.googleFullAddress') == 'false') {
                 $allowedTypes = ['street_address', 'sublocality', 'subpremise', 'premise', 'street_number', 'floor', 'establishment', 'point_of_interest', 'parking', 'post_box', 'postal_town', 'room', 'bus_station', 'train_station', 'transit_station'];
                 $finalAddress = '';
                 $count = count($response['address_components']);
@@ -35,14 +37,17 @@ class GeocoderController extends Controller
                             }
                         }
                     }
+
                 }
                 return response()->json($finalAddress);
             } else {
                 return response()->json($response['formatted_address']);
             }
+
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 401);
         }
+
     }
 
     /**
@@ -53,4 +58,5 @@ class GeocoderController extends Controller
         $address = \Geocoder::getCoordinatesForAddress($request->string);
         return response()->json($address);
     }
+
 }

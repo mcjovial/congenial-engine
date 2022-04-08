@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
-use App\Order;
-use Exception;
 use App\Coupon;
-use Carbon\Carbon;
+use App\Order;
 use App\Restaurant;
+use Auth;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 
 class CouponController extends Controller
@@ -81,6 +81,7 @@ class CouponController extends Controller
                         ];
                         return response()->json($response);
                     }
+
                 } else {
                     $response = [
                         'success' => false,
@@ -103,14 +104,11 @@ class CouponController extends Controller
 
     public function coupons()
     {
-        $coupons = Coupon::orderBy('id', 'DESC')->with('restaurants')->paginate(20);
-        $couponTotal = $coupons->total();
-
-        $restaurants = Restaurant::get(['id', 'name']);
+        $coupons = Coupon::orderBy('id', 'DESC')->get();
+        $restaurants = Restaurant::all();
         $todaysDate = Carbon::now()->format('m-d-Y');
         return view('admin.coupons', array(
             'coupons' => $coupons,
-            'couponTotal' => $couponTotal,
             'restaurants' => $restaurants,
             'todaysDate' => $todaysDate,
         ));
@@ -171,15 +169,12 @@ class CouponController extends Controller
      */
     public function getEditCoupon($id)
     {
-        $coupon = Coupon::where('id', $id)->with('restaurant')->first();
-        $couponAssignedRestaurants = $coupon->restaurants()->pluck('restaurant_id')->toArray();
-
-        $restaurants = Restaurant::get();
+        $coupon = Coupon::where('id', $id)->first();
+        $restaurants = Restaurant::all();
         if ($coupon) {
             return view('admin.editCoupon', array(
                 'coupon' => $coupon,
                 'restaurants' => $restaurants,
-                'couponAssignedRestaurants' => $couponAssignedRestaurants,
             ));
         }
         return redirect()->route('admin.coupons');
@@ -246,7 +241,7 @@ class CouponController extends Controller
 
         if ($coupon) {
             $coupon->delete();
-            return redirect()->route('admin.coupons');
+            return redirect()->back()->with(['success' => 'Coupon Deleted']);
         }
         return redirect()->route('admin.coupons');
     }

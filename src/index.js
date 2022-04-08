@@ -151,25 +151,16 @@ const RatingAndReview = Loadable({
 	loader: () => import("./components/Mobile/Account/Orders/RatingAndReview"),
 	loading: () => <Loading />,
 });
-const ViewStoreReviews = Loadable({
-	loader: () => import("./components/Mobile/StoreReviews"),
-	loading: () => <Loading />,
-});
 
 const Alerts = Loadable({
 	loader: () => import("./components/Mobile/Alerts"),
 	loading: () => <Loading />,
 });
 
-const FavoriteRestaurantList = Loadable({
-	loader: () => import("./components/Mobile/Home/FavoriteRestaurants"),
-	loading: () => <Loading />,
-});
-
-const LoginAsCustomer = Loadable({
-	loader: () => import("./components/Mobile/Modules/LoginAsCustomer"),
-	loading: () => <Loading />,
-});
+// const TestComponent = Loadable({
+// 	loader: () => import("./components/Mobile/TestComponent/List"),
+// 	loading: () => <Loading />,
+// });
 
 const ScrollToTop = () => {
 	window.scrollTo(0, 0);
@@ -209,8 +200,7 @@ ReactDOM.render(
 					<Route path={"/my-addresses"} exact component={withTracker(Addresses)} />
 					<Route path={"/my-wallet"} exact component={withTracker(WalletPage)} />
 					<Route path={"/my-orders"} exact component={withTracker(Orders)} />
-					<Route path={"/rate-order/:id"} exact component={withTracker(RatingAndReview)} />
-					<Route path={"/reviews/:slug"} exact component={withTracker(ViewStoreReviews)} />
+					<Route path={"/rate-and-review/:id"} exact component={withTracker(RatingAndReview)} />
 
 					<Route path={"/checkout"} exact component={withTracker(Checkout)} />
 					<Route path={"/running-order/:unique_order_id"} exact component={withTracker(RunningOrder)} />
@@ -218,7 +208,7 @@ ReactDOM.render(
 					<Route path={"/cart"} exact component={withTracker(CartPage)} />
 
 					<Route path={"/pages/:slug"} exact component={withTracker(SinglePage)} />
-					<Route path={"/my-favorite-stores"} exact component={withTracker(FavoriteRestaurantList)} />
+
 					{/* Delivery Routes */}
 					<Route path={"/delivery"} exact component={Delivery} />
 					<Route path={"/delivery/login"} exact component={DeliveryLogin} />
@@ -226,9 +216,6 @@ ReactDOM.render(
 					<Route path={"/delivery/orders/:unique_order_id"} exact component={ViewOrder} />
 					<Route path={"/delivery/completed-orders"} exact component={Delivery} />
 					{/* Common Routes */}
-					{/* Admin Login as Customer Module Routes */}
-					<Route path={"/auth/login-as-customer/:id?"} exact component={LoginAsCustomer} />
-					{/* END Admin Login as Customer Module Routes */}
 					<Route component={NotFound} />
 				</Switch>
 			</React.Fragment>

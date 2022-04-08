@@ -5,20 +5,18 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
-                <span class="font-weight-bold mr-2">Total</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold">{{ $categoriesCount }} Store
-                    Categories</span>
+            <h4><i class="icon-circle-right2 mr-2"></i>
+                <span class="font-weight-bold mr-2">Total Categories</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $categoriesCount }}</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
         <div class="header-elements d-none py-0 mb-3 mb-md-0">
             <div class="breadcrumb">
-                <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" data-toggle="modal"
-                    data-target="#addNewRestaurantCategory">
-                    <b><i class="icon-plus2"></i></b>
-                    Add New Store Category
+                <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left"
+                    data-toggle="modal" data-target="#addNewRestaurantCategory">
+                <b><i class="icon-plus2"></i></b>
+                Add New Store Category
                 </button>
             </div>
         </div>
@@ -29,12 +27,10 @@
         <div class="card-body">
             <div class="col-lg-12">
                 @foreach($restaurantCategories as $rC)
-                <span class="badge @if($rC->is_active) badge-success @else badge-warning @endif">{{ $rC->name }}</span>
+                <span class="badge @if($rC->is_active) badge-primary @else badge-warning @endif badge-pill animated">{{ $rC->name }}</span>
                 @endforeach
                 <div class="clearfix"></div>
-                <button class="btn btn-md btn-primary btn-labeled btn-labeled-left float-right" data-toggle="modal"
-                    data-target="#manageRestaurantCategory"><b><i class="icon-grid52"></i></b> Manage
-                    Categories</button>
+                <button class="btn btn-md btn-primary btn-labeled btn-labeled-left float-right"  data-toggle="modal" data-target="#manageRestaurantCategory"><b><i class="icon-grid52"></i></b> Manage Categories</button>
             </div>
         </div>
     </div>
@@ -42,15 +38,13 @@
     <div class="card">
         <div class="card-body">
             <form action="{{ route('admin.saveRestaurantCategorySliderSettings') }}" method="POST">
-
+                
                 <div class="form-group row">
                     <label class="col-lg-3 col-form-label">Enable Store Category Slider: </label>
                     <div class="col-lg-9">
                         <div class="checkbox checkbox-switchery mt-2">
                             <label>
-                                <input value="true" type="checkbox" class="switchery-primary"
-                                    @if(config('setting.enRestaurantCategorySlider')=="true" ) checked="checked" @endif
-                                    name="enRestaurantCategorySlider">
+                            <input value="true" type="checkbox" class="switchery-primary" @if(config('settings.enRestaurantCategorySlider') == "true") checked="checked" @endif name="enRestaurantCategorySlider">
                             </label>
                         </div>
                     </div>
@@ -58,30 +52,18 @@
                 <div class="form-group row">
                     <label class="col-lg-3 col-form-label">Slider Position:</label>
                     <div class="col-lg-9">
-                        <select name="restaurantCategorySliderPosition" class="form-control form-control-lg"
-                            required="required">
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="0" ) selected="selected"
-                                @endif value="0">Before 1st Store</option>
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="1" ) selected="selected"
-                                @endif value="1">After 1st Store</option>
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="2" ) selected="selected"
-                                @endif value="2">After 2nd Store</option>
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="3" ) selected="selected"
-                                @endif value="3">After 3rd Store</option>
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="4" ) selected="selected"
-                                @endif value="4">After 4th Store</option>
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="5" ) selected="selected"
-                                @endif value="5">After 5th Store</option>
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="6" ) selected="selected"
-                                @endif value="6">After 6th Store</option>
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="7" ) selected="selected"
-                                @endif value="7">After 7th Store</option>
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="8" ) selected="selected"
-                                @endif value="8">After 8th Store</option>
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="9" ) selected="selected"
-                                @endif value="9">After 9th Store</option>
-                            <option @if(config('setting.restaurantCategorySliderPosition')=="10" ) selected="selected"
-                                @endif value="10">After 10th Store</option>
+                        <select name="restaurantCategorySliderPosition" class="form-control form-control-lg" required="required">
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "0") selected="selected" @endif value="0">Before 1st Store</option>
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "1") selected="selected" @endif value="1">After 1st Store</option>
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "2") selected="selected" @endif value="2">After 2nd Store</option>
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "3") selected="selected" @endif value="3">After 3rd Store</option>
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "4") selected="selected" @endif value="4">After 4th Store</option>
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "5") selected="selected" @endif value="5">After 5th Store</option>
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "6") selected="selected" @endif value="6">After 6th Store</option>
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "7") selected="selected" @endif value="7">After 7th Store</option>
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "8") selected="selected" @endif value="8">After 8th Store</option>
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "9") selected="selected" @endif value="9">After 9th Store</option>
+                            <option @if(config('settings.restaurantCategorySliderPosition') == "10") selected="selected" @endif value="10">After 10th Store</option>
                         </select>
                     </div>
                 </div>
@@ -90,16 +72,11 @@
                     <label class="col-lg-3 col-form-label">Size:</label>
                     <div class="col-lg-9">
                         <select name="restaurantCategorySliderSize" class="form-control form-control-lg">
-                            <option @if(config('setting.restaurantCategorySliderSize')=="1" ) selected="selected" @endif
-                                value="1">Extra Small</option>
-                            <option @if(config('setting.restaurantCategorySliderSize')=="2" ) selected="selected" @endif
-                                value="2">Small</option>
-                            <option @if(config('setting.restaurantCategorySliderSize')=="3" ) selected="selected" @endif
-                                value="3">Medium</option>
-                            <option @if(config('setting.restaurantCategorySliderSize')=="4" ) selected="selected" @endif
-                                value="4">Large</option>
-                            <option @if(config('setting.restaurantCategorySliderSize')=="5" ) selected="selected" @endif
-                                value="5">Extra Large</option>
+                            <option @if(config('settings.restaurantCategorySliderSize') == "1") selected="selected" @endif value="1">Extra Small</option>
+                            <option @if(config('settings.restaurantCategorySliderSize') == "2") selected="selected" @endif value="2">Small</option>
+                            <option @if(config('settings.restaurantCategorySliderSize') == "3") selected="selected" @endif value="3">Medium</option>
+                            <option @if(config('settings.restaurantCategorySliderSize') == "4") selected="selected" @endif value="4">Large</option>
+                            <option @if(config('settings.restaurantCategorySliderSize') == "5") selected="selected" @endif value="5">Extra Large</option>
                         </select>
                     </div>
                 </div>
@@ -108,24 +85,19 @@
                     <label class="col-lg-3 col-form-label">Style:</label>
                     <div class="col-lg-9">
                         <select name="restaurantCategorySliderStyle" class="form-control form-control-lg">
-                            <option @if(config('setting.restaurantCategorySliderStyle')=="1" ) selected="selected"
-                                @endif value="1">Square</option>
-                            <option @if(config('setting.restaurantCategorySliderStyle')=="0.4" ) selected="selected"
-                                @endif value="0.4">Standard</option>
-                            <option @if(config('setting.restaurantCategorySliderStyle')=="10" ) selected="selected"
-                                @endif value="10">Circular</option>
+                            <option @if(config('settings.restaurantCategorySliderStyle') == "1") selected="selected" @endif value="1">Square</option>
+                            <option @if(config('settings.restaurantCategorySliderStyle') == "0.4") selected="selected" @endif value="0.4">Standard</option>
+                            <option @if(config('settings.restaurantCategorySliderStyle') == "10") selected="selected" @endif value="10">Circular</option>
                         </select>
                     </div>
                 </div>
-
+                
                 <div class="form-group row">
                     <label class="col-lg-3 col-form-label">Show Store Category Slider Label: </label>
                     <div class="col-lg-9">
                         <div class="checkbox checkbox-switchery mt-2">
                             <label>
-                                <input value="true" type="checkbox" class="switchery-primary"
-                                    @if(config('setting.showRestaurantCategorySliderLabel')=="true" ) checked="checked"
-                                    @endif name="showRestaurantCategorySliderLabel">
+                            <input value="true" type="checkbox" class="switchery-primary" @if(config('settings.showRestaurantCategorySliderLabel') == "true") checked="checked" @endif name="showRestaurantCategorySliderLabel">
                             </label>
                         </div>
                     </div>
@@ -150,8 +122,8 @@
                 <strong>No Slides</strong>
                 <div class="text-right">
                     <button type="submit" class="btn btn-primary" id="addSlide">
-                        ADD SLIDE
-                        <i class="icon-plus3 ml-1"></i>
+                    ADD SLIDE
+                    <i class="icon-plus3 ml-1"></i>
                     </button>
                 </div>
             </div>
@@ -160,20 +132,13 @@
                 @foreach($restaurantCategorySlider as $slide)
                 <div class="col-md-2 mb-2 each-slide" data-id="{{ $slide->id }}">
                     <p class="h6 mb-1"><strong>{{ $slide->name }}</strong></p>
-                    <img src="{{ substr(url("/"), 0, strrpos(url("/"), '/')) }}{{ $slide->image }}"
-                        alt="{{ $slide->name }}" width="150" height="150">
+                    <img src="{{ substr(url("/"), 0, strrpos(url("/"), '/')) }}{{ $slide->image }}" alt="{{ $slide->name }}" width="150" height="150">
                     <div class="btn-group btn-group-justified" style="width: 150px">
-                        <a href="{{ route('admin.deleteRestaurantCategorySlide', $slide->id) }}"
-                            class="btn btn-danger rounded-0" data-popup="tooltip" title="Delete Slide"
-                            data-placement="bottom"> <i class="icon-trash ml-1"></i> </a>
+                        <a href="{{ route('admin.deleteRestaurantCategorySlide', $slide->id) }}" class="btn btn-danger rounded-0" data-popup="tooltip" title="Delete Slide" data-placement="bottom"> <i class="icon-trash ml-1"></i> </a>
                         @if($slide->is_active)
-                        <a href="{{ route('admin.disableRestaurantCategorySlide', $slide->id) }}"
-                            class="btn btn-secondary rounded-0" data-popup="tooltip" title="Disable Slide"
-                            data-placement="bottom"> <i class="icon-switch2 ml-1"></i> </a>
+                        <a href="{{ route('admin.disableRestaurantCategorySlide', $slide->id) }}" class="btn btn-secondary rounded-0" data-popup="tooltip" title="Disable Slide" data-placement="bottom"> <i class="icon-switch2 ml-1"></i> </a>
                         @else
-                        <a href="{{ route('admin.disableRestaurantCategorySlide', $slide->id) }}"
-                            class="btn btn-warning rounded-0" data-popup="tooltip" title="Enable Slide"
-                            data-placement="bottom"> <i class="icon-switch2 ml-1"></i> </a>
+                        <a href="{{ route('admin.disableRestaurantCategorySlide', $slide->id) }}" class="btn btn-warning rounded-0" data-popup="tooltip" title="Enable Slide" data-placement="bottom"> <i class="icon-switch2 ml-1"></i> </a>
                         @endif
                     </div>
                 </div>
@@ -181,26 +146,23 @@
             </div>
             <div class="text-right">
                 <button type="submit" class="btn btn-primary btn-labeled btn-labeled-left" id="addSlide">
-                    <b><i class="icon-plus3"></i></b>ADD SLIDE
+                <b><i class="icon-plus3"></i></b>ADD SLIDE
                 </button>
             </div>
             @endif
-            <form action="{{ route('admin.createRestaurantCategorySlide') }}" method="POST" id="slideForm"
-                class="mt-3 hidden" enctype="multipart/form-data">
+            <form action="{{ route('admin.createRestaurantCategorySlide') }}" method="POST" id="slideForm" class="mt-3 hidden" enctype="multipart/form-data">
                 <div class="form-group row">
                     <label class="col-lg-3 col-form-label">Slide Name:</label>
                     <div class="col-lg-9">
-                        <input type="text" class="form-control form-control-lg" name="name" placeholder="Slide Name"
-                            required>
+                        <input type="text" class="form-control form-control-lg" name="name" placeholder="Slide Name" required>
                     </div>
                 </div>
                 <div class="form-group row">
                     <label class="col-lg-3 col-form-label">Slide Image:</label>
                     <div class="col-lg-9">
-                        <img class="slider-preview-image hidden" />
+                        <img class="slider-preview-image hidden"/>
                         <div class="uploader">
-                            <input type="file" class="form-control-uniform" name="image" required
-                                accept="image/x-png,image/gif,image/jpeg" onchange="readURL(this);">
+                            <input type="file" class="form-control-uniform" name="image" required accept="image/x-png,image/gif,image/jpeg" onchange="readURL(this);">
                             <span class="help-text text-muted">Image of minimum dimension 384x384</span>
                         </div>
                     </div>
@@ -208,8 +170,7 @@
                 <div class="form-group row">
                     <label class="col-lg-3 col-form-label">Link To:</label>
                     <div class="col-lg-9">
-                        <select class="form-control form-control-lg select" multiple="multiple" data-fouc
-                            name="restaurant_categories[]" required>
+                        <select class="form-control form-control-lg select" multiple="multiple" data-fouc name="restaurant_categories[]" required>
                             @foreach($restaurantCategoriesActive as $resCat)
                             <option value="{{ $resCat->id }}">{{ $resCat->name }}</option>
                             @endforeach
@@ -219,8 +180,8 @@
                 @csrf
                 <div class="text-right">
                     <button type="submit" class="btn btn-primary">
-                        SAVE
-                        <i class="icon-database-insert ml-1"></i>
+                    SAVE
+                    <i class="icon-database-insert ml-1"></i>
                     </button>
                 </div>
             </form>
@@ -244,12 +205,11 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label">Status</label>
+                        <label class="col-lg-3 col-form-label">Is Active?</label>
                         <div class="col-lg-9">
                             <div class="checkbox checkbox-switchery mt-2">
                                 <label>
-                                    <input value="true" type="checkbox" class="switchery-primary" checked="checked"
-                                        name="is_active">
+                                <input value="true" type="checkbox" class="switchery-primary" checked="checked" name="is_active">
                                 </label>
                             </div>
                         </div>
@@ -277,9 +237,7 @@
                 <div class="row">
                     @foreach($restaurantCategories as $resCategory)
                     <div class="col-lg-6 col-xs-12 col-sm-12 mb-4">
-                        <form action="{{ route('admin.updateRestaurantCategory') }}" method="POST"
-                            enctype="multipart/form-data" class="updateRestaurantCategory p-2"
-                            style="border-radius: 0.375rem; border: 1px solid #ddd;">
+                        <form action="{{ route('admin.updateRestaurantCategory') }}" method="POST" enctype="multipart/form-data" class="updateRestaurantCategory p-2" style="border-radius: 0.375rem; border: 1px solid #ddd;">
                             <input type="hidden" name="id" value="{{ $resCategory->id }}">
                             <div class="form-group row">
                                 <label class="col-lg-3 col-form-label">Name:</label>
@@ -289,12 +247,11 @@
                                 </div>
                             </div>
                             <div class="form-group row mb-1">
-                                <label class="col-lg-3 col-form-label">Status</label>
+                                <label class="col-lg-3 col-form-label">Is Active?</label>
                                 <div class="col-lg-9">
                                     <div class="checkbox checkbox-switchery mt-2">
                                         <label>
-                                            <input value="true" type="checkbox" class="switchery-primary"
-                                                @if($resCategory->is_active) checked="checked" @endif name="is_active">
+                                        <input value="true" type="checkbox" class="switchery-primary" @if($resCategory->is_active) checked="checked" @endif name="is_active">
                                         </label>
                                     </div>
                                 </div>

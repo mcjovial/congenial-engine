@@ -48,7 +48,7 @@ Then, register class alias by adding an entry in aliases section
 Finally, from the command line again, run 
 
 ```
-php artisan vendor:publish --provider="Berkayk\OneSignal\OneSignalServiceProvider" --tag="config"
+php artisan vendor:publish --tag=config
 ``` 
 
 to publish the default configuration file. 
@@ -61,12 +61,8 @@ your OneSignal authorization keys.
 
 ## Configuration
 
-You need to fill in your OneSignal *App ID* and *REST API Key* inside your
-.env file like this:
-```
-ONESIGNAL_APP_ID=xxxxxxxxxxxxxxxxxxxx
-ONESIGNAL_REST_API_KEY=xxxxxxxxxxxxxxxxxx
-```
+You need to fill in `onesignal.php` file that is found in your applications `config` directory.
+`app_id` is your *OneSignal App ID* and `rest_api_key` is your *REST API Key*.
 
 ## Usage
 
@@ -98,8 +94,8 @@ You can send a message based on a set of tags with the command
     OneSignal::sendNotificationUsingTags(
         "Some Message",
         array(
-            ["field" => "tag", "key" => "email", "relation" => "=", "value" => "email21@example.com"],
-            ["field" => "tag", "key" => "email", "relation" => "=", "value" => "email1@example.com"],
+            ["key" => "email", "relation" => "=", "value" => "email21@example.com"],
+            ["key" => "email", "relation" => "=", "value" => "email1@example.com"],
             ...
         ),
         $url = null,
@@ -115,8 +111,8 @@ You can send a message based on a set of tags with the command
     OneSignal::sendNotificationUsingTags(
         "Some Message",
         array(
-            ["field" => "tag", "key" => "session_count", "relation" => ">", "value" => '2'],
-            ["field" => "tag", "key" => "first_session", "relation" => ">", "value" => '2000'],
+            ["key" => "session_count", "relation" => ">", "value" => '2'],
+            ["key" => "first_session", "relation" => ">", "value" => '2000'],
         ),
         $url = null,
         $data = null,

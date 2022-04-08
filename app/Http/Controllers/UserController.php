@@ -1,22 +1,15 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\AcceptDelivery;
 use App\Address;
-use App\Order;
-use App\Rating;
-use App\Restaurant;
-use App\SmsOtp;
 use App\User;
-use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Ixudra\Curl\Facades\Curl;
 use JWTAuth;
 use JWTAuthException;
 use Spatie\Permission\Models\Role;
-use Throwable;
 
 class UserController extends Controller
 {
@@ -28,6 +21,7 @@ class UserController extends Controller
     private function getToken($email, $password)
     {
         $token = null;
+        //$credentials = $request->only('email', 'password');
         try {
             if (!$token = JWTAuth::attempt(['email' => $email, 'password' => $password])) {
                 return response()->json([
@@ -51,7 +45,7 @@ class UserController extends Controller
     public function login(Request $request)
     {
 
-        $user = User::where('email', $request->email)->get()->first();
+        $user = \App\User::where('email', $request->email)->get()->first();
 
         //check if it is coming from social login,
         if ($request->accessToken != null) {
@@ -68,7 +62,7 @@ class UserController extends Controller
                         $user->auth_token = $token;
 
                         // Add address if address present
-                        if (isset($request->address['lat'])) {
+                        if ($request->address['lat'] != null) {
                             $address = new Address();
                             $address->user_id = $user->id;
                             $address->latitude = $request->address['lat'];
@@ -82,7 +76,7 @@ class UserController extends Controller
 
                         $user->save();
                         if ($user->default_address_id !== 0) {
-                            $default_address = Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
+                            $default_address = \App\Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
                         } else {
                             $default_address = null;
                         }
@@ -99,9 +93,8 @@ class UserController extends Controller
                                 'phone' => $user->phone,
                                 'default_address_id' => $user->default_address_id,
                                 'default_address' => $default_address,
+                                'delivery_pin' => $user->delivery_pin,
                                 'wallet_balance' => $user->balanceFloat,
-                                'avatar' => $user->avatar,
-                                'tax_number' => $user->tax_number,
                             ],
                             'running_order' => $running_order,
                         ];
@@ -122,7 +115,7 @@ class UserController extends Controller
                                 $user->auth_token = $token;
 
                                 // Add address if address present
-                                if (isset($request->address['lat'])) {
+                                if ($request->address['lat'] != null) {
                                     $address = new Address();
                                     $address->user_id = $user->id;
                                     $address->latitude = $request->address['lat'];
@@ -135,13 +128,13 @@ class UserController extends Controller
                                 }
 
                                 $user->save();
-                            } catch (Throwable $e) {
+                            } catch (\Throwable $e) {
                                 $response = ['success' => false, 'data' => 'Something went wrong. Please try again...'];
                                 return response()->json($response, 201);
                             }
 
                             if ($user->default_address_id !== 0) {
-                                $default_address = Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
+                                $default_address = \App\Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
                             } else {
                                 $default_address = null;
                             }
@@ -158,15 +151,15 @@ class UserController extends Controller
                                     'phone' => $user->phone,
                                     'default_address_id' => $user->default_address_id,
                                     'default_address' => $default_address,
+                                    'delivery_pin' => $user->delivery_pin,
                                     'wallet_balance' => $user->balanceFloat,
-                                    'avatar' => $user->avatar,
-                                    'tax_number' => $user->tax_number,
                                 ],
                                 'running_order' => $running_order,
                             ];
 
                             return response()->json($response);
                         }
+
                     } else {
                         $response = [
                             'enter_phone_after_social_login' => true,
@@ -184,15 +177,13 @@ class UserController extends Controller
                             ];
                             return response()->json($response);
                         } else {
-                            enSovCheck($request);
-
                             //reg user
                             $user = new User();
                             $user->name = $request->name;
                             $user->email = $request->email;
                             $user->phone = $request->phone;
-                            $user->password = Hash::make(str_random(8));
-                            $user->user_ip = $request->ip();
+                            $user->password = \Hash::make(str_random(8));
+                            $user->delivery_pin = strtoupper(str_random(5));
 
                             try {
                                 $user->save();
@@ -201,7 +192,7 @@ class UserController extends Controller
                                 $user->auth_token = $token;
 
                                 // Add address if address present
-                                if (isset($request->address['lat'])) {
+                                if ($request->address['lat'] != null) {
                                     $address = new Address();
                                     $address->user_id = $user->id;
                                     $address->latitude = $request->address['lat'];
@@ -214,13 +205,13 @@ class UserController extends Controller
                                 }
 
                                 $user->save();
-                            } catch (Throwable $e) {
+                            } catch (\Throwable $e) {
                                 $response = ['success' => false, 'data' => 'Something went wrong. Please try again...'];
                                 return response()->json($response, 201);
                             }
 
                             if ($user->default_address_id !== 0) {
-                                $default_address = Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
+                                $default_address = \App\Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
                             } else {
                                 $default_address = null;
                             }
@@ -237,14 +228,14 @@ class UserController extends Controller
                                     'phone' => $user->phone,
                                     'default_address_id' => $user->default_address_id,
                                     'default_address' => $default_address,
+                                    'delivery_pin' => $user->delivery_pin,
                                     'wallet_balance' => $user->balanceFloat,
-                                    'avatar' => $user->avatar,
-                                    'tax_number' => $user->tax_number,
                                 ],
                                 'running_order' => $running_order,
                             ];
                             return response()->json($response);
                         }
+
                     } else {
                         // SHOW ENTER PHONE NUMBER
                         $response = [
@@ -263,13 +254,13 @@ class UserController extends Controller
         // if user exists, check user
 
         if ($request->password != null) {
-            if ($user && Hash::check($request->password, $user->password)) // The passwords match...
+            if ($user && \Hash::check($request->password, $user->password)) // The passwords match...
             {
                 $token = self::getToken($request->email, $request->password);
                 $user->auth_token = $token;
 
                 // Add address if address present
-                if (isset($request->address['lat'])) {
+                if ($request->address['lat'] != null) {
                     $address = new Address();
                     $address->user_id = $user->id;
                     $address->latitude = $request->address['lat'];
@@ -283,7 +274,7 @@ class UserController extends Controller
 
                 $user->save();
                 if ($user->default_address_id !== 0) {
-                    $default_address = Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
+                    $default_address = \App\Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
                 } else {
                     $default_address = null;
                 }
@@ -300,9 +291,8 @@ class UserController extends Controller
                         'phone' => $user->phone,
                         'default_address_id' => $user->default_address_id,
                         'default_address' => $default_address,
+                        'delivery_pin' => $user->delivery_pin,
                         'wallet_balance' => $user->balanceFloat,
-                        'avatar' => $user->avatar,
-                        'tax_number' => $user->tax_number,
                     ],
                     'running_order' => $running_order,
                 ];
@@ -312,158 +302,14 @@ class UserController extends Controller
                 return response()->json($response, 201);
             }
         }
+
     }
 
-    /**
-     * @param Request $request
-     */
-    public function loginWithOtp(Request $request)
-    {
-        $otpTable = SmsOtp::where('phone', $request->phone)->first();
-        if ($otpTable && $request->otp == $otpTable->otp) {
-
-            //check if user exists...
-            $user = User::where('phone', $request->phone)->first();
-
-            if ($user) {
-                //user exists, save the address and login user
-                if (isset($request->address['lat'])) {
-                    $address = new Address();
-                    $address->user_id = $user->id;
-                    $address->latitude = $request->address['lat'];
-                    $address->longitude = $request->address['lng'];
-                    $address->address = $request->address['address'];
-                    $address->house = $request->address['house'];
-                    $address->tag = $request->address['tag'];
-                    $address->save();
-                    $user->default_address_id = $address->id;
-                }
-                $token = JWTAuth::fromUser($user);
-                $user->auth_token = $token;
-
-                $user->save();
-
-                if ($user->default_address_id !== 0) {
-                    $default_address = Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
-                } else {
-                    $default_address = null;
-                }
-                $running_order = null;
-
-                $response = [
-                    'success' => true,
-                    'data' => [
-                        'id' => $user->id,
-                        'auth_token' => $token,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'phone' => $user->phone,
-                        'default_address_id' => $user->default_address_id,
-                        'default_address' => $default_address,
-                        'wallet_balance' => $user->balanceFloat,
-                        'avatar' => $user->avatar,
-                        'tax_number' => $user->tax_number,
-                    ],
-                    'running_order' => $running_order,
-                ];
-                return response()->json($response);
-            } else {
-
-                //new user...
-
-                $randomPassword = str_random(8);
-                $payload = [
-                    'password' => Hash::make($randomPassword),
-                    'email' => $request->email,
-                    'name' => $request->name,
-                    'phone' => $request->phone,
-                    'auth_token' => '',
-                    'user_ip' => $request->ip(),
-                ];
-
-                // try {
-
-                $request->validate([
-                    'name' => ['required', 'string', 'max:255'],
-                    'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-                    'phone' => ['required'],
-                ]);
-
-                $user = new User($payload);
-                if ($user->save()) {
-
-                    $token = self::getToken($request->email, $randomPassword); // generate user token
-
-                    if (!is_string($token)) {
-                        return response()->json(['success' => false, 'data' => 'Token generation failed'], 201);
-                    }
-
-                    $user = User::where('email', $request->email)->get()->first();
-
-                    $user->auth_token = $token; // update user token
-
-                    // Add address if address present
-                    if (isset($request->address['lat'])) {
-                        $address = new Address();
-                        $address->user_id = $user->id;
-                        $address->latitude = $request->address['lat'];
-                        $address->longitude = $request->address['lng'];
-                        $address->address = $request->address['address'];
-                        $address->house = $request->address['house'];
-                        $address->tag = $request->address['tag'];
-                        $address->save();
-                        $user->default_address_id = $address->id;
-                    }
-
-                    $user->save();
-                    $user->assignRole('Customer');
-
-                    if ($user->default_address_id !== 0) {
-                        $default_address = Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
-                    } else {
-                        $default_address = null;
-                    }
-
-                    $response = [
-                        'success' => true,
-                        'data' => [
-                            'id' => $user->id,
-                            'auth_token' => $token,
-                            'name' => $user->name,
-                            'email' => $user->email,
-                            'phone' => $user->phone,
-                            'default_address_id' => $user->default_address_id,
-                            'default_address' => $default_address,
-                            'wallet_balance' => $user->balanceFloat,
-                            'avatar' => $user->avatar,
-                            'tax_number' => $user->tax_number,
-                        ],
-                        'running_order' => null,
-                    ];
-                    return response()->json($response);
-                } else {
-                    $response = ['success' => false, 'data' => 'Couldnt register user'];
-                }
-                // } catch (Throwable $e) {
-                //     $response = ['success' => false, 'data' => 'Couldnt register user.'];
-                //     return response()->json($response, 201);
-                // }
-
-            }
-        } else {
-            //otp not present... error
-            $response = ['success' => false, 'data' => 'DONOTMATCH'];
-            return response()->json($response, 201);
-        }
-    }
-
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function register(Request $request)
     {
-
-        enSovCheck($request);
 
         $checkEmail = User::where('email', $request->email)->first();
         $checkPhone = User::where('phone', $request->phone)->first();
@@ -476,12 +322,12 @@ class UserController extends Controller
         }
 
         $payload = [
-            'password' => Hash::make($request->password),
+            'password' => \Hash::make($request->password),
             'email' => $request->email,
             'name' => $request->name,
             'phone' => $request->phone,
+            'delivery_pin' => strtoupper(str_random(5)),
             'auth_token' => '',
-            'user_ip' => $request->ip(),
         ];
 
         try {
@@ -493,7 +339,7 @@ class UserController extends Controller
                 'phone' => ['required'],
             ]);
 
-            $user = new User($payload);
+            $user = new \App\User($payload);
             if ($user->save()) {
 
                 $token = self::getToken($request->email, $request->password); // generate user token
@@ -502,12 +348,12 @@ class UserController extends Controller
                     return response()->json(['success' => false, 'data' => 'Token generation failed'], 201);
                 }
 
-                $user = User::where('email', $request->email)->get()->first();
+                $user = \App\User::where('email', $request->email)->get()->first();
 
                 $user->auth_token = $token; // update user token
 
                 // Add address if address present
-                if (isset($request->address['lat'])) {
+                if ($request->address['lat'] != null) {
                     $address = new Address();
                     $address->user_id = $user->id;
                     $address->latitude = $request->address['lat'];
@@ -523,7 +369,7 @@ class UserController extends Controller
                 $user->assignRole('Customer');
 
                 if ($user->default_address_id !== 0) {
-                    $default_address = Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
+                    $default_address = \App\Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
                 } else {
                     $default_address = null;
                 }
@@ -538,16 +384,15 @@ class UserController extends Controller
                         'phone' => $user->phone,
                         'default_address_id' => $user->default_address_id,
                         'default_address' => $default_address,
+                        'delivery_pin' => $user->delivery_pin,
                         'wallet_balance' => $user->balanceFloat,
-                        'avatar' => $user->avatar,
-                        'tax_number' => $user->tax_number,
                     ],
                     'running_order' => null,
                 ];
             } else {
                 $response = ['success' => false, 'data' => 'Couldnt register user'];
             }
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $response = ['success' => false, 'data' => 'Couldnt register user.'];
             return response()->json($response, 201);
         }
@@ -555,9 +400,9 @@ class UserController extends Controller
         return response()->json($response, 201);
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateUserInfo(Request $request)
     {
         $user = auth()->user();
@@ -565,12 +410,12 @@ class UserController extends Controller
         if ($user) {
 
             if ($user->default_address_id !== 0) {
-                $default_address = Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
+                $default_address = \App\Address::where('id', $user->default_address_id)->get(['address', 'house', 'latitude', 'longitude', 'tag'])->first();
             } else {
                 $default_address = null;
             }
 
-            $running_order = Order::where('user_id', $user->id)
+            $running_order = \App\Order::where('user_id', $user->id)
                 ->whereIn('orderstatus_id', ['1', '2', '3', '4', '7', '8'])
                 ->where('unique_order_id', $request->unique_order_id)
                 ->with('restaurant')
@@ -588,10 +433,6 @@ class UserController extends Controller
                             $delivery_details = $delivery_details->toArray();
                             $delivery_details['phone'] = $delivery_user->phone;
                         }
-
-                        $ratings = Rating::where('delivery_id', $delivery_user->id)->select(['rating_delivery', 'review_delivery'])->get();
-                        $averageRating = number_format((float) $ratings->avg('rating_delivery'), 1, '.', '');
-                        $delivery_details['rating'] = $averageRating;
                     }
                 }
             }
@@ -606,9 +447,9 @@ class UserController extends Controller
                     'phone' => $user->phone,
                     'default_address_id' => $user->default_address_id,
                     'default_address' => $default_address,
+                    'delivery_pin' => $user->delivery_pin,
                     'wallet_balance' => $user->balanceFloat,
                     'avatar' => $user->avatar,
-                    'tax_number' => $user->tax_number,
                 ],
                 'running_order' => $running_order,
                 'delivery_details' => $delivery_details,
@@ -616,6 +457,7 @@ class UserController extends Controller
 
             return response()->json($response);
         }
+
     }
 
     /**
@@ -626,7 +468,7 @@ class UserController extends Controller
         $user = auth()->user();
 
         if ($user) {
-            $running_order = Order::where('user_id', $user->id)
+            $running_order = \App\Order::where('user_id', $user->id)
                 ->whereIn('orderstatus_id', ['1', '2', '3', '4', '7'])
                 ->get();
 
@@ -638,13 +480,13 @@ class UserController extends Controller
                 return response()->json($success);
             }
         }
+
     }
 
-    /**
-     * @param $email
-     * @param $provider
-     * @param $accessToken
-     */
+/**
+ * @param $provider
+ * @param $accessToken
+ */
     public function validateAccessToken($email, $provider, $accessToken)
     {
         if ($provider == 'facebook') {
@@ -653,12 +495,13 @@ class UserController extends Controller
             $curl = json_decode($curl);
 
             if (isset($curl->id)) {
-                if ($curl->id == config('setting.facebookAppId')) {
+                if ($curl->id == config('settings.facebookAppId')) {
                     return true;
                 }
                 return false;
             }
             return false;
+
         }
         if ($provider == 'google') {
             // validate google access token
@@ -722,31 +565,5 @@ class UserController extends Controller
             return response()->json(['success' => true]);
         }
         return response()->json(['success' => false]);
-    }
-
-    /**
-     * @param $id
-     */
-    public function toggleFavorite(Request $request)
-    {
-        $user = auth()->user();
-        $restaurant = Restaurant::find($request->id);
-        $restaurant->toggleFavorite();
-        $restaurant->makeHidden(['delivery_areas']);
-        $restaurant->is_favorited = $restaurant->isFavorited();
-        $restaurant->avgRating = storeAvgRating($restaurant->ratings);
-        return response()->json($restaurant);
-    }
-
-    /**
-     * @param Request $request
-     */
-    public function updateTaxNumber(Request $request)
-    {
-        $user = auth()->user();
-        $user->tax_number = $request->tax_number;
-        $user->save();
-
-        return response()->json(['success' => true]);
     }
 };

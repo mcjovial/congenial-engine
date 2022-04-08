@@ -50,28 +50,28 @@ class Explore extends Component {
 	}
 
 	componentWillReceiveProps(nextProps) {
-		if (this.props.searches !== nextProps.searches) {
+		if (this.props.restaurants !== nextProps.restaurants) {
 			this.setState({ loading: false });
 		}
+		// console.log(nextProps.restaurants.restaurants.length);
 
-		if (nextProps.searches) {
-			if (nextProps.searches.restaurants.length === 0 && nextProps.searches.items.length === 0) {
+		if (nextProps.restaurants) {
+			if (nextProps.restaurants.restaurants.length === 0 && nextProps.restaurants.items.length === 0) {
 				this.setState({ showBgImage: true, nothingFound: true });
 			} else {
 				this.setState({ showBgImage: false, nothingFound: false });
 			}
 		}
 	}
-
 	render() {
+		// console.log("Show BG Image:", this.state.showBgImage);
+
 		if (window.innerWidth > 768) {
 			return <Redirect to="/" />;
 		}
 		if (localStorage.getItem("storeColor") === null) {
 			return <Redirect to={"/"} />;
 		}
-		const { searches } = this.props;
-
 		return (
 			<React.Fragment>
 				<Meta
@@ -113,10 +113,12 @@ class Explore extends Component {
 					</ContentLoader>
 				)}
 
-				{searches && searches.restaurants && searches.restaurants.length > 0 && (
-					<RestaurantSearchList restaurants={searches.restaurants} />
+				{this.props.restaurants.restaurants && this.props.restaurants.restaurants.length > 0 && (
+					<RestaurantSearchList restaurants={this.props.restaurants.restaurants} />
 				)}
-				{searches && searches.items && searches.items.length > 0 && <ItemSearchList items={searches.items} />}
+				{this.props.restaurants.items && this.props.restaurants.items.length > 0 && (
+					<ItemSearchList items={this.props.restaurants.items} />
+				)}
 
 				{this.state.showBgImage && (
 					<div className="d-flex justify-content-center mt-100">
@@ -140,7 +142,7 @@ class Explore extends Component {
 }
 
 const mapStateToProps = (state) => ({
-	searches: state.searches.restaurants,
+	restaurants: state.restaurants.restaurants,
 });
 
 export default connect(

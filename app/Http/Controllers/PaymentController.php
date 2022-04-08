@@ -5,23 +5,21 @@ namespace App\Http\Controllers;
 use App\Helpers\TranslationHelper;
 use App\Order;
 use App\PaymentGateway;
-use App\PushNotify;
 use App\Restaurant;
+use App\Sms;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Ixudra\Curl\Facades\Curl;
-use Nwidart\Modules\Facades\Module;
+use OneSignal;
 use PaytmWallet;
-use App\User;
+use Razorpay\Api\Api;
 
 class PaymentController extends Controller
 {
-    /**
-     * @param Request $request
-     */
     public function getPaymentGateways(Request $request)
     {
-        if (config('setting.allowPaymentGatewaySelection') == 'true') {
+        if (config('settings.allowPaymentGatewaySelection') == 'true') {
             $restaurant = Restaurant::where('id', $request->restaurant_id)->first();
             if ($restaurant) {
                 if (count($restaurant->payment_gateways) > 0) {
@@ -58,6 +56,36 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * @param Request $request
+     */
+    public function processRazorpay(Request $request)
+    {
+        $api_key = config('settings.razorpayKeyId');
+        $api_secret = config('settings.razorpayKeySecret');
+
+        $api = new Api($api_key, $api_secret);
+
+        try {
+            $response = Curl::to('https://api.razorpay.com/v1/orders')
+                ->withOption('USERPWD', "$api_key:$api_secret")
+                ->withData(array('amount' => $request->totalAmount * 100, 'currency' => config('settings.currencyId'), 'payment_capture' => 1))
+                ->post();
+
+            $response = json_decode($response);
+            $response = [
+                'razorpay_success' => true,
+                'response' => $response,
+            ];
+            return response()->json($response);
+        } catch (\Throwable $th) {
+            $response = [
+                'razorpay_success' => false,
+                'message' => $th->getMessage(),
+            ];
+            return response()->json($response);
+        }
+    }
 
     /**
      * @param Request $request
@@ -71,19 +99,9 @@ class PaymentController extends Controller
             echo 'Order not found, already paid or payment method is different.';
         } else {
 
-            if ($order->wallet_amount != 0) {
-                $orderTotal = $order->total - $order->wallet_amount;
-            } else {
-                if ($order->payable == 0) {
-                    $orderTotal = $order->total;
-                } else {
-                    $orderTotal = $order->payable;
-                }
-            }
+            $amount = number_format((float) $order->total, 2, '.', '');
 
-            $amount = number_format((float) $orderTotal, 2, '.', '');
-
-            \MercadoPago\SDK::setAccessToken(config('setting.mercadopagoAccessToken'));
+            \MercadoPago\SDK::setAccessToken(config('settings.mercadopagoAccessToken'));
 
             $preference = new \MercadoPago\Preference();
 
@@ -121,54 +139,44 @@ class PaymentController extends Controller
      */
     public function returnMercadoPago(Request $request)
     {
-        $order = Order::where('transaction_id', $request->preference_id)->where('orderstatus_id', '8')->where('payment_mode', 'MERCADOPAGO')->with('restaurant')->first();
+        $order = Order::where('transaction_id', $request->preference_id)->where('orderstatus_id', '8')->where('payment_mode', 'MERCADOPAGO')->first();
 
         $txnStatus = $request->collection_status;
 
         if ($order == null) {
             echo 'Order not found, already paid or payment method is different.';
         } else {
+            $restaurant = Restaurant::where('id', $order->restaurant_id)->first();
 
             if ($txnStatus == 'approved') {
 
-                if ($order->restaurant->auto_acceptable) {
+                if ($restaurant->auto_acceptable) {
                     $orderstatus_id = '2';
-                    if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled() && $order->schedule_date != null && $order->schedule_slot != null) {
-                        $orderstatus_id = '10';
+                    if (config('settings.enablePushNotificationOrders') == 'true') {
+                        //to user
+                        $notify = new PushNotify();
+                        $notify->sendPushNotification('2', $order->user_id, $order->unique_order_id);
                     }
+                    $this->sendPushNotificationStoreOwner($order->restaurant_id);
                 } else {
                     $orderstatus_id = '1';
-                    if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled()) {
-                        if ($order->schedule_date != null && $order->schedule_slot != null) {
-                            $orderstatus_id = '10';
-                        }
+                    if (config('settings.smsRestaurantNotify') == 'true') {
+                        $restaurant_id = $order->restaurant_id;
+                        $this->smsToRestaurant($restaurant_id, $order->total);
                     }
+                    $this->sendPushNotificationStoreOwner($order->restaurant_id);
                 }
 
                 $order->orderstatus_id = $orderstatus_id;
                 $order->save();
-
-                sendNotificationAccordingToOrderRules($order);
-
-                if ($order->orderstatus_id == '2') {
-                    activity()
-                        ->performedOn($order)
-                        ->causedBy(User::find(1))
-                        ->withProperties(['type' => 'Order_Accepted_Auto'])->log('Order auto accepted');
-                }
-
                 $redirectUrl = 'https://' . $request->getHttpHost() . '/running-order/' . $order->unique_order_id;
                 // $redirectUrl = 'http://localhost:3000/running-order/' . $order->unique_order_id;
                 return redirect()->away($redirectUrl);
             } else {
+                $orderUpdate = Order::find($order->id);
                 $order->orderstatus_id = 9;
                 $order->save();
-                activity()
-                    ->performedOn($order)
-                    ->withProperties(['type' => 'Order_Payment_Failed'])->log('Order payment failed');
-
                 $redirectUrl = 'https://' . $request->getHttpHost() . '/my-orders';
-
                 return redirect()->away($redirectUrl);
             }
         }
@@ -186,7 +194,7 @@ class PaymentController extends Controller
         }
 
         if ($user) {
-            \Stripe\Stripe::setApiKey(config('setting.stripeSecretKey'));
+            \Stripe\Stripe::setApiKey(config('settings.stripeSecretKey'));
 
             $intent = \Stripe\PaymentIntent::create([
                 'amount' => $request->amount,
@@ -208,57 +216,40 @@ class PaymentController extends Controller
     public function stripeRedirectCapture(Request $request)
     {
         // \Log::info($request->all());
-        \Stripe\Stripe::setApiKey(config('setting.stripeSecretKey'));
+        \Stripe\Stripe::setApiKey(config('settings.stripeSecretKey'));
         $intent = \Stripe\PaymentIntent::retrieve($request->payment_intent);
 
         if ($request->has('order_id')) {
             //get the order ID from url params
-            $order = Order::where('id', $request->order_id)->with('restaurant')->first();
+            $order = Order::where('id', $request->order_id)->first();
 
             if ($intent->status == 'succeeded') {
                 // dd('Success');
                 //check if the order id of that order is 8 (waiting payment)
                 if ($order && $order->orderstatus_id == 8) {
 
-                    if ($order->restaurant->auto_acceptable) {
+                    //change orderstatus id, process notification and stuff
+                    $restaurant = Restaurant::where('id', $order->restaurant_id)->first();
+
+                    if ($restaurant->auto_acceptable) {
                         $orderstatus_id = '2';
-                        if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled() && $order->schedule_date != null && $order->schedule_slot != null) {
-                            $orderstatus_id = '10';
+                        if (config('settings.enablePushNotificationOrders') == 'true') {
+                            //to user
+                            $notify = new PushNotify();
+                            $notify->sendPushNotification('2', $order->user_id, $order->unique_order_id);
                         }
+                        $this->sendPushNotificationStoreOwner($order->restaurant_id);
                     } else {
                         $orderstatus_id = '1';
-                        if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled()) {
-                            if ($order->schedule_date != null && $order->schedule_slot != null) {
-                                $orderstatus_id = '10';
-                            }
+                        if (config('settings.smsRestaurantNotify') == 'true') {
+                            $restaurant_id = $order->restaurant_id;
+                            $this->smsToRestaurant($restaurant_id, $order->total);
                         }
+                        $this->sendPushNotificationStoreOwner($order->restaurant_id);
                     }
 
                     $order->orderstatus_id = $orderstatus_id;
                     $order->save();
-
-                    if ($order->restaurant->auto_acceptable) {
-                        if ($orderstatus_id == '2') {
-                            //to user
-                            $notify = new PushNotify();
-                            $notify->sendPushNotification('2', $order->user_id, $order->unique_order_id);
-                            //to delivery
-                            sendSmsToDelivery($order->restaurant_id);
-                            sendPushNotificationToDelivery($order->restaurant_id, $order);
-                        }
-
-                        sendPushNotificationToStoreOwner($order->restaurant_id, $order->unique_order_id);
-                    } else {
-                        sendSmsToStoreOwner($order->restaurant_id, $order->total);
-                        sendPushNotificationToStoreOwner($order->restaurant_id, $order->unique_order_id);
-                    }
-
-                    if ($order->orderstatus_id == '2') {
-                        activity()
-                            ->performedOn($order)
-                            ->causedBy(User::find(1))
-                            ->withProperties(['type' => 'Order_Accepted_Auto'])->log('Order auto accepted');
-                    }
 
                     //redirect to running order page
                     $redirectUrl = 'https://' . $request->getHttpHost() . '/running-order/' . $order->unique_order_id;
@@ -270,10 +261,6 @@ class PaymentController extends Controller
                 // dd("Failed");
                 $order->orderstatus_id = 9; //payment failed
                 $order->save();
-
-                activity()
-                    ->performedOn($order)
-                    ->withProperties(['type' => 'Order_Payment_Failed'])->log('Order payment failed');
 
                 $redirectUrl = 'https://' . $request->getHttpHost() . '/running-order/' . $order->unique_order_id;
                 // $redirectUrl = 'http://localhost:3000/running-order/' . $order->unique_order_id;
@@ -290,7 +277,7 @@ class PaymentController extends Controller
     {
         $error = '';
 
-        $paymongoPK = config('setting.paymongoPK');
+        $paymongoPK = config('settings.paymongoPK');
 
         $validator = Validator::make($request->all(), [
             'ccNum' => 'required',
@@ -363,9 +350,9 @@ class PaymentController extends Controller
                                 'request_three_d_secure' => 'automatic',
                             ),
                         ),
-                        'currency' => config('setting.currencyId'),
+                        'currency' => config('settings.currencyId'),
                         'description' => 'Food Delivery',
-                        'statement_descriptor' => config('setting.storeName'),
+                        'statement_descriptor' => config('settings.storeName'),
                     ),
                 ),
             );
@@ -385,7 +372,6 @@ class PaymentController extends Controller
         // Attach payment method with payment intent
         if ((isset($paymentMethodId)) && (isset($paymentIntentId))) {
             $returnUrl = 'https://' . $request->getHttpHost() . '/public/api/payment/handle-process-paymongo/' . $paymentIntentId;
-            // $returnUrl = 'http://127.0.0.1/foodomaa/public/api/payment/handle-process-paymongo/' . $paymentIntentId;
             $attachPiData = array(
                 'data' => array(
                     'attributes' => array(
@@ -437,55 +423,41 @@ class PaymentController extends Controller
      */
     public function handlePayMongoRedirect(Request $request, $id)
     {
-        $order = Order::where('transaction_id', $id)->where('orderstatus_id', '8')->where('payment_mode', 'PAYMONGO')->with('restaurant')->first();
+        //pi_q8NhrK7VoZTLwAYBnXU5eNL7
+        $order = Order::where('transaction_id', $id)->where('orderstatus_id', '8')->where('payment_mode', 'PAYMONGO')->first();
+
         if ($order == null) {
             echo 'Order not found, already paid or payment method is different.';
-            die();
-        }
+        } else {
+            //change orderstatus id, process notification and stuff
+            $restaurant = Restaurant::where('id', $order->restaurant_id)->first();
 
-        $paymentIntentUrl = 'https://api.paymongo.com/v1/payment_intents/' . $id;
-
-        $paymongoSK = config('setting.paymongoSK');
-        $response = Curl::to($paymentIntentUrl)
-            ->withHeader('Content-Type: application/json')
-            ->withHeader('Authorization: Basic ' . base64_encode($paymongoSK))
-            ->returnResponseObject()
-            ->get();
-
-        $res = json_decode($response->content);
-
-        if ($res && $res->data && $res->data->attributes) {
-            if ($res->data->attributes->status == 'succeeded') {
-                if ($order->restaurant->auto_acceptable) {
-                    $orderstatus_id = '2';
-                    if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled() && $order->schedule_date != null && $order->schedule_slot != null) {
-                        $orderstatus_id = '10';
-                    }
-                } else {
-                    $orderstatus_id = '1';
-                    if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled()) {
-                        if ($order->schedule_date != null && $order->schedule_slot != null) {
-                            $orderstatus_id = '10';
-                        }
-                    }
+            if ($restaurant->auto_acceptable) {
+                $orderstatus_id = '2';
+                if (config('settings.enablePushNotificationOrders') == 'true') {
+                    //to user
+                    $notify = new PushNotify();
+                    $notify->sendPushNotification('2', $order->user_id, $order->unique_order_id);
                 }
-
-                $order->orderstatus_id = $orderstatus_id;
-                $order->save();
-
-                sendNotificationAccordingToOrderRules($order);
-
-                if ($order->orderstatus_id == '2') {
-                    activity()
-                        ->performedOn($order)
-                        ->causedBy(User::find(1))
-                        ->withProperties(['type' => 'Order_Accepted_Auto'])->log('Order auto accepted');
+                $this->sendPushNotificationStoreOwner($order->restaurant_id);
+            } else {
+                $orderstatus_id = '1';
+                if (config('settings.smsRestaurantNotify') == 'true') {
+                    $restaurant_id = $order->restaurant_id;
+                    $this->smsToRestaurant($restaurant_id, $order->total);
                 }
+                $this->sendPushNotificationStoreOwner($order->restaurant_id);
             }
+
+            $order->orderstatus_id = $orderstatus_id;
+            $order->save();
+
+            $order->orderstatus_id = $orderstatus_id;
+            $order->save();
+            $redirectUrl = 'https://' . $request->getHttpHost() . '/running-order/' . $order->unique_order_id;
+            // $redirectUrl = 'http://localhost:3000/running-order/' . $order->unique_order_id;
+            return redirect()->away($redirectUrl);
         }
-        $redirectUrl = 'https://' . $request->getHttpHost() . '/running-order/' . $order->unique_order_id;
-        // $redirectUrl = 'http://localhost:3000/running-order/' . $order->unique_order_id;
-        return redirect()->away($redirectUrl);
     }
 
     /**
@@ -495,7 +467,7 @@ class PaymentController extends Controller
      */
     public function apiPaymongo($url, $data)
     {
-        $paymongoSK = config('setting.paymongoSK');
+        $paymongoSK = config('settings.paymongoSK');
 
         $response = Curl::to($url)
             ->withHeader('Content-Type: application/json')
@@ -507,6 +479,41 @@ class PaymentController extends Controller
         return $response;
     }
 
+    /**
+     * @param $restaurant_id
+     * @param $orderTotal
+     */
+    private function smsToRestaurant($restaurant_id, $orderTotal)
+    {
+        //get restaurant
+        $restaurant = Restaurant::where('id', $restaurant_id)->first();
+        if ($restaurant) {
+            if ($restaurant->is_notifiable) {
+                //get all pivot users of restaurant (Store Ownerowners)
+                $pivotUsers = $restaurant->users()
+                    ->wherePivot('restaurant_id', $restaurant_id)
+                    ->get();
+                //filter only res owner and send notification.
+                foreach ($pivotUsers as $pU) {
+                    if ($pU->hasRole('Store Owner')) {
+                        // Include Order orderTotal or not ?
+                        switch (config('settings.smsRestOrderValue')) {
+                            case 'true':
+                                $message = config('settings.defaultSmsRestaurantMsg') . round($orderTotal);
+                                break;
+                            case 'false':
+                                $message = config('settings.defaultSmsRestaurantMsg');
+                                break;
+                        }
+                        // As its not an OTP based message Nulling OTP
+                        $otp = null;
+                        $smsnotify = new Sms();
+                        $smsnotify->processSmsAction('OD_NOTIFY', $pU->phone, $otp, $message);
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * @param Request $request
@@ -517,17 +524,11 @@ class PaymentController extends Controller
 
         if ($order) {
             $payment = PaytmWallet::with('receive');
-
-            if ($order->wallet_amount != 0) {
+            if ($order->wallet_amount != null) {
                 $orderTotal = $order->total - $order->wallet_amount;
             } else {
-                if ($order->payable == 0) {
-                    $orderTotal = $order->total;
-                } else {
-                    $orderTotal = $order->payable;
-                }
+                $orderTotal = $order->total;
             }
-
             $payment->prepare([
                 'order' => $order->unique_order_id, // your order id taken from cart
                 'user' => $order->user_id, // your user id
@@ -559,38 +560,33 @@ class PaymentController extends Controller
         $response = $transaction->response(); // To get raw response as array
         //Check out response parameters sent by paytm here -> http://paywithpaytm.com/developer/paytm_api_doc?target=interpreting-response-sent-by-paytm
 
-        $order = Order::where('unique_order_id', $response['ORDERID'])->where('orderstatus_id', '8')->where('payment_mode', 'PAYTM')->with('restaurant')->first();
+        $order = Order::where('unique_order_id', $response['ORDERID'])->where('orderstatus_id', '8')->where('payment_mode', 'PAYTM')->first();
 
         if ($order) {
 
             if ($transaction->isSuccessful()) {
 
-                if ($order->restaurant->auto_acceptable) {
+                $restaurant = Restaurant::where('id', $order->restaurant_id)->first();
+
+                if ($restaurant->auto_acceptable) {
                     $orderstatus_id = '2';
-                    if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled() && $order->schedule_date != null && $order->schedule_slot != null) {
-                        $orderstatus_id = '10';
+                    if (config('settings.enablePushNotificationOrders') == 'true') {
+                        //to user
+                        $notify = new PushNotify();
+                        $notify->sendPushNotification('2', $order->user_id, $order->unique_order_id);
                     }
+                    $this->sendPushNotificationStoreOwner($order->restaurant_id);
                 } else {
                     $orderstatus_id = '1';
-                    if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled()) {
-                        if ($order->schedule_date != null && $order->schedule_slot != null) {
-                            $orderstatus_id = '10';
-                        }
+                    if (config('settings.smsRestaurantNotify') == 'true') {
+                        $restaurant_id = $order->restaurant_id;
+                        $this->smsToRestaurant($restaurant_id, $order->total);
                     }
+                    $this->sendPushNotificationStoreOwner($order->restaurant_id);
                 }
 
                 $order->orderstatus_id = $orderstatus_id;
                 $order->save();
-
-                sendNotificationAccordingToOrderRules($order);
-
-                if ($order->orderstatus_id == '2') {
-                    activity()
-                        ->performedOn($order)
-                        ->causedBy(User::find(1))
-                        ->withProperties(['type' => 'Order_Accepted_Auto'])->log('Order auto accepted');
-                }
-
                 $redirectUrl = 'https://' . $request->getHttpHost() . '/running-order/' . $order->unique_order_id;
                 // $redirectUrl = 'http://localhost:3000/running-order/' . $order->unique_order_id;
                 return redirect()->away($redirectUrl);
@@ -603,11 +599,6 @@ class PaymentController extends Controller
                 //Transaction Failed
                 $order->orderstatus_id = '9';
                 $order->save();
-
-                activity()
-                    ->performedOn($order)
-                    ->withProperties(['type' => 'Order_Payment_Failed'])->log('Order payment failed');
-
                 $redirectUrl = 'https://' . $request->getHttpHost() . '/running-order/' . $order->unique_order_id;
                 // $redirectUrl = 'http://localhost:3000/running-order/' . $order->unique_order_id;
                 return redirect()->away($redirectUrl);
@@ -624,46 +615,28 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     * @return mixed
-     */
-    public function verifyKhaltiPayment(Request $request)
+    private function sendPushNotificationStoreOwner($restaurant_id)
     {
-        $data = [
-            'token' => $request->token,
-            'amount' => $request->amount,
-        ];
-
-        $url = 'https://khalti.com/api/v2/payment/verify/';
-
-        $khaltiSecretKey = config('setting.khaltiSecretKey');
-
-        $response = Curl::to($url)
-            ->withHeader('Authorization: Key ' . $khaltiSecretKey)
-            ->withData($data)
-            ->post();
-
-        $response = json_decode($response, true);
-        if (isset($response['idx'])) {
-            $data = [
-                'success' => true,
-                'idx' => $response['idx'],
-            ];
-            return response()->json($data);
+        $restaurant = Restaurant::where('id', $restaurant_id)->first();
+        if ($restaurant) {
+            //get all pivot users of restaurant (Store Ownerowners)
+            $pivotUsers = $restaurant->users()
+                ->wherePivot('restaurant_id', $restaurant_id)
+                ->get();
+            //filter only res owner and send notification.
+            foreach ($pivotUsers as $pU) {
+                if ($pU->hasRole('Store Owner')) {
+                    $message = config('settings.restaurantNewOrderNotificationMsg');
+                    OneSignal::sendNotificationToExternalUser(
+                        $message,
+                        $pU->id,
+                        $url = null,
+                        $data = null,
+                        $buttons = null,
+                        $schedule = null
+                    );
+                }
+            }
         }
-
-        if (isset($response['error_key']) && $response['error_key'] == 'already_verified') {
-            $data = [
-                'success' => true,
-                'idx' => null,
-            ];
-            return response()->json($data);
-        }
-
-        $data = [
-            'success' => false,
-        ];
-        return response()->json($data);
     }
-}
+};

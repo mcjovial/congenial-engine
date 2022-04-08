@@ -11,5 +11,7 @@ export const addProduct = (product) => ({
 });
 
 export const removeProduct = (product) => (dispatch) => {
+	console.log("From action", product);
+
 	return dispatch({ type: REMOVE_PRODUCT, payload: product });
 };

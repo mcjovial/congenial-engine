@@ -11,18 +11,18 @@ import { getSettings } from "../../../services/settings/actions";
 import { getSingleLanguageData } from "../../../services/languages/actions";
 
 class FirstScreen extends Component {
-	state = {
-		splashVersion: 1,
-	};
 	componentDidMount() {
+		//if one config is missing then call the api to fetch settings
+
+		// if (!localStorage.getItem("storeColor")) {
+		// 	this.props.getSettings();
+		// }
+
 		if (localStorage.getItem("storeColor")) {
 			setTimeout(() => {
 				this.removeSplashScreen();
 			}, 1000);
 		}
-		let splashVersion = Math.random() * Math.floor(9999999);
-		localStorage.setItem("splashVersion", splashVersion);
-		this.setState({ splashVersion: splashVersion });
 	}
 
 	removeSplashScreen = () => {
@@ -65,6 +65,9 @@ class FirstScreen extends Component {
 	render() {
 		const { user } = this.props;
 
+		if (localStorage.getItem("userSetAddress") !== null) {
+			return <Redirect to="/stores" />;
+		}
 		return (
 			<React.Fragment>
 				<Meta
@@ -82,7 +85,7 @@ class FirstScreen extends Component {
 						<div className="block m-0">
 							<div className="block-content p-0">
 								<img
-									src={`/assets/img/splash/splash.jpg?v=${this.state.splashVersion}`}
+									src="/assets/img/splash/splash.jpg"
 									className="img-fluid"
 									alt={localStorage.getItem("storeName")}
 									style={{
@@ -139,17 +142,13 @@ class FirstScreen extends Component {
 									<Ink duration="500" hasTouch="true" />
 								</DelayLink>
 								{user.success ? (
-									<p className="login-block font-w500 mb-0 firstscreen-loggedin-message-block">
+									<p className="login-block font-w500 mb-0">
 										{localStorage.getItem("firstScreenWelcomeMessage")} {user.data.name}
 									</p>
 								) : (
-									<p className="login-block mb-0 firstscreen-login-link-block">
+									<p className="login-block mb-0">
 										{localStorage.getItem("firstScreenLoginText")}{" "}
-										<NavLink
-											to="/login"
-											style={{ color: localStorage.getItem("storeColor") }}
-											className="firstscreen-login-link"
-										>
+										<NavLink to="/login" style={{ color: localStorage.getItem("storeColor") }}>
 											{localStorage.getItem("firstScreenLoginBtn")}
 										</NavLink>
 									</p>

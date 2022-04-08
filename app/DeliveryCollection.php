@@ -6,12 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class DeliveryCollection extends Model
 {
-
-    public static function boot()
-    {
-        parent::boot();
-        static::addGlobalScope(new \App\Scopes\ZoneScope);
-    }
     /**
      * @return mixed
      */
@@ -26,10 +20,5 @@ class DeliveryCollection extends Model
     public function user()
     {
         return $this->belongsTo('App\User');
-    }
-
-    public function zone()
-    {
-        return $this->belongsTo('App\Zone');
     }
 }

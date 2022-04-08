@@ -2,14 +2,12 @@ import React, { Component } from "react";
 
 import BackWithSearch from "../../Elements/BackWithSearch";
 import ContentLoader from "react-content-loader";
+
 import { Link } from "react-router-dom";
-import { connect } from "react-redux";
-import { setFavoriteRest } from "../../../../services/items/actions";
 
 class RestaurantInfo extends Component {
 	state = {
 		withLinkToRestaurant: false,
-		isFavorite: false,
 	};
 
 	componentDidMount() {
@@ -52,34 +50,11 @@ class RestaurantInfo extends Component {
 			this.fixedRestaurantInfo(hidden);
 		}
 	};
-
-	setFavoriteRestaurant = () => {
-		const { restaurant_info, user } = this.props;
-		if (user.success) {
-			if (restaurant_info.is_favorited) {
-				this.refs.heartIcon.classList.remove("is-active");
-			} else {
-				this.refs.heartIcon.classList.add("is-active");
-			}
-			this.props.setFavoriteRest(user.data.auth_token, restaurant_info.id);
-		}
-	};
-
-	static getDerivedStateFromProps(nextProps, prevState) {
-		if (nextProps.restaurant_info !== prevState.restaurant_info) {
-			return {
-				data: nextProps.restaurant_info,
-			};
-		} else {
-			return null;
-		}
-	}
-
 	render() {
-		const { history, restaurant, user } = this.props;
+		const { history, restaurant } = this.props;
 		return (
 			<React.Fragment>
-				<div className="bg-white">
+				<div className="height-25 bg-white">
 					<BackWithSearch
 						ref={(node) => {
 							this.child = node;
@@ -90,7 +65,6 @@ class RestaurantInfo extends Component {
 						restaurant={restaurant}
 						disable_search={true}
 						homeButton={true}
-						shareButton={true}
 					/>
 
 					{restaurant.length === 0 ? (
@@ -109,18 +83,17 @@ class RestaurantInfo extends Component {
 						<React.Fragment>
 							<Link
 								to={"../../stores/" + restaurant.slug}
-								className={`store-info-itemspage ${this.state.withLinkToRestaurant ? "" : "no-click"}`}
+								className={this.state.withLinkToRestaurant ? "" : "no-click"}
 							>
-								<div className="d-flex pt-50">
-									<div className="px-15 mt-5">
+								<div className="pt-50">
+									<div className="block-content block-content-full pt-2">
 										<img
 											src={restaurant.image}
 											alt={restaurant.name}
 											className="restaurant-image mt-0"
 										/>
 									</div>
-
-									<div className="mt-5 pb-15 w-100">
+									<div className="block-content block-content-full restaurant-info">
 										<h4 className="font-w600 mb-5 text-dark">{restaurant.name}</h4>
 										<div className="font-size-sm text-muted truncate-text text-muted">
 											{restaurant.description}
@@ -138,39 +111,20 @@ class RestaurantInfo extends Component {
 											</p>
 										)}
 										<div className="text-center restaurant-meta mt-5 d-flex align-items-center justify-content-between text-muted">
-											{restaurant.avgRating === "0" ? (
-												<div className="col-2 p-0 text-left">
-													<i
-														className="fa fa-star"
-														style={{
-															color: localStorage.getItem("storeColor"),
-														}}
-													/>{" "}
-													{restaurant.rating}
-												</div>
-											) : (
-												<Link
-													to={"/reviews/" + restaurant.slug}
-													style={{ display: "contents" }}
-													className="yes-click"
-												>
-													<div className="col-2 p-0 text-left store-rating-block">
-														<i
-															className="fa fa-star"
-															style={{
-																color: localStorage.getItem("storeColor"),
-															}}
-														/>{" "}
-														{restaurant.avgRating}
-													</div>
-												</Link>
-											)}
-
-											<div className="col-4 p-0 text-center store-distance-block">
+											<div className="col-2 p-0 text-left">
+												<i
+													className="fa fa-star"
+													style={{
+														color: localStorage.getItem("storeColor"),
+													}}
+												/>{" "}
+												{restaurant.rating}
+											</div>
+											<div className="col-4 p-0 text-center">
 												<i className="si si-clock" /> {restaurant.delivery_time}{" "}
 												{localStorage.getItem("homePageMinsText")}
 											</div>
-											<div className="col-6 p-0 text-center store-avgprice-block">
+											<div className="col-6 p-0 text-center">
 												<i className="si si-wallet" />{" "}
 												{localStorage.getItem("currencySymbolAlign") === "left" && (
 													<React.Fragment>
@@ -190,14 +144,6 @@ class RestaurantInfo extends Component {
 									</div>
 								</div>
 							</Link>
-							{user.success && (
-								<span onClick={this.setFavoriteRestaurant}>
-									<div
-										ref="heartIcon"
-										className={`heart ${restaurant.is_favorited && "is-active"}`}
-									/>
-								</span>
-							)}
 						</React.Fragment>
 					)}
 				</div>
@@ -219,12 +165,4 @@ class RestaurantInfo extends Component {
 	}
 }
 
-const mapStateToProps = (state) => ({
-	restaurant_info: state.items.restaurant_info,
-	user: state.user.user,
-});
-
-export default connect(
-	mapStateToProps,
-	{ setFavoriteRest }
-)(RestaurantInfo);
+export default RestaurantInfo;

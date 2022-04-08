@@ -6,13 +6,11 @@ import Moment from "react-moment";
 
 import { formatPrice } from "../../../../helpers/formatPrice";
 import OrderCancelPopup from "./OrderCancelPopup";
-import AwaitingPaymentTimer from "./AwaitingPaymentTimer";
 
 class OrderList extends Component {
 	componentDidMount() {
 		document.getElementsByTagName("body")[0].classList.add("bg-grey");
 	}
-
 	__getOrderStatus = (id) => {
 		if (id === 1) {
 			return localStorage.getItem("orderPlacedStatusText");
@@ -41,14 +39,7 @@ class OrderList extends Component {
 		if (id === 9) {
 			return localStorage.getItem("paymentFailedStatusText");
 		}
-		if (id === 10) {
-			return localStorage.getItem("scheduledOrderStatusText");
-		}
-		if (id === 11) {
-			return localStorage.getItem("confirmedOrderStatusText");
-		}
 	};
-
 	_getTotalItemCost = (item) => {
 		let itemCost = parseFloat(item.price) * item.quantity;
 		if (item.order_item_addons.length) {
@@ -63,7 +54,6 @@ class OrderList extends Component {
 	componentWillUnmount() {
 		document.getElementsByTagName("body")[0].classList.remove("bg-grey");
 	}
-
 	render() {
 		const { order, user, cancelOrder } = this.props;
 		return (
@@ -89,35 +79,18 @@ class OrderList extends Component {
 								</DelayLink>
 							)}
 						</div>
-						<div className="pull-right">
-							{order.is_ratable && (
-								<DelayLink
-									to={`/rate-order/${order.id}`}
-									className="btn btn-square btn-outline-secondary mb-10 order-track-button"
-									delay={250}
-									style={{ position: "relative" }}
-								>
-									{localStorage.getItem("orderRateOrderButton")}
-									<Ink duration="500" />
-								</DelayLink>
-							)}
-						</div>
+
 						<div className="display-flex">
 							<div className="flex-auto">
 								<button
 									className={`mr-5 btn btn-square btn-outline-secondary min-width-125 mb-10 order-status-button text-muted ${order.orderstatus_id ===
-										6 && "text-danger"} ${order.orderstatus_id === 11 && "order-confirmed-badge"}`}
+										6 && "text-danger"} `}
 								>
 									{this.__getOrderStatus(order.orderstatus_id)}
 								</button>
 							</div>
 						</div>
-						{order.schedule_slot !== null && (
-							<p className="mb-0 orderlist-scheduleSlot">
-								{JSON.parse(order.schedule_date).day}, {JSON.parse(order.schedule_date).date} (
-								{JSON.parse(order.schedule_slot).open} - {JSON.parse(order.schedule_slot).close})
-							</p>
-						)}
+
 						<span className="text-muted pull-right" style={{ fontSize: "0.9rem" }}>
 							{localStorage.getItem("showFromNowDate") === "true" ? (
 								<Moment fromNow>{order.created_at}</Moment>
@@ -125,6 +98,7 @@ class OrderList extends Component {
 								<Moment format="DD/MM/YYYY hh:mma">{order.created_at}</Moment>
 							)}
 						</span>
+
 						<div className="flex-auto">
 							<h6 className="font-w700 mb-2" style={{ color: localStorage.getItem("storeColor") }}>
 								{order.unique_order_id}
@@ -192,24 +166,22 @@ class OrderList extends Component {
 									</React.Fragment>
 								</div>
 							)}
-							{order.restaurant_charge !== null && (
-								<div className="display-flex mt-10">
-									<React.Fragment>
-										<div className="flex-auto">
-											<small>{localStorage.getItem("cartRestaurantCharges")}:</small>{" "}
-										</div>
-										<div className="flex-auto text-right">
-											<small>
-												{localStorage.getItem("currencySymbolAlign") === "left" &&
-													localStorage.getItem("currencyFormat")}
-												{order.restaurant_charge}
-												{localStorage.getItem("currencySymbolAlign") === "right" &&
-													localStorage.getItem("currencyFormat")}
-											</small>
-										</div>
-									</React.Fragment>
-								</div>
-							)}
+							<div className="display-flex mt-10">
+								<React.Fragment>
+									<div className="flex-auto">
+										<small>{localStorage.getItem("cartRestaurantCharges")}:</small>{" "}
+									</div>
+									<div className="flex-auto text-right">
+										<small>
+											{localStorage.getItem("currencySymbolAlign") === "left" &&
+												localStorage.getItem("currencyFormat")}
+											{order.restaurant_charge}
+											{localStorage.getItem("currencySymbolAlign") === "right" &&
+												localStorage.getItem("currencyFormat")}
+										</small>
+									</div>
+								</React.Fragment>
+							</div>
 							<div className="display-flex mt-10">
 								<React.Fragment>
 									<div className="flex-auto">
@@ -271,68 +243,25 @@ class OrderList extends Component {
 									</React.Fragment>
 								</div>
 							)}
-
 							<div className="display-flex mt-10 font-w700">
-								<React.Fragment>
-									<div className="flex-auto">{localStorage.getItem("orderTextTotal")}</div>
-									<div className="flex-auto text-right">
-										{localStorage.getItem("currencySymbolAlign") === "left" &&
-											localStorage.getItem("currencyFormat")}
-										{order.total}
-										{localStorage.getItem("currencySymbolAlign") === "right" &&
-											localStorage.getItem("currencyFormat")}
-									</div>
-								</React.Fragment>
-							</div>
-
-							{order.wallet_amount && (
-								<div className="display-flex mt-10">
-									<div className="flex-auto">
-										{localStorage.getItem("orderAmountPaidWithWallet")}:
-									</div>
-									<div className="flex-auto text-right">
-										-
-										{localStorage.getItem("currencySymbolAlign") === "left" &&
-											localStorage.getItem("currencyFormat")}
-										{order.wallet_amount}
-										{localStorage.getItem("currencySymbolAlign") === "right" &&
-											localStorage.getItem("currencyFormat")}
-									</div>
+								<div className="flex-auto">
+									{localStorage.getItem("orderTextTotal")}
+									<br />
+									<span className="billdetail-paymentmode">
+										<span>{localStorage.getItem("orderDetailsPaymentMode")}</span>{" "}
+										<span className="ml-1">{order.payment_mode}</span>
+									</span>
 								</div>
-							)}
-
-							{!(order.orderstatus_id === 5 || order.orderstatus_id === 6) && (
-								<React.Fragment>
-									{order.payment_mode === "COD" && (
-										<React.Fragment>
-											{(order.payable !== null || order.payable !== "0.00") && (
-												<div className="display-flex mt-10">
-													<div className="flex-auto">
-														{localStorage.getItem("orderAmountRemainingToPay")}:{" "}
-													</div>
-													<div className="flex-auto text-right">
-														{localStorage.getItem("currencySymbolAlign") === "left" &&
-															localStorage.getItem("currencyFormat")}
-														{order.payable}
-														{localStorage.getItem("currencySymbolAlign") === "right" &&
-															localStorage.getItem("currencyFormat")}
-													</div>
-												</div>
-											)}
-										</React.Fragment>
-									)}
-								</React.Fragment>
-							)}
-
-							<div className="display-flex mt-10 font-w700">
-								<React.Fragment>
-									<div className="flex-auto">{localStorage.getItem("orderDetailsPaymentMode")}</div>
-									<div className="flex-auto text-right">{order.payment_mode}</div>
-								</React.Fragment>
+								<div className="flex-auto text-right">
+									{localStorage.getItem("currencySymbolAlign") === "left" &&
+										localStorage.getItem("currencyFormat")}
+									{order.total}
+									{localStorage.getItem("currencySymbolAlign") === "right" &&
+										localStorage.getItem("currencyFormat")}
+								</div>
 							</div>
 						</React.Fragment>
-						<p className="small mt-2 orderlist-address">{order.address}</p>
-						{(order.orderstatus_id === 1 || order.orderstatus_id === 10) && (
+						{order.orderstatus_id === 1 && (
 							<React.Fragment>
 								<div className="pull-right">
 									<OrderCancelPopup order={order} user={user} cancelOrder={cancelOrder} />
@@ -340,8 +269,6 @@ class OrderList extends Component {
 								<div className="clearfix" />
 							</React.Fragment>
 						)}
-
-						{order.orderstatus_id === 8 && <AwaitingPaymentTimer order={order} />}
 					</div>
 				</div>
 			</React.Fragment>

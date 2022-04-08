@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
 
 class InstallRequest extends FormRequest
 {
@@ -25,6 +25,7 @@ class InstallRequest extends FormRequest
     public function rules()
     {
         return [
+            'db.purchase_code' => 'required',
             'db.host' => 'required',
             'db.port' => 'required',
             'db.username' => 'required',
@@ -62,6 +63,7 @@ class InstallRequest extends FormRequest
     public function attributes()
     {
         return [
+            'db.purchase_code' => 'Purchase Code',
             'db.host' => 'Host',
             'db.port' => 'Port',
             'db.username' => 'DB Username',

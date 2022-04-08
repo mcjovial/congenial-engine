@@ -30,10 +30,7 @@ export const GET_PAYMENT_GATEWAYS_URL = WEBSITE_URL + "/public/api/get-payment-g
 export const NOTIFICATION_TOKEN_URL = WEBSITE_URL + "/public/api/save-notification-token";
 export const SEND_OTP_URL = WEBSITE_URL + "/public/api/send-otp";
 export const VERIFY_OTP_URL = WEBSITE_URL + "/public/api/verify-otp";
-
-export const RAZORPAY_CREATE_ORDER_URL = WEBSITE_URL + "/public/api/payment/razorpay/create-order";
-export const RAZORPAY_PROCESS_VERIFY_URL = WEBSITE_URL + "/public/api/payment/razorpay/process";
-
+export const RAZORPAY_PAYMENT_URL = WEBSITE_URL + "/public/api/payment/process-razor-pay";
 export const PAYTM_PAYMENT_URL = WEBSITE_URL + "/public/api/payment/paytm";
 
 export const CHECK_USER_RUNNING_ORDER_URL = WEBSITE_URL + "/public/api/check-running-order";
@@ -62,19 +59,9 @@ export const PAYMONGO_PAYMENT_URL = WEBSITE_URL + "/public/api/payment/process-p
 
 export const MERCADOPAGO_PAYMENT_URL = WEBSITE_URL + "/public/api/payment/process-mercado-pago";
 
-export const KHALTI_PAYMENT_VERIFICATION_URL = WEBSITE_URL + "/public/api/payment/verify-khalti-payment";
-
-export const GET_REVIEWS_OF_STORE_URL = WEBSITE_URL + "/public/api/get-store-reviews";
 export const GET_SINGLE_ORDER_TO_BE_RATED = WEBSITE_URL + "/public/api/single-ratable-order";
 export const GET_RATABLE_ORDER_DETAILS_URL = WEBSITE_URL + "/public/api/get-ratable-order";
-export const ADD_RATING_URL = WEBSITE_URL + "/public/api/rate-order";
-export const ADD_TO_FAVORITE_RESTAURANT_URL = WEBSITE_URL + "/public/api/toggle-favorite";
-export const GET_FAVORITE_RESTAURANTS_URL = WEBSITE_URL + "/public/api/get-favorite-stores";
-export const GET_FAVORITE_RESTAURANT_FOR_LOGGED_IN_URL = WEBSITE_URL + "/public/api/get-restaurant-info-with-favourite";
-export const SAVE_VAT_NUMBER_URL = WEBSITE_URL + "/public/api/update-tax-number";
-
-export const LOGIN_USER_WITH_OTP_URL = WEBSITE_URL + "/public/api/login-with-otp";
-export const GENERATE_OTP_FOR_LOGIN_URL = WEBSITE_URL + "/public/api/generate-otp-for-login";
+export const ADD_RATING_URL = WEBSITE_URL + "/public/api/save-new-rating";
 
 /* Delivery URLs */
 export const LOGIN_DELIVERY_USER_URL = WEBSITE_URL + "/public/api/delivery/login";
@@ -86,9 +73,3 @@ export const GET_DELIVERY_GUY_GPS_LOCATION_URL = WEBSITE_URL + "/public/api/deli
 export const ACCEPT_TO_DELIVER_URL = WEBSITE_URL + "/public/api/delivery/accept-to-deliver";
 export const PICKEDUP_ORDER_URL = WEBSITE_URL + "/public/api/delivery/pickedup-order";
 export const DELIVER_ORDER_URL = WEBSITE_URL + "/public/api/delivery/deliver-order";
-export const TOGGLE_DELIVERY_GUY_STATUS_URL = WEBSITE_URL + "/public/api/delivery/toggle-delivery-guy-status";
-export const DELIVERY_COMPLETED_ORDERS_URL = WEBSITE_URL + "/public/api/delivery/get-completed-orders";
-
-/* Module URLs*/
-export const ADMIN_LOGIN_AS_CUSTOMER_URL = WEBSITE_URL + "/public/callandorder/login-as-customer";
-export const REGISTER_GUEST_USER_URL = WEBSITE_URL + "/public/callandorder/register-guest-user";

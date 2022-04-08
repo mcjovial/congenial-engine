@@ -13,7 +13,6 @@ import { getAllLanguages, getSingleLanguageData } from "../../services/languages
 class SinglePage extends Component {
 	componentDidMount() {
 		this.props.getSettings();
-
 		this.props.getAllLanguages();
 
 		this.props.clearSinglePage();

@@ -29,7 +29,6 @@ class Register extends Component {
 		loading: false,
 		name: "",
 		email: "",
-		onlyPhone: "",
 		phone: "",
 		password: "",
 		otp: "",
@@ -40,11 +39,9 @@ class Register extends Component {
 		invalid_otp: false,
 		showResendOtp: false,
 		countdownStart: false,
-		countDownSeconds: 30,
+		countDownSeconds: 15,
 		enSOV: "",
-		errorMessage: "",
-		countryCodeSelect: "",
-		isFoodomaaAndroidWebView: false,
+		errorMessage: ""
 	};
 
 	static contextTypes = {
@@ -52,10 +49,6 @@ class Register extends Component {
 	};
 
 	componentDidMount() {
-		const countryCode = localStorage.getItem("phoneCountryCode");
-		const countryCodesArr = countryCode.split(",");
-		this.setState({ countryCodeSelect: countryCodesArr[0].replace(/\s/g, "") });
-
 		const enSOV = this.props.settings && this.props.settings.find((data) => data.key === "enSOV");
 		this.setState({ enSOV: enSOV.value });
 
@@ -81,27 +74,10 @@ class Register extends Component {
 				}
 			}, 0.5 * 1000);
 		}
-
-		if (navigator.userAgent === "FoodomaaAndroidWebViewUA") {
-			if (window.Android !== "undefined") {
-				this.setState({ isFoodomaaAndroidWebView: true });
-			}
-		}
 	}
 
 	handleInputChange = (event) => {
-		if (event.target.name === "phone") {
-			this.setState({ phone: this.state.countryCodeSelect + event.target.value.replace(/^0+/, "") });
-			this.setState({ onlyPhone: event.target.value.replace(/^0+/, "") });
-		} else {
-			this.setState({ [event.target.name]: event.target.value.trim() });
-		}
-	};
-	handleCountryCodeChange = (event) => {
-		const { target } = event;
-		this.setState({ countryCodeSelect: target.value }, () => {
-			this.setState({ phone: target.value + this.state.onlyPhone });
-		});
+		this.setState({ [event.target.name]: event.target.value });
 	};
 
 	handleRegister = (event) => {
@@ -127,8 +103,7 @@ class Register extends Component {
 					this.state.email,
 					this.state.phone,
 					this.state.password,
-					this.getLocationFromLocalStorage(),
-					null
+					JSON.parse(localStorage.getItem("userSetAddress"))
 				);
 			}
 		} else {
@@ -156,8 +131,7 @@ class Register extends Component {
 					this.state.accessToken,
 					this.state.phone,
 					this.state.provider,
-					this.getLocationFromLocalStorage(),
-					this.state.otp
+					JSON.parse(localStorage.getItem("userSetAddress"))
 				);
 			}
 		} else {
@@ -187,35 +161,41 @@ class Register extends Component {
 		}
 	};
 
-	componentWillReceiveProps(nextProps) {
+	componentWillReceiveProps(newProps) {
 		const { user } = this.props;
 
-		if (user !== nextProps.user) {
+		if (user !== newProps.user) {
 			this.setState({ loading: false });
 		}
 
-		if (nextProps.user.success) {
-			if (nextProps.user.data.default_address !== null) {
+		if (newProps.user.success) {
+			if (newProps.user.data.default_address !== null) {
 				const userSetAddress = {
-					lat: nextProps.user.data.default_address.latitude,
-					lng: nextProps.user.data.default_address.longitude,
-					address: nextProps.user.data.default_address.address,
-					house: nextProps.user.data.default_address.house,
-					tag: nextProps.user.data.default_address.tag,
+					lat: newProps.user.data.default_address.latitude,
+					lng: newProps.user.data.default_address.longitude,
+					address: newProps.user.data.default_address.address,
+					house: newProps.user.data.default_address.house,
+					tag: newProps.user.data.default_address.tag,
 				};
 				localStorage.setItem("userSetAddress", JSON.stringify(userSetAddress));
 			}
-			if (navigator.userAgent === "FoodomaaAndroidWebViewUA") {
-				if (window.Android !== "undefined") {
-					window.Android.registerFcm(nextProps.user.data.auth_token);
-				}
-			}
+
+			// if (localStorage.getItem("fromCartToLogin") === "1") {
+			// 	localStorage.removeItem("fromCartToLogin");
+			// 	console.log("HERE1");
+			// 	//redirect to cart page
+			// 	this.context.router.history.push("/cart");
+			// }
+			// } else {
+			// 	//goback
+			// 	this.context.router.history.goBack();
+			// }
 		}
 
-		if (nextProps.user.email_phone_already_used) {
+		if (newProps.user.email_phone_already_used) {
 			this.setState({ email_phone_already_used: true });
 		}
-		if (nextProps.user.otp) {
+		if (newProps.user.otp) {
 			this.setState({ email_phone_already_used: false, error: false });
 			//otp sent, hide reg form and show otp form
 			document.getElementById("registerForm").classList.add("hidden");
@@ -229,7 +209,7 @@ class Register extends Component {
 			this.validator.hideMessages();
 		}
 
-		if (nextProps.user.valid_otp) {
+		if (newProps.user.valid_otp) {
 			this.setState({ invalid_otp: false, error: false, loading: true });
 			// register user
 			if (this.state.social_login) {
@@ -240,8 +220,7 @@ class Register extends Component {
 					this.state.accessToken,
 					this.state.phone,
 					this.state.provider,
-					this.getLocationFromLocalStorage(),
-					this.state.otp
+					JSON.parse(localStorage.getItem("userSetAddress"))
 				);
 			} else {
 				this.props.registerUser(
@@ -249,8 +228,7 @@ class Register extends Component {
 					this.state.email,
 					this.state.phone,
 					this.state.password,
-					this.getLocationFromLocalStorage(),
-					this.state.otp
+					JSON.parse(localStorage.getItem("userSetAddress"))
 				);
 			}
 
@@ -258,17 +236,17 @@ class Register extends Component {
 			// this.setState({ loading: false });
 		}
 
-		if (nextProps.user.valid_otp === false) {
+		if (newProps.user.valid_otp === false) {
 			console.log("Invalid OTP");
 			this.setState({ invalid_otp: true });
 		}
 
-		if (!nextProps.user) {
+		if (!newProps.user) {
 			this.setState({ error: true });
 		}
 
 		//old user, proceed to login after social login
-		if (nextProps.user.proceed_login) {
+		if (newProps.user.proceed_login) {
 			console.log("From Social : user already exists");
 			this.props.loginUser(
 				this.state.name,
@@ -277,15 +255,11 @@ class Register extends Component {
 				this.state.accessToken,
 				null,
 				this.state.provider,
-				this.getLocationFromLocalStorage(),
-				this.state.otp
+				JSON.parse(localStorage.getItem("userSetAddress"))
 			);
 		}
 
-		if (nextProps.user.enter_phone_after_social_login) {
-			// this.setState({ error: false });
-			console.log("After Send OTP Enter Number");
-
+		if (newProps.user.enter_phone_after_social_login) {
 			this.validator.hideMessages();
 			document.getElementById("registerForm").classList.add("hidden");
 			document.getElementById("socialLoginDiv").classList.add("hidden");
@@ -332,8 +306,7 @@ class Register extends Component {
 				user._token.accessToken,
 				null,
 				user._provider,
-				this.getLocationFromLocalStorage(),
-				this.state.otp
+				JSON.parse(localStorage.getItem("userSetAddress"))
 			);
 		}
 	};
@@ -346,7 +319,7 @@ class Register extends Component {
 		setTimeout(() => {
 			this.setState({ showResendOtp: true });
 			clearInterval(this.intervalID);
-		}, 30000 + 1000);
+		}, 15000 + 1000);
 		this.intervalID = setInterval(() => {
 			console.log("interval going on");
 			this.setState({ countDownSeconds: this.state.countDownSeconds - 1 });
@@ -359,50 +332,7 @@ class Register extends Component {
 		clearInterval(this.intervalID);
 	}
 
-	processDefaultCountryCode = () => {
-		const countryCode = localStorage.getItem("phoneCountryCode");
-		const countryCodesArr = countryCode.split(",");
-		if (countryCodesArr.length === 0) {
-			return <span className="country-code" />;
-		}
-		if (countryCodesArr.length === 1) {
-			return <span className="country-code">{countryCodesArr[0].replace(/\s/g, "")}</span>;
-		}
-		if (countryCodesArr.length > 1) {
-			return (
-				<select
-					name="countryCodeSelect"
-					onChange={this.handleCountryCodeChange}
-					className="country-code--dropdown"
-				>
-					{countryCodesArr.map((countryCode) => (
-						<option key={countryCode} value={countryCode.replace(/\s/g, "")}>
-							{countryCode.replace(/\s/g, "")}
-						</option>
-					))}
-				</select>
-			);
-		}
-	};
-
-	getLocationFromLocalStorage = () => {
-		const userSetAddress = JSON.parse(localStorage.getItem("userSetAddress"));
-
-		if (userSetAddress === null) {
-			return null;
-		} else {
-			if (userSetAddress.hasOwnProperty("businessLocation")) {
-				return null;
-			} else {
-				return userSetAddress;
-			}
-		}
-	};
-
 	render() {
-		if (localStorage.getItem("enOLnR") === "true") {
-			return <Redirect to={"/login"} />;
-		}
 		if (window.innerWidth > 768) {
 			return <Redirect to="/" />;
 		}
@@ -428,11 +358,7 @@ class Register extends Component {
 			<React.Fragment>
 				{this.state.error && (
 					<div className="auth-error">
-						<div className="error-shake">
-							{this.state.errorMessage !== ""
-								? this.state.errorMessage
-								: localStorage.getItem("loginErrorMessage")}
-						</div>
+						<div className="error-shake">{this.state.errorMessage !== "" ? this.state.errorMessage : localStorage.getItem("loginErrorMessage")}</div>
 					</div>
 				)}
 				{this.state.email_phone_already_used && (
@@ -446,18 +372,18 @@ class Register extends Component {
 					</div>
 				)}
 				{this.state.loading && <Loading />}
-				<div className="cust-auth-header">
+				<div className="auth-header">
 					<div className="input-group">
 						<div className="input-group-prepend">
 							<BackButton history={this.props.history} />
 						</div>
 					</div>
 					<img
-						src="/assets/img/various/login-illustration.png"
-						className="login-image pull-right"
+						src="/assets/img/login-header.png"
+						className="login-image pull-right mr-15"
 						alt="login-header"
 					/>
-					<div className="login-texts px-15 mt-30 pb-20">
+					<div className="login-texts px-15 mt-50 pb-20">
 						<span className="login-title">{localStorage.getItem("registerRegisterTitle")}</span>
 						<br />
 						<span className="login-subtitle">{localStorage.getItem("registerRegisterSubTitle")}</span>
@@ -467,75 +393,78 @@ class Register extends Component {
 				<div className="bg-white">
 					<form onSubmit={this.handleRegister} id="registerForm">
 						<div className="form-group px-15 pt-30">
+							<label className="col-12 edit-address-input-label">
+								{localStorage.getItem("loginLoginNameLabel")}{" "}
+								{this.validator.message("name", this.state.name, "required|string")}
+							</label>
 							<div className="col-md-9 pb-5">
 								<input
 									type="text"
 									name="name"
 									onChange={this.handleInputChange}
-									className="form-control auth-input"
-									placeholder={localStorage.getItem("loginLoginNameLabel")}
+									className="form-control edit-address-input"
 								/>
-								{this.validator.message("name", this.state.name, "required|string")}
 							</div>
-
+							<label className="col-12 edit-address-input-label">
+								{localStorage.getItem("loginLoginEmailLabel")}{" "}
+								{this.validator.message("email", this.state.email, "required|email")}
+							</label>
 							<div className="col-md-9 pb-5">
 								<input
 									type="text"
 									name="email"
 									onChange={this.handleInputChange}
-									className="form-control auth-input"
-									placeholder={localStorage.getItem("loginLoginEmailLabel")}
+									className="form-control edit-address-input"
 								/>
-								{this.validator.message("email", this.state.email, "required|email")}
 							</div>
+							<label className="col-12 edit-address-input-label">
+								{localStorage.getItem("loginLoginPhoneLabel")}{" "}
+								{this.validator.message("phone", this.state.phone, [
+									"required",
+									{ regex: ["^\\+[1-9]\\d{1,14}$"] },
+									{ min: ["8"] },
+								])}
+							</label>
 							<div className="col-md-9 pb-5">
-								<div>
-									{this.processDefaultCountryCode()}
-									<span>
-										<input
-											name="phone"
-											type="tel"
-											onChange={this.handleInputChange}
-											className="form-control phone-number-country-code auth-input"
-											placeholder={localStorage.getItem("loginLoginPhoneLabel")}
-										/>
-										{this.validator.message("phone", this.state.phone, [
-											"required",
-											{ regex: ["^\\+[1-9]\\d{1,14}$"] },
-											{ min: ["8"] },
-										])}
-									</span>
-								</div>
+								<input
+									defaultValue={
+										localStorage.getItem("phoneCountryCode") === null
+											? ""
+											: localStorage.getItem("phoneCountryCode")
+									}
+									name="phone"
+									type="tel"
+									onChange={this.handleInputChange}
+									className="form-control edit-address-input"
+								/>
 							</div>
+							<label className="col-12 edit-address-input-label">
+								{localStorage.getItem("loginLoginPasswordLabel")}{" "}
+								{this.validator.message("password", this.state.password, "required|min:8")}
+							</label>
 							<div className="col-md-9">
 								<input
 									type="password"
 									name="password"
 									onChange={this.handleInputChange}
-									className="form-control auth-input"
-									placeholder={localStorage.getItem("loginLoginPasswordLabel")}
+									className="form-control edit-address-input"
 								/>
-								{this.validator.message("password", this.state.password, "required|min:8")}
 							</div>
 						</div>
-						<div className="mt-20 mx-15 d-flex justify-content-center">
+						<div className="mt-20 px-15 pt-15 button-block">
 							<button
 								type="submit"
 								className="btn btn-main"
-								style={{
-									backgroundColor: localStorage.getItem("storeColor"),
-									width: "90%",
-									borderRadius: "4px",
-								}}
+								style={{ backgroundColor: localStorage.getItem("storeColor") }}
 							>
-								{localStorage.getItem("firstScreenRegisterBtn")}
+								{localStorage.getItem("registerRegisterTitle")}
 							</button>
 						</div>
 					</form>
 
 					<form onSubmit={this.handleVerifyOtp} id="otpForm" className="hidden">
 						<div className="form-group px-15 pt-30">
-							<label className="col-12 auth-input-label">
+							<label className="col-12 edit-address-input-label">
 								{localStorage.getItem("otpSentMsg")} {this.state.phone}
 								{this.validator.message("otp", this.state.otp, "required|numeric|min:4|max:6")}
 							</label>
@@ -544,7 +473,7 @@ class Register extends Component {
 									name="otp"
 									type="tel"
 									onChange={this.handleInputChange}
-									className="form-control auth-input"
+									className="form-control edit-address-input"
 									required
 								/>
 							</div>
@@ -579,30 +508,29 @@ class Register extends Component {
 						className="hidden"
 					>
 						<div className="form-group px-15 pt-30">
-							<label className="col-12 auth-input-label">
+							<label className="col-12 edit-address-input-label">
 								{localStorage.getItem("socialWelcomeText")} {this.state.name},
 							</label>
-							<label className="col-12 auth-input-label">
+							<label className="col-12 edit-address-input-label">
 								{localStorage.getItem("enterPhoneToVerify")}{" "}
+								{this.validator.message("phone", this.state.phone, [
+									"required",
+									{ regex: ["^\\+[1-9]\\d{1,14}$"] },
+									{ min: ["8"] },
+								])}
 							</label>
 							<div className="col-md-9 pb-5">
-								<div>
-									{this.processDefaultCountryCode()}
-									<span>
-										<input
-											name="phone"
-											type="tel"
-											onChange={this.handleInputChange}
-											className="form-control phone-number-country-code auth-input"
-										/>
-
-										{this.validator.message("phone", this.state.phone, [
-											"required",
-											{ regex: ["^\\+[1-9]\\d{1,14}$"] },
-											{ min: ["8"] },
-										])}
-									</span>
-								</div>
+								<input
+									defaultValue={
+										localStorage.getItem("phoneCountryCode") === null
+											? ""
+											: localStorage.getItem("phoneCountryCode")
+									}
+									name="phone"
+									type="tel"
+									onChange={this.handleInputChange}
+									className="form-control edit-address-input"
+								/>
 							</div>
 							<button
 								type="submit"
@@ -614,106 +542,58 @@ class Register extends Component {
 						</div>
 					</form>
 
-					{!this.state.isFoodomaaAndroidWebView && (
-						<div className="text-center mt-3 mb-20" id="socialLoginDiv">
-							<p className="login-or mt-2">OR</p>
-							<div ref="socialLoginLoader">
-								<ContentLoader
-									height={60}
-									width={400}
-									speed={1.2}
-									primaryColor="#f3f3f3"
-									secondaryColor="#ecebeb"
-								>
-									<rect x="28" y="0" rx="0" ry="0" width="165" height="45" />
-									<rect x="210" y="0" rx="0" ry="0" width="165" height="45" />
-								</ContentLoader>
-							</div>
-							<div ref="socialLogin" className="hidden">
-								{localStorage.getItem("enableFacebookLogin") === "true" && (
-									<SocialButton
-										provider="facebook"
-										appId={localStorage.getItem("facebookAppId")}
-										onLoginSuccess={this.handleSocialLogin}
-										onLoginFailure={() =>
-											console.log("Failed didn't get time to init or login failed")
-										}
-										className="facebook-login-button mr-2"
-									>
-										<div className="d-flex justify-content-between align-items-center">
-											<div>
-												<img
-													src="/assets/img/various/facebook.png"
-													alt="Facebook Login"
-													className="img-fluid"
-													style={{ width: "18px", marginRight: "10px" }}
-												/>
-											</div>
-											<div style={{ fontSize: "14px" }}>
-												{localStorage.getItem("facebookLoginButtonText")}
-											</div>
-										</div>
-									</SocialButton>
-								)}
-								{localStorage.getItem("enableGoogleLogin") === "true" && (
-									<SocialButton
-										provider="google"
-										appId={localStorage.getItem("googleAppId")}
-										onLoginSuccess={this.handleSocialLogin}
-										onLoginFailure={() =>
-											console.log("Failed didn't get time to init or login failed")
-										}
-										className="google-login-button"
-									>
-										<div className="d-flex justify-content-between align-items-center">
-											<div>
-												<img
-													src="/assets/img/various/google.png"
-													alt="Google"
-													className="img-fluid"
-													style={{ width: "18px", marginRight: "10px" }}
-												/>
-											</div>
-											<div>{localStorage.getItem("googleLoginButtonText")}</div>
-										</div>
-									</SocialButton>
-								)}
-							</div>
+					<div className="text-center mt-3 mb-20" id="socialLoginDiv">
+						<p className="login-or mt-2">OR</p>
+						<div ref="socialLoginLoader">
+							<ContentLoader
+								height={60}
+								width={400}
+								speed={1.2}
+								primaryColor="#f3f3f3"
+								secondaryColor="#ecebeb"
+							>
+								<rect x="28" y="0" rx="0" ry="0" width="165" height="45" />
+								<rect x="210" y="0" rx="0" ry="0" width="165" height="45" />
+							</ContentLoader>
 						</div>
-					)}
-					<div>
-						<div className="wave-container login-bottom-wave">
-							<svg viewBox="0 0 120 28" className="wave-svg">
-								<defs>
-									<filter id="goo">
-										<feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
-										<feColorMatrix
-											in="blur"
-											mode="matrix"
-											values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 13 -9"
-											result="goo"
-										/>
-										<xfeBlend in="SourceGraphic" in2="goo" />
-									</filter>
-									<path
-										id="wave"
-										d="M 0,10 C 30,10 30,15 60,15 90,15 90,10 120,10 150,10 150,15 180,15 210,15 210,10 240,10 v 28 h -240 z"
-									/>
-								</defs>
-
-								<use id="wave3" className="wave" xlinkHref="#wave" x="0" y="-2" />
-								<use id="wave2" className="wave" xlinkHref="#wave" x="0" y="0" />
-							</svg>
+						<div ref="socialLogin" className="hidden">
+							{localStorage.getItem("enableFacebookLogin") === "true" && (
+								<SocialButton
+									provider="facebook"
+									appId={localStorage.getItem("facebookAppId")}
+									onLoginSuccess={this.handleSocialLogin}
+									onLoginFailure={() => console.log("Failed didn't get time to init or login failed")}
+									className="facebook-login-button mr-2"
+								>
+									{localStorage.getItem("facebookLoginButtonText")}
+								</SocialButton>
+							)}
+							{localStorage.getItem("enableGoogleLogin") === "true" && (
+								<SocialButton
+									provider="google"
+									appId={localStorage.getItem("googleAppId")}
+									onLoginSuccess={this.handleSocialLogin}
+									onLoginFailure={() => console.log("Failed didn't get time to init or login failed")}
+									className="google-login-button"
+								>
+									<div className="d-flex justify-content-between align-items-center">
+										<div>
+											<img
+												src="/assets/img/various/google.png"
+												alt="Google"
+												className="img-fluid"
+												style={{ width: "18px", marginRight: "10px" }}
+											/>
+										</div>
+										<div>{localStorage.getItem("googleLoginButtonText")}</div>
+									</div>
+								</SocialButton>
+							)}
 						</div>
 					</div>
-
-					<div className="text-center mt-50 mb-100 auth-login-text-block">
+					<div className="text-center mt-50 mb-100">
 						{localStorage.getItem("regsiterAlreadyHaveAccount")}{" "}
-						<NavLink
-							to="/login"
-							style={{ color: localStorage.getItem("storeColor") }}
-							className="auth-login-link"
-						>
+						<NavLink to="/login" style={{ color: localStorage.getItem("storeColor") }}>
 							{localStorage.getItem("firstScreenLoginBtn")}
 						</NavLink>
 					</div>

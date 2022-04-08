@@ -39,9 +39,6 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\Localization::class,
-            \App\Http\Middleware\CheckAtleastOneLocationIsPrimary::class,
-            \App\Http\Middleware\RpMiddleware::class,
-            \App\Http\Middleware\PhpVersionCompatibility::class,
         ],
 
         'api' => [
@@ -68,12 +65,12 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'jwt-auth' => \App\Http\Middleware\jwtMiddleware::class,
+        'sclc' => \App\Http\Middleware\SCLC::class,
+        'sclcc' => \App\Http\Middleware\SCLCC::class,
+        'selfhelpm' => \App\Http\Middleware\SelfHelpM::class,
         'admin' => \App\Http\Middleware\IsAdmin::class,
         'storeowner' => \App\Http\Middleware\IsRestaurantOwner::class,
         'isactiveuser' => \App\Http\Middleware\IsActiveUser::class,
-        'role' => \Spatie\Permission\Middlewares\RoleMiddleware::class,
-        'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
-        'checkzoneaccess' => \App\Http\Middleware\CheckZoneAccess::class,
     ];
 
     /**
@@ -91,6 +88,5 @@ class Kernel extends HttpKernel
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
         \Illuminate\Auth\Middleware\Authorize::class,
         \App\Http\Middleware\RedirectIfUpdateAvailable::class,
-        \App\Http\Middleware\CheckAtleastOneLocationIsPrimary::class,
     ];
 }

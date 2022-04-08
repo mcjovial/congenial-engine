@@ -1,4 +1,4 @@
-import { GET_RESTAURANTS_SLIDES_URL } from "../../../../configs/index";
+import { GET_SINGLE_ORDER_TO_BE_RATED, GET_RESTAURANTS_SLIDES_URL } from "../../../../configs/index";
 import React, { Component } from "react";
 
 import ContentLoader from "react-content-loader";
@@ -9,6 +9,7 @@ import LazyLoad from "react-lazyload";
 import { withRouter } from "react-router-dom";
 import axios from "axios";
 import PromoSlider from "../PromoSlider";
+import Zoom from "react-reveal/Zoom";
 import Fade from "react-reveal/Fade";
 
 import { connect } from "react-redux";
@@ -19,66 +20,36 @@ class RestaurantList extends Component {
 		total: null,
 		restaurants: [],
 		loading: false,
+		loading_more: true,
 		selfpickup: false,
 		userPreferredSelectionDelivery: true,
 		userPreferredSelectionSelfPickup: false,
 		no_restaurants: false,
 		data: [],
 		review_data: [],
-		isHomeDelivery: true,
 	};
 
 	componentDidMount() {
 		this.getAllRestaurantSliders();
-		if (localStorage.getItem("enSPU") === "true") {
-			//when selfpickup is on
-			if (localStorage.getItem("userPreferredSelection") === "DELIVERY") {
-				this.setState({
-					selfpickup: false,
-					isHomeDelivery: true,
-					userPreferredSelectionDelivery: true,
-					userPreferredSelectionSelfPickup: false,
-				});
-				if (this.props.restaurants && this.props.restaurants.length <= 0) {
-					this.filterDelivery();
-				}
-			}
-			if (
-				localStorage.getItem("userPreferredSelection") === "SELFPICKUP" &&
-				localStorage.getItem("enSPU") === "true"
-			) {
-				this.setState({
-					selfpickup: true,
-					isHomeDelivery: false,
-					userPreferredSelectionSelfPickup: true,
-					userPreferredSelectionDelivery: false,
-				});
-				if (this.props.restaurants && this.props.restaurants.length <= 0) {
-					this.filterSelfPickup();
-				}
-			}
-		} else {
-			//when selfpickup is off by admin
-			this.setState({
-				selfpickup: false,
-				isHomeDelivery: true,
-				userPreferredSelectionDelivery: true,
-				userPreferredSelectionSelfPickup: false,
-			});
-			if (this.props.restaurants && this.props.restaurants.length <= 0) {
-				this.filterDelivery();
-			}
+		if (localStorage.getItem("enRAR") === "true" && "enRAR" === "disRAR") {
+			this.getRatableOrdersDetails();
 		}
 
-		if (localStorage.getItem("userPreferredSelection") === null) {
+		if (localStorage.getItem("userPreferredSelection") === "DELIVERY") {
+			this.setState({ userPreferredSelectionDelivery: true });
+			this.filterDelivery();
+		}
+		if (
+			localStorage.getItem("userPreferredSelection") === "SELFPICKUP" &&
+			localStorage.getItem("enSPU") === "true"
+		) {
+			this.setState({ userPreferredSelectionSelfPickup: true });
+			this.filterSelfPickup();
+		} else {
 			localStorage.setItem("userPreferredSelection", "DELIVERY");
 			localStorage.setItem("userSelected", "DELIVERY");
-			this.setState({ userPreferredSelectionDelivery: true, isHomeDelivery: true });
+			this.setState({ userPreferredSelectionDelivery: true });
 			this.__getDeliveryRestaurants();
-		}
-
-		if (this.props.restaurants && this.props.restaurants.length > 0) {
-			this.setState({ total: this.props.restaurants.length });
 		}
 	}
 
@@ -88,13 +59,13 @@ class RestaurantList extends Component {
 				loading: true,
 			});
 			const userSetAddress = JSON.parse(localStorage.getItem("userSetAddress"));
-
 			this.props.getDeliveryRestaurants(userSetAddress.lat, userSetAddress.lng).then((restaurants) => {
 				if (restaurants && restaurants.payload.length) {
 					this.setState({
 						total: restaurants.payload.length,
 						no_restaurants: false,
 						loading: false,
+						loading_more: false,
 					});
 				} else {
 					this.setState({
@@ -119,11 +90,13 @@ class RestaurantList extends Component {
 						total: restaurants.payload.length,
 						no_restaurants: false,
 						loading: false,
+						loading_more: false,
 					});
 				} else {
 					this.setState({
 						total: null,
 						loading: false,
+						loading_more: false,
 						no_restaurants: true,
 					});
 				}
@@ -144,6 +117,11 @@ class RestaurantList extends Component {
 			}
 		);
 		localStorage.setItem("userPreferredSelection", "DELIVERY");
+		if (localStorage.getItem("showPromoSlider") === "true") {
+			// window.scrollTo({ top: 205, behavior: "smooth" });
+		} else {
+			// window.scrollTo({ top: 0, behavior: "smooth" });
+		}
 	};
 
 	filterSelfPickup = () => {
@@ -159,6 +137,11 @@ class RestaurantList extends Component {
 			}
 		);
 		localStorage.setItem("userPreferredSelection", "SELFPICKUP");
+		if (localStorage.getItem("showPromoSlider") === "true") {
+			// window.scrollTo({ top: 205, behavior: "smooth" });
+		} else {
+			// window.scrollTo({ top: 0, behavior: "smooth" });
+		}
 	};
 
 	getAllRestaurantSliders = () => {
@@ -183,6 +166,38 @@ class RestaurantList extends Component {
 		}
 	};
 
+	getRatableOrdersDetails = () => {
+		const { user } = this.props;
+		if (user.success) {
+			axios
+				.post(GET_SINGLE_ORDER_TO_BE_RATED, {
+					user_id: user.data.id,
+					token: user.data.auth_token,
+				})
+				.then((response) => {
+					this.setState({
+						review_data: response.data,
+					});
+				});
+		}
+	};
+
+	animateStarIcon = () => {
+		let stars = [];
+
+		for (let i = 1; i <= 5; i++) {
+			stars.push(
+				<Zoom top delay={i * 100} key={i}>
+					<i
+						className="fa fa-star pr-1"
+						style={{ color: localStorage.getItem("rarModHomeBannerStarsColor") }}
+					/>
+				</Zoom>
+			);
+		}
+		return stars;
+	};
+
 	render() {
 		return (
 			<React.Fragment>
@@ -197,25 +212,21 @@ class RestaurantList extends Component {
 										<h1 className="restaurant-count mb-0 mr-2">
 											{localStorage.getItem("noRestaurantMessage")}
 										</h1>
-
-										<div className="d-flex btn-group btn-preference-group">
+										<div className="d-flex">
 											<button
-												onClick={() => {
-													this.filterDelivery();
-													// window.scrollTo({ top: 190, behavior: "smooth" });
-												}}
+												onClick={this.filterDelivery}
 												className={
-													"btn btn-preference " +
+													"btn btn-preference mr-2 " +
 													(this.state.userPreferredSelectionDelivery ? "user-preferred" : "")
 												}
 											>
 												{localStorage.getItem("deliveryTypeDelivery")}
+												{this.state.userPreferredSelectionDelivery && (
+													<i className="si si-check ml-2" />
+												)}
 											</button>
 											<button
-												onClick={() => {
-													this.filterSelfPickup();
-													// window.scrollTo({ top: 190, behavior: "smooth" });
-												}}
+												onClick={this.filterSelfPickup}
 												className={
 													"btn btn-preference " +
 													(this.state.userPreferredSelectionSelfPickup
@@ -224,6 +235,9 @@ class RestaurantList extends Component {
 												}
 											>
 												{localStorage.getItem("deliveryTypeSelfPickup")}
+												{this.state.userPreferredSelectionSelfPickup && (
+													<i className="si si-check ml-2" />
+												)}
 											</button>
 										</div>
 									</div>
@@ -244,7 +258,7 @@ class RestaurantList extends Component {
 									"bg-light " + (localStorage.getItem("enSPU") === "true" ? "sticky-top" : "pt-3")
 								}
 							>
-								{localStorage.getItem("enSPU") === "true" ? (
+								{localStorage.getItem("enSPU") === "true" && (
 									<React.Fragment>
 										<div className="px-15 py-3 d-flex justify-content-between align-items-center">
 											<h1 className="restaurant-count mb-0 mr-2">
@@ -252,26 +266,23 @@ class RestaurantList extends Component {
 												{localStorage.getItem("restaurantCountText")}
 											</h1>
 
-											<div className="d-flex btn-group btn-preference-group">
+											<div className="d-flex">
 												<button
-													onClick={() => {
-														this.filterDelivery();
-														// window.scrollTo({ top: 190, behavior: "smooth" });
-													}}
+													onClick={this.filterDelivery}
 													className={
-														"btn btn-preference " +
+														"btn btn-preference mr-2 " +
 														(this.state.userPreferredSelectionDelivery
 															? "user-preferred"
 															: "")
 													}
 												>
 													{localStorage.getItem("deliveryTypeDelivery")}
+													{this.state.userPreferredSelectionDelivery && (
+														<i className="si si-check ml-2" />
+													)}
 												</button>
 												<button
-													onClick={() => {
-														this.filterSelfPickup();
-														// window.scrollTo({ top: 190, behavior: "smooth" });
-													}}
+													onClick={this.filterSelfPickup}
 													className={
 														"btn btn-preference " +
 														(this.state.userPreferredSelectionSelfPickup
@@ -280,17 +291,13 @@ class RestaurantList extends Component {
 													}
 												>
 													{localStorage.getItem("deliveryTypeSelfPickup")}
+													{this.state.userPreferredSelectionSelfPickup && (
+														<i className="si si-check ml-2" />
+													)}
 												</button>
 											</div>
 										</div>
 									</React.Fragment>
-								) : (
-									<div className="px-15 py-3 d-flex justify-content-between align-items-center">
-										<h1 className="restaurant-count mb-0 mr-2">
-											{!this.state.loading && this.state.total}{" "}
-											{localStorage.getItem("restaurantCountText")}
-										</h1>
-									</div>
 								)}
 							</div>
 						</React.Fragment>
@@ -393,7 +400,7 @@ class RestaurantList extends Component {
 												<DelayLink
 													to={"../stores/" + restaurant.slug}
 													delay={200}
-													className="block text-center mb-3 single-store-homepage"
+													className="block text-center mb-3"
 													clickAction={() => {
 														localStorage.getItem("userPreferredSelection") === "DELIVERY" &&
 															restaurant.delivery_type === 1 &&
@@ -419,17 +426,9 @@ class RestaurantList extends Component {
 														} `}
 													>
 														{restaurant.is_featured ? (
-															<React.Fragment>
-																{restaurant.custom_featured_name == null ? (
-																	<div className="ribbon-box">
-																		{localStorage.getItem("restaurantFeaturedText")}
-																	</div>
-																) : (
-																	<div className="ribbon-box">
-																		{restaurant.custom_featured_name}
-																	</div>
-																)}
-															</React.Fragment>
+															<div className="ribbon-box">
+																{localStorage.getItem("restaurantFeaturedText")}
+															</div>
 														) : null}
 
 														<Fade duration={500}>
@@ -448,15 +447,6 @@ class RestaurantList extends Component {
 														<div className="font-size-sm text-muted truncate-text text-muted">
 															{restaurant.description}
 														</div>
-														{restaurant.custom_message_on_list !== null &&
-															restaurant.custom_message_on_list !== "<p><br></p>" && (
-																<div
-																	dangerouslySetInnerHTML={{
-																		__html: restaurant.custom_message_on_list,
-																	}}
-																/>
-															)}
-
 														{!restaurant.is_active && (
 															<span className="restaurant-not-active-msg">
 																{localStorage.getItem("restaurantNotActiveMsg")}
@@ -464,7 +454,7 @@ class RestaurantList extends Component {
 														)}
 														<hr className="my-10" />
 														<div className="text-center restaurant-meta mt-5 d-flex align-items-center justify-content-between text-muted">
-															<div className="col-2 p-0 text-left store-rating-block">
+															<div className="col-2 p-0 text-left">
 																<i
 																	className={`fa fa-star pr-1 ${!restaurant.is_active &&
 																		"restaurant-not-active"}`}
@@ -472,11 +462,9 @@ class RestaurantList extends Component {
 																		color: localStorage.getItem("storeColor"),
 																	}}
 																/>{" "}
-																{restaurant.avgRating === "0"
-																	? restaurant.rating
-																	: restaurant.avgRating}
+																{restaurant.rating}
 															</div>
-															<div className="col-4 p-0 text-center store-distance-block">
+															<div className="col-4 p-0 text-center">
 																{this.state.selfpickup ? (
 																	<span>
 																		<i className="si si-pointer pr-1" />
@@ -492,7 +480,7 @@ class RestaurantList extends Component {
 																	</span>
 																)}
 															</div>
-															<div className="col-6 p-0 text-center store-avgprice-block">
+															<div className="col-6 p-0 text-center">
 																<i className="si si-wallet" />{" "}
 																{localStorage.getItem("currencySymbolAlign") ===
 																	"left" && (
@@ -663,6 +651,22 @@ class RestaurantList extends Component {
 							)}
 						</React.Fragment>
 					)}
+
+					{this.state.loading_more ? (
+						<div className="">
+							<ContentLoader
+								height={120}
+								width={400}
+								speed={1.2}
+								primaryColor="#f3f3f3"
+								secondaryColor="#ecebeb"
+							>
+								<rect x="20" y="20" rx="4" ry="4" width="80" height="78" />
+								<rect x="144" y="35" rx="0" ry="0" width="115" height="18" />
+								<rect x="144" y="65" rx="0" ry="0" width="165" height="16" />
+							</ContentLoader>
+						</div>
+					) : null}
 				</div>
 			</React.Fragment>
 		);

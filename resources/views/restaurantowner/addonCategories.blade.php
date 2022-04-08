@@ -5,17 +5,14 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
+            <h4><i class="icon-circle-right2 mr-2"></i>
                 @if(empty($query))
-                    <span class="font-weight-bold mr-2">{{ __('storeDashboard.total')}}</span>
-                    <i class="icon-circle-right2 mr-2"></i>
-                    <span class="font-weight-bold mr-2">{{ $count }}</span>
+                <span class="font-weight-bold mr-2">{{ __('storeDashboard.total')}}</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $count }}</span>
                 @else
                 <span class="font-weight-bold mr-2">{{ __('storeDashboard.total')}}</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }}</span>
-                <br>
-                <span class="font-weight-normal mr-2">{{ __('storeDashboard.sphResultFor')}} "{{ $query }}"</span>
+                <span class="badge badge-primary badge-pill animated flipInX mr-2">{{ $count }}</span>
+                <span class="font-weight-bold mr-2">{{ __('storeDashboard.sphResultFor')}} "{{ $query }}"</span>
                 @endif
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
@@ -61,12 +58,12 @@
                             <td>{{ $addonCategory->name }}</td>
                             <td>
                                 @if($addonCategory->type == "SINGLE")
-                                 <span class="btn btn-xs btn-info p-1">
+                                <span class="badge badge-flat border-grey-800 text-primary text-capitalize mr-1">
                                 {{__('storeDashboard.acpRowSingleSelection')}}
                                 </span>
                                 @endif
                                 @if($addonCategory->type == "MULTI")
-                                <span class="btn btn-xs btn-secondary p-1">
+                                <span class="badge badge-flat border-grey-800 text-primary text-capitalize mr-1">
                                 {{__('storeDashboard.acpRowMultipleSelection')}}
                                 </span>
                                 @endif
@@ -76,7 +73,8 @@
                             <td class="text-center">
                                 <div class="btn-group btn-group-justified">
                                     <a href="{{ route('restaurant.editAddonCategory', $addonCategory->id) }}"
-                                        class="btn btn-sm btn-primary"> {{__('storeDashboard.edit')}}</a>
+                                        class="badge badge-primary badge-icon"> {{__('storeDashboard.edit')}} <i
+                                        class="icon-database-edit2 ml-1"></i></a>
                                 </div>
                             </td>
                         </tr>

@@ -1,25 +1,22 @@
 @extends('admin.layouts.master')
 @section("title")
-Reports - Top Items | Dashboard
+Reports - Top Items | Dashboard 
 @endsection
 @section('content')
 <style>
     .chart-container {
-        margin-top: 5rem;
-        overflow: hidden;
+    margin-top: 5rem;
+    overflow: hidden;
     }
-
     .chart-container.has-scroll {
-        overflow: hidden;
+    overflow: hidden;
     }
-
     .select2-selection--single .select2-selection__rendered {
-        padding-left: .875rem !important;
-        padding-right: 5.375rem !important;
+    padding-left: .875rem !important;
+    padding-right: 5.375rem !important;
     }
-
     .range-selector {
-        margin: 10px;
+    margin: 10px;
     }
 </style>
 <div class="page-header">
@@ -38,29 +35,22 @@ Reports - Top Items | Dashboard
                         <select class="form-control selectRest" name="restaurant_id" style="width: 300px;">
                             <option></option>
                             @foreach ($restaurants as $restaurant_select)
-                            <option value="{{ $restaurant_select->id }}" @if( app('request')->input('restaurant_id') ==
-                                $restaurant_select->id) selected @endif
-                                class="text-capitalize">{{ $restaurant_select->name }}</option>
+                            <option value="{{ $restaurant_select->id }}" @if( app('request')->input('restaurant_id') == $restaurant_select->id) selected @endif class="text-capitalize">{{ $restaurant_select->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-lg-5">
-                        <select class="form-control selectRange" name="range" required>
-                            <option value="1" @if(app('request')->input('range') == '1') selected @endif
-                                class="text-capitalize">This Week</option>
-                            <option value="2" @if(app('request')->input('range') == '2') selected @endif
-                                class="text-capitalize">Last 7 Days</option>
-                            <option value="3" @if(app('request')->input('range') == '3') selected @endif
-                                class="text-capitalize">This Month ({{ \Carbon\Carbon::now()->format('F')}})</option>
-                            <option value="4" @if(app('request')->input('range') == '4') selected @endif
-                                class="text-capitalize">Last 30 Days</option>
-                            <option value="5" @if(app('request')->input('range') == '5') selected @endif
-                                class="text-capitalize">All Time</option>
+                        <select class="form-control selectRange" name="range" required> 
+                        <option value="1" @if(app('request')->input('range') == '1') selected @endif class="text-capitalize">This Week</option>
+                        <option value="2" @if(app('request')->input('range') == '2') selected @endif class="text-capitalize">Last 7 Days</option>
+                        <option value="3" @if(app('request')->input('range') == '3') selected @endif class="text-capitalize">This Month ({{ \Carbon\Carbon::now()->format('F')}})</option>
+                        <option value="4" @if(app('request')->input('range') == '4') selected @endif class="text-capitalize">Last 30 Days</option>
+                        <option value="5" @if(app('request')->input('range') == '5') selected @endif class="text-capitalize">All Time</option>
                         </select>
                     </div>
                     <div class="col-lg-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="icon-search4"></i>
+                        <i class="icon-search4"></i>
                         </button>
                     </div>
                 </div>
@@ -90,16 +80,14 @@ Reports - Top Items | Dashboard
                         <tbody>
                             @foreach($top_items_completed_restaurant as $item)
                             <tr>
-                                <td>
-                                    <a href="{{ route('admin.get.editItem', $item->item_id) }}"
-                                        class="letter-icon-title">{{ $item->name }}</a>
+                                <td>    
+                                    <a href="{{ route('admin.get.editItem', $item->item_id) }}" class="letter-icon-title">{{ $item->name }}</a>
                                 </td>
                                 <td>
                                     {{ $item->qty}}
                                 </td>
                                 <td>
-                                    <span class="text-semibold no-margin">{{ config('setting.currencyFormat') }}
-                                        {{ round($item->price * $item->qty) }}</span>
+                                    <span class="text-semibold no-margin">{{ config('settings.currencyFormat') }} {{ round($item->price * $item->qty) }}</span>
                                 </td>
                             </tr>
                             @endforeach
@@ -115,16 +103,14 @@ Reports - Top Items | Dashboard
                         <tbody>
                             @foreach($top_items_total as $top_item)
                             <tr>
-                                <td>
-                                    <a href="{{ route('admin.get.editItem', $top_item->item_id) }}"
-                                        class="letter-icon-title">{{ $top_item->name }}</a>
+                                <td>    
+                                    <a href="{{ route('admin.get.editItem', $top_item->item_id) }}" class="letter-icon-title">{{ $top_item->name }}</a>
                                 </td>
                                 <td>
                                     {{ $top_item->qty}}
                                 </td>
                                 <td>
-                                    <span class="text-semibold no-margin">{{ config('setting.currencyFormat') }}
-                                        {{ round($top_item->price * $top_item->qty) }}</span>
+                                    <span class="text-semibold no-margin">{{ config('settings.currencyFormat') }} {{ round($top_item->price * $top_item->qty) }}</span>
                                 </td>
                             </tr>
                             @endforeach

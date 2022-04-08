@@ -24,31 +24,26 @@ class ItemSearchList extends Component {
 								}}
 								className="block block-link-shadow text-center light-bottom-border"
 							>
-								{item.image !== null && (
-									<div className="block-content block-content-full pt-2">
-										<LazyLoad>
-											<img src={item.image} alt={item.name} className="restaurant-image mt-0" />
-										</LazyLoad>
-									</div>
-								)}
-								<div
-									className={`block-content block-content-full restaurant-info ${item.image ===
-										null && "pl-20"}`}
-								>
+								<div className="block-content block-content-full pt-2">
+									<LazyLoad>
+										<img src={item.image} alt={item.name} className="restaurant-image mt-0" />
+									</LazyLoad>
+								</div>
+								<div className="block-content block-content-full restaurant-info">
 									<div className="font-w600 mb-5">
 										{localStorage.getItem("showVegNonVegBadge") === "true" &&
 											item.is_veg !== null && (
 												<React.Fragment>
 													{item.is_veg ? (
 														<img
-															src="/assets/img/various/veg-icon-bg.png"
+															src="/assets/img/various/veg-icon.png"
 															alt="Veg"
 															style={{ width: "1rem" }}
 															className="mr-1"
 														/>
 													) : (
 														<img
-															src="/assets/img/various/non-veg-icon-bg.png"
+															src="/assets/img/various/non-veg-icon.png"
 															alt="Non-Veg"
 															style={{ width: "1rem" }}
 															className="mr-1"

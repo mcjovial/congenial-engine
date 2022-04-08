@@ -8,7 +8,7 @@ class Requirement
     {
         $version = phpversion();
         return [
-            'PHP = 7.2.x' => version_compare($version, '7.2', '>=') && version_compare($version, '7.4', '<'),
+            'PHP = 7.2.x' => version_compare($version, '7.2', '>=') && version_compare($version, '7.3', '<'),
             'FileInfo PHP Extension' => extension_loaded('fileinfo'),
             'BCMath PHP Extension' => extension_loaded('bcmath'),
             'Curl PHP Extension' => extension_loaded('curl'),
@@ -20,7 +20,6 @@ class Requirement
             'Ctype PHP Extension' => extension_loaded('ctype'),
             'JSON PHP Extension' => extension_loaded('json'),
             'Zip PHP Extension' => extension_loaded('zip'),
-            'ionCube Loader Extension' => extension_loaded('ionCube Loader'),
         ];
     }
 

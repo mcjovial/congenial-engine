@@ -5,10 +5,9 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
-                <span class="font-weight-bold mr-2">Total</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $couponTotal }} Coupons</span>
+            <h4><i class="icon-circle-right2 mr-2"></i>
+                <span class="font-weight-bold mr-2">TOTAL</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ count($coupons) }}</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
@@ -37,7 +36,7 @@
                             <th>Discount</th>
                             <th>Status</th>
                             <th>Usage</th>
-                            <th style="min-width: 150px;">Expiry Date</th>
+                            <th>Expiry Date</th>
                             <th>Min Subtotal</th>
                             <th>Max Discount</th>
                             <th class="text-center" style="width: 10%;"><i class="
@@ -49,16 +48,15 @@
                         <tr>
                             <td>{{ $coupon->name }}</td>
                             <td>
-                                @if(count($coupon->restaurants) > 1)
-                                <span class="badge badge-flat border-grey-800 text-default text-capitalize">MULTIPLE
-                                    STORES</span>
-                                @else
-                                @foreach($coupon->restaurants as $couponRestaurant)
-                                <span
-                                    class="badge badge-flat border-grey-800 text-default text-capitalize">{{ $couponRestaurant->name }}</span>
-                                @endforeach
-                                @endif
-                            </td>
+                            @if(count($coupon->restaurants) > 1)
+                           <span class="badge badge-flat border-grey-800 text-default text-capitalize">MULTIPLE
+                               STORES</span>
+                           @else
+                           @foreach($coupon->restaurants as $couponRestaurant)
+                                <span class="badge badge-flat border-grey-800 text-default text-capitalize">{{ $couponRestaurant->name }}</span>
+                           @endforeach
+                           @endif
+                           </td>
                             <td><b>{{ $coupon->code }}</b></td>
                             <td>
                                 <span class="badge badge-flat border-grey-800 text-default text-capitalize">
@@ -67,7 +65,7 @@
                             </td>
                             <td>
                                 @if($coupon->discount_type == "AMOUNT")
-                                {{ config('setting.currencyFormat') }} {{ $coupon->discount }}
+                                {{ config('settings.currencyFormat') }} {{ $coupon->discount }}
                                 @else
                                 {{ $coupon->discount }} <strong>%</strong>
                                 @endif
@@ -85,28 +83,22 @@
                             <td><span
                                     class="badge badge-flat border-grey-800 text-default text-capitalize">{{ $coupon->count }}</span>
                             </td>
-                            <td class="small">
-                                @if(\Carbon\Carbon::now() > $coupon->expiry_date)
-                                <p class="mb-0 font-weight-bold text-danger blink-soft">EXPIRED</p>
-                                @endif
-                                {{ $coupon->expiry_date->diffForHumans() }} <br>
-                                ({{ $coupon->expiry_date->format('Y-m-d') }})
+                            <td>{{ $coupon->expiry_date->diffForHumans() }}
+                                <br>({{ $coupon->expiry_date->format('Y-m-d') }})
                             </td>
                             <td>{{ $coupon->min_subtotal }}</td>
-                            <td>@if($coupon->max_discount) {{ $coupon->max_discount }} @else <span
-                                    class="badge badge-flat border-grey-800 text-default text-capitalize">NA</span>
-                                @endif</td>
+                            <td>{{ $coupon->max_discount }}</td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-justified">
                                     <a href="{{ route('admin.get.getEditCoupon', $coupon->id) }}"
-                                        class="btn btn-sm btn-primary"> Edit</a>
+                                        class="badge badge-primary badge-icon"> EDIT <i
+                                            class="icon-database-edit2 ml-1"></i></a>
                                 </div>
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
-                {{ $coupons->links() }}
             </div>
         </div>
     </div>
@@ -158,7 +150,7 @@
                         <label class="col-lg-3 col-form-label">Max Discount</label>
                         <div class="col-lg-9">
                             <input type="text" class="form-control form-control-lg max_discount" name="max_discount"
-                                placeholder="Max discount applicable in {{ config('setting.currencyFormat') }}">
+                                placeholder="Max discount applicable in {{ config('settings.currencyFormat') }}">
                         </div>
                     </div>
                     <div class="form-group row">
@@ -180,17 +172,15 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon Applicable
-                            Stores:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon Applicable Stores:</label>
                         <div class="col-lg-9">
-                            <select multiple="multiple" class="form-control select-search couponStoreSelect"
-                                name="restaurant_id[]" required id="storeSelect">
+                            <select multiple="multiple" class="form-control select-search couponStoreSelect" name="restaurant_id[]" required id="storeSelect">
                                 @foreach ($restaurants as $restaurant)
                                 <option value="{{ $restaurant->id }}" class="text-capitalize">{{ $restaurant->name }}
                                 </option>
                                 @endforeach
                             </select>
-                            <input type="checkbox" id="selectAllStores"><span class="ml-1">Select All Stores</span>
+                             <input type="checkbox" id="selectAllStores"><span class="ml-1">Select All Stores</span>
                         </div>
                     </div>
                     <script>
@@ -216,7 +206,7 @@
                         <label class="col-lg-3 col-form-label">Min Subtotal</label>
                         <div class="col-lg-9">
                             <input type="text" class="form-control form-control-lg min_subtotal" name="min_subtotal"
-                                placeholder="Min subtotal required for coupon in {{ config('setting.currencyFormat') }}">
+                                placeholder="Min subtotal required for coupon in {{ config('settings.currencyFormat') }}">
                         </div>
                     </div>
                     <div class="form-group row">
@@ -226,32 +216,31 @@
                                 placeholder="Subtotal not reached message">
                         </div>
                     </div>
-                    <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon User
-                            Type</label>
+                     <div class="form-group row">
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Coupon User Type</label>
                         <div class="col-lg-9">
-                            <select class="form-control select-search select" name="user_type" required>
-                                <option value="ALL" class="text-capitalize">
-                                    Unlimited times for all users
-                                </option>
-                                <option value="ONCENEW" class="text-capitalize">
-                                    Once for new user for first order
-                                </option>
-                                <option value="ONCE" class="text-capitalize">
-                                    Once per user
-                                </option>
-                                <option value="CUSTOM" class="text-capitalize">
-                                    Define custom limit per user
-                                </option>
-                            </select>
-                        </div>
+                    <select class="form-control select-search select" name="user_type" required>
+                        <option value="ALL" class="text-capitalize">
+                            Unlimited times for all users
+                        </option>
+                        <option value="ONCENEW" class="text-capitalize">
+                            Once for new user for first order
+                        </option>
+                        <option value="ONCE" class="text-capitalize">
+                            Once per user
+                        </option>
+                        <option value="CUSTOM" class="text-capitalize">
+                            Define custom limit per user
+                        </option>
+                     </select>
+                     </div>
                     </div>
                     <div class="form-group row hidden" id="maxUsePerUser">
                         <label class="col-lg-3 col-form-label">Max number of
                             use per user:</label>
                         <div class="col-lg-9">
-                            <input type="text" class="form-control form-control-lg max_count_per_user"
-                                name="max_count_per_user" placeholder="Max number of use per user">
+                            <input type="text" class="form-control form-control-lg max_count_per_user" name="max_count_per_user"
+                                placeholder="Max number of use per user">
                         </div>
                     </div>
                     <script>
@@ -270,8 +259,8 @@
                         <label class="col-lg-3 col-form-label">Is Active?</label>
                         <div class="col-lg-9 d-flex align-items-center">
                             <div class="checkbox checkbox-switchery">
-                                <input value="true" type="checkbox" class="switchery-primary isactive" checked="checked"
-                                    name="is_active">
+                                    <input value="true" type="checkbox" class="switchery-primary isactive"
+                                        checked="checked" name="is_active">
                                 </label>
                             </div>
                         </div>

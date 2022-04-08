@@ -236,6 +236,7 @@ class ForgotPassword extends Component {
     }
 
     render() {
+        // console.log(this.state);
         if (window.innerWidth > 768) {
             return <Redirect to="/" />;
         }

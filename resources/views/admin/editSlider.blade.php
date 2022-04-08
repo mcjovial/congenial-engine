@@ -13,27 +13,27 @@
         </div>
     </div>
 </div>
-<div class="content" style="margin-bottom: 10rem;">
+<div class="content">
     <div class="row">
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <legend class="font-weight-semibold text-uppercase font-size-sm">
-                        Slider Properties
+                        Edit Slider Properties
                     </legend>
                     <form action="{{ route('admin.updateSlider') }}" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="id" value="{{ $slider->id }}">
                         <div class="form-group row">
-                            <label class="col-lg-4 col-form-label">Name:</label>
-                            <div class="col-lg-8">
+                            <label class="col-lg-3 col-form-label">Name:</label>
+                            <div class="col-lg-9">
                                 <input type="text" class="form-control form-control-lg" name="name"
                                     placeholder="Enter Slider Name" required value="{{ $slider->name }}">
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-lg-4 col-form-label">Position:</label>
-                            <div class="col-lg-8">
-                                <select name="position_id" class="form-control form-control-lg select">
+                            <label class="col-lg-3 col-form-label">Position:</label>
+                            <div class="col-lg-9">
+                                <select name="position_id" class="form-control form-control-lg">
                                 <option value="0" @if($slider->position_id == 0) selected="selected" @endif>Main Position</option>
                                 <option value="1" @if($slider->position_id == 1) selected="selected" @endif>After 1st Store</option>
                                 <option value="2" @if($slider->position_id == 2) selected="selected" @endif>After 2nd Store</option>
@@ -45,9 +45,9 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-lg-4 col-form-label">Size:</label>
-                            <div class="col-lg-8">
-                                <select name="size" class="form-control form-control-lg select" required="required">
+                            <label class="col-lg-3 col-form-label">Size:</label>
+                            <div class="col-lg-9">
+                                <select name="size" class="form-control form-control-lg" required="required">
                                 <option value="1" @if($slider->size == 1) selected="selected" @endif>Extra Small</option>
                                 <option value="2" @if($slider->size == 2) selected="selected" @endif>Small</option>
                                 <option value="3" @if($slider->size == 3) selected="selected" @endif>Medium</option>
@@ -56,33 +56,20 @@
                                 </select>
                             </div>
                         </div>
-
                         @csrf
-                        <div class="d-flex justify-content-end my-4">
+                        <div class="d-flex justify-content-between">
+                            <div class="text-left">
+                                <a class="btn btn-danger text-white" data-toggle="modal" data-target="#deleteSliderConfirmModal" id="deleteSliderButton">
+                                DELETE SLIDER
+                                <i class="icon-trash ml-1"></i>
+                                </a>
+                            </div>
                             <div class="text-right">
                                 <button type="submit" class="btn btn-primary">
                                 Update
                                 <i class="icon-database-insert ml-1"></i>
                                 </button>
                             </div>
-                        </div>
-
-                        <hr>
-
-                        <div class="text-left">
-                            <div class="btn-group btn-group-justified">
-                                @if($slider->is_active)
-                                <a href="{{ route('admin.disableSlider', $slider->id) }}" class="btn btn-warning text-white mr-3" data-popup="tooltip" title="Disable Slider" data-placement="bottom"> Disable <i class="icon-switch2 ml-1"></i> </a>
-                                @else
-                                <a href="{{ route('admin.disableSlider', $slider->id) }}" class="btn btn-primary text-white mr-3" data-popup="tooltip" title="Enable Slider" data-placement="bottom"> Enable <i class="icon-switch2 ml-1"></i> </a>
-                                @endif
-                                <a class="btn btn-danger text-white" data-toggle="modal" data-target="#deleteSliderConfirmModal" id="deleteSliderButton" href="javascript:void(0)">
-                                DELETE SLIDER
-                                <i class="icon-trash ml-1"></i>
-                                </a>
-                            </div>
-
-                           
                         </div>
                     </form>
                 </div>
@@ -109,8 +96,7 @@
                         @foreach($slides as $slide)
                         <div class="col-md-3 mb-2 each-slide" data-id="{{ $slide->id }}">
                             <p class="h6 mb-1"><strong>{{ $slide->name }}</strong></p>
-                            <img src="{{ substr(url("/"), 0, strrpos(url("/"), '/')) }}{{ $slide->image }}" alt="{{ $slide->name }}" width="150" height="150"
-                            data-popup="tooltip" title="{{ $slide->link }}" data-placement="right">
+                            <img src="{{ substr(url("/"), 0, strrpos(url("/"), '/')) }}{{ $slide->image }}" alt="{{ $slide->name }}" width="150" height="150">
                             <div class="btn-group btn-group-justified" style="width: 150px">
                                 <a href="{{ route('admin.editSlide', $slide->id) }}" class="btn btn-dark rounded-0" data-popup="tooltip" title="Edit Slide" data-placement="bottom"> <i class="icon-pencil3"></i> </a>
                                 <a href="{{ route('admin.deleteSlide', $slide->id) }}" class="btn btn-danger" data-popup="tooltip" title="Delete Slide" data-placement="bottom"> <i class="icon-trash"></i> </a>
@@ -131,9 +117,6 @@
                     </div>
                     @endif
                     <form action="{{ route('admin.saveSlide') }}" method="POST" id="slideForm" class="mt-3 hidden" enctype="multipart/form-data">
-                        <legend class="font-weight-semibold text-uppercase font-size-sm">
-                             Add New Slide
-                        </legend>
                         <input type="hidden" class="form-control form-control-lg" name="promo_slider_id" value="{{ $slider->id }}" required>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label">Slide Name:</label>
@@ -147,98 +130,30 @@
                                 <img class="slider-preview-image hidden"/>
                                 <div class="uploader">
                                     <input type="file" class="form-control-uniform" name="image" required accept="image/x-png,image/gif,image/jpeg" onchange="readURL(this);">
-                                    <small>Image of minimum dimension 384x384</small>
+                                    <span class="help-text text-muted">Image of minimum dimension 384x384</span>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="form-group row" id="linkSlideTo">
-                            <label class="col-lg-3 col-form-label">Link Slide To:</label>
+                        <div class="form-group row" id="restaurantURL">
+                            <label class="col-lg-3 col-form-label">Link To:</label>
                             <div class="col-lg-9">
-                                <select class="form-control form-control-lg linkTo" name="model">
-                                    <option></option>
-                                    <option value="1">Store</option>
-                                    <option value="2">Item</option>
-                                    <option value="3">Custom URL</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group row hidden" id="storesList">
-                            <label class="col-lg-3 col-form-label">Select a Store:</label>
-                            <div class="col-lg-9">
-                                <select class="form-control form-control-lg storesList" name="restaurant_id">
-                                    <option></option>
+                                <select class="form-control form-control-lg select" name="url" id="urlInput" required>
                                     @foreach($restaurants as $restaurant)
-                                        <option value="{{ $restaurant->id }}">{{ $restaurant->name }}</option>
+                                    <option value="stores/{{ $restaurant->slug }}">{{ $restaurant->name }}</option>
                                     @endforeach
                                 </select>
+                                <div id="urlHelpBlockContainer" class="hidden">
+                                    <p class="help-block text-muted mb-0">Your URL will be: </p>
+                                    <span class="help-block" id="baseURL"></span><strong><span id="appendURL"></span></strong>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="form-group row hidden" id="itemList">
-                            <label class="col-lg-3 col-form-label">Select an Item:</label>
-                            <div class="col-lg-9">
-                                <select class="form-control form-control-lg itemList" name="item_id">
-                                    <option></option>
-                                        @foreach($restaurants as $store)
-                                            <optgroup label="{{ $store->name }}">
-                                                @foreach($store->items as $storeItem)
-                                                <option value="{{ $storeItem->id }}">{{ $storeItem->name }}</option>
-                                                @endforeach
-                                            </optgroup>
-                                        @endforeach
-                                </select>
-                            </div>
-                        </div>
-
+                        <button class="btn btn-md btn-primary" id="enterCustomURL" type="button">Enter Custom URL</button>
                         <div class="form-group row hidden" id="customURL">
-                           <label class="col-lg-3 col-form-label">Custom URL:</label>
+                            <label class="col-lg-3 col-form-label">Custom URL:</label>
                             <div class="col-lg-9">
                                 <input type="url" class="form-control form-control-lg" name="customUrl" id="customUrl" placeholder="Enter your custom URL">
-                                <span class="help-text small">Enter full URL with http:// or https://</span>
-                            </div>
-                        </div>
-
-                        <div id="onCustomUrlActive" class="hidden">
-                            <legend class="font-weight-semibold text-uppercase font-size-sm">
-                                Display Location
-                            </legend>
-                            <div class="form-group row">
-                                <label class="col-lg-3 col-form-label"><strong>Location restriction<i class="icon-question3 ml-1" data-popup="tooltip" title="Enabling this will allow you to set latitude, longitude and display radius for this slide/image and only when user's location is within the radius, the slide/image will appear." data-placement="top"></i></strong> </label>
-                                <div class="col-lg-9">
-                                    <div class="checkbox checkbox-switchery mt-2">
-                                        <label>
-                                        <input value="true" type="checkbox" class="switchery-primary">
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="locationProperties" class="hidden">
-                                <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Latitude:</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control form-control-lg latitude" name="latitude"
-                                            placeholder="Enter Latitude">
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Longitude:</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control form-control-lg longitude" name="longitude"
-                                            placeholder="Enter Longitude">
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Radius:</label>
-                                    <div class="col-lg-9">
-                                        <input type="text" class="form-control form-control-lg radius" name="radius"
-                                            placeholder="Enter Operation Radius">
-                                    </div>
-                                </div>
-
-                                <span class="text-muted">To get a valid latitude/longitude, you can use services like: <a href="https://www.mapcoordinates.net/en" target="_blank">https://www.mapcoordinates.net/en</a></span> <br> <span class="text-muted">If you enter an invalid Latitude/Longitude the system might crash with a white screen.</span>
+                                <span class="help-text">Enter full URL with http:// or https://</span>
                             </div>
                         </div>
                         @csrf
@@ -287,97 +202,10 @@
         }
     }
     $(function () {
-            
-             $('#changeLink').click(function(event) {
-                 $('#linkSlideTo').removeClass('hidden');
-                 $(this).addClass('hidden');
-                 $('.linkTo').attr('required', 'required');
-             });
-
-             $('.latitude').numeric({allowThouSep:false});
-             $('.longitude').numeric({allowThouSep:false});
-             $('.radius').numeric({ allowThouSep:false, maxDecimalPlaces: 0, allowMinus: false  });
-
-            var elem = document.querySelector('.switchery-primary');
-            var switchery = new Switchery(elem, { color: '#2196F3' });
-
-            elem.onchange = function() {
-              if (elem.checked) {
-                 $('#locationProperties').removeClass('hidden');
-                 $('.latitude').attr('required', 'required');
-                 $('.longitude').attr('required', 'required');
-                 $('.radius').attr('required', 'required');
-              } else {
-                  $('#locationProperties').addClass('hidden');
-                  $('.latitude').removeAttr('required');
-                  $('.longitude').removeAttr('required');
-                  $('.radius').removeAttr('required');
-              }
-            };
-
-             $('.linkTo').select2({
-                  placeholder: "Choose an option",
-                  minimumResultsForSearch: -1
-             });
-
-             $('.storesList').select2({
-                 placeholder: "Select a store",
-             });
-
-              $('.itemList').select2({
-                 placeholder: "Select an item",
-             });
-
-             $("[name='model']").change(function() {
-                 let selectedLinkOption = $(this).val();
-
-                 //on store selected
-                 if (selectedLinkOption == 1) {
-                     $('#storesList').removeClass('hidden');
-                     $('.storesList').attr('required', 'required');
-
-                     $('#itemList').addClass('hidden');
-                     $('#customURL').addClass('hidden');
-
-                     $('#customUrl').removeAttr('required');
-                     $('.itemList').removeAttr('required');
-
-                     $('#onCustomUrlActive').addClass('hidden');
-                 }
-
-                 //on items selected
-                 if (selectedLinkOption == 2) {
-                     $('#itemList').removeClass('hidden');
-                      $('.itemList').attr('required', 'required');
-
-                     $('#storesList').addClass('hidden');
-                     $('#customURL').addClass('hidden');
-
-                     $('#customUrl').removeAttr('required');
-                     $('.storesList').removeAttr('required');
-
-                     $('#onCustomUrlActive').addClass('hidden');
-                 }
-
-                 //om custom URL selected
-                 if (selectedLinkOption == 3) {
-                     $('#customURL').removeClass('hidden');
-                     $('#customUrl').attr('required', 'required');
-
-                     $('#itemList').addClass('hidden');
-                     $('#storesList').addClass('hidden');
-
-                     $('.storesList').removeAttr('required');
-                     $('.itemList').removeAttr('required');
-
-                     $('#onCustomUrlActive').removeClass('hidden');
-                 } 
-
-             });
-
-        $('.select').select2({
-            minimumResultsForSearch: -1
+        $("#showPassword").click(function (e) { 
+            $("#passwordInput").attr("type", "text");
         });
+        $('.select').select2();
     
        $('.form-control-uniform').uniform();
     

@@ -5,10 +5,9 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
-                <span class="font-weight-bold mr-2">Total</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }} Sliders</span>
+            <h4><i class="icon-circle-right2 mr-2"></i>
+                <span class="font-weight-bold mr-2">TOTAL</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $count }}</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
@@ -16,8 +15,8 @@
             <div class="breadcrumb">
                 <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" id="addNewSlider"
                     data-toggle="modal" data-target="#addNewSliderModal">
-                    <b><i class="icon-plus2"></i></b>
-                    Add New Slider
+                <b><i class="icon-plus2"></i></b>
+                Add New Slider
                 </button>
             </div>
         </div>
@@ -46,11 +45,11 @@
                             <td>{{ $slider->name }}</td>
                             <td>@if($slider->is_active)
                                 <span class="badge badge-flat border-grey-800 text-default text-capitalize">
-                                    Active
+                                Active
                                 </span>
                                 @else
                                 <span class="badge badge-flat border-grey-800 text-default text-capitalize">
-                                    Inactive
+                                Inactive
                                 </span>
                                 @endif
                             </td>
@@ -96,15 +95,12 @@
                             <td class="text-center">
                                 <div class="btn-group btn-group-justified">
                                     <a href="{{ route('admin.get.editSlider', $slider->id) }}"
-                                        class="btn btn-sm btn-primary"> Edit </a>
+                                        class="badge badge-primary badge-icon"> EDIT <i
+                                        class="icon-database-edit2 ml-1"></i></a>
                                     @if($slider->is_active)
-                                    <a href="{{ route('admin.disableSlider', $slider->id) }}"
-                                        class="btn btn-sm btn-primary ml-1" data-popup="tooltip" title="Disable Slider"
-                                        data-placement="bottom"> <i class="icon-switch2"></i> </a>
+                                    <a href="{{ route('admin.disableSlider', $slider->id) }}" class="badge badge-primary badge-icon ml-1" data-popup="tooltip" title="Disable Slider" data-placement="bottom"> <i class="icon-switch2"></i> </a>
                                     @else
-                                    <a href="{{ route('admin.disableSlider', $slider->id) }}"
-                                        class="btn btn-sm btn-danger ml-1 " data-popup="tooltip" title="Enable Slider"
-                                        data-placement="bottom"> <i class="icon-switch2"></i> </a>
+                                    <a href="{{ route('admin.disableSlider', $slider->id) }}" class="badge badge-primary badge-icon ml-1 badge-danger" data-popup="tooltip" title="Enable Slider" data-placement="bottom"> <i class="icon-switch2"></i> </a>
                                     @endif
                                 </div>
                             </td>
@@ -130,6 +126,7 @@
                         <div class="col-lg-9">
                             <input type="text" class="form-control form-control-lg" name="name"
                                 placeholder="Enter Slider Name" required>
+                            <span class="help-text text-muted">The new slider will be INACTIVE by default.</span>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -150,24 +147,21 @@
                         <label class="col-lg-3 col-form-label">Size:</label>
                         <div class="col-lg-9">
                             <select name="size" class="form-control form-control-lg" required="required">
-                                <option value="1">Extra Small</option>
-                                <option value="2">Small</option>
-                                <option value="3">Medium</option>
-                                <option value="4">Large</option>
-                                <option value="5">Extra Large</option>
+                                 <option value="1">Extra Small</option>
+                                 <option value="2">Small</option>
+                                 <option value="3">Medium</option>
+                                 <option value="4">Large</option>
+                                 <option value="5">Extra Large</option>
                             </select>
                         </div>
                     </div>
-                    <hr>
                     @csrf
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            SAVE
-                            <i class="icon-database-insert ml-1"></i>
+                        SAVE
+                        <i class="icon-database-insert ml-1"></i>
                         </button>
                     </div>
-                    <span class="help-text text-muted">The new slider will be <b class="text-danger">inactive</b> by
-                        default.</span>
                 </form>
             </div>
         </div>

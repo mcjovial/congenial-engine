@@ -2,64 +2,85 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
-use Image;
-use App\Sms;
-use Artisan;
-use App\Item;
-use App\Page;
-use App\User;
-use App\Zone;
-use App\Addon;
-use App\Order;
-use App\Slide;
-use Exception;
-use App\Rating;
-use App\Address;
-use App\Setting;
-use App\TodoNote;
-use App\EagleView;
-use Carbon\Carbon;
-use App\PushNotify;
-use App\Restaurant;
-use App\SmsGateway;
-use App\SocketPush;
-use App\Orderstatus;
-use App\PromoSlider;
-use App\Translation;
-use App\FoodomaaNews;
-use App\ItemCategory;
-use App\AddonCategory;
 use App\AcceptDelivery;
+use App\Addon;
+use App\AddonCategory;
+use App\DeliveryGuyDetail;
+use App\Helpers\TranslationHelper;
+use App\Http\Middleware\SCLC;
+use App\Http\Middleware\SCLCC;
+use App\Http\Middleware\SelfHelpM;
+use App\Item;
+use App\ItemCategory;
+use App\Order;
+use App\Orderstatus;
+use App\Page;
 use App\PaymentGateway;
 use App\PopularGeoPlace;
-use App\RestaurantPayout;
-use App\DeliveryGuyDetail;
-use App\StorePayoutDetail;
+use App\PromoSlider;
+use App\PushNotify;
+use App\Restaurant;
 use App\RestaurantCategory;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Helpers\TranslationHelper;
-use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
-use Nwidart\Modules\Facades\Module;
+use App\RestaurantPayout;
+use App\Setting;
+use App\Slide;
+use App\Sms;
+use App\SmsGateway;
+use App\StorePayoutDetail;
+use App\Translation;
+use App\User;
+use Artisan;
+use Auth;
 use Bavix\Wallet\Models\Transaction;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\PermissionRegistrar;
-
+use Illuminate\Support\Str;
+use Image;
+use Ixudra\Curl\Facades\Curl;
+use Omnipay\Omnipay;
+use OneSignal;
+use Spatie\Permission\Models\Role;
+use Yajra\DataTables\DataTables;
 
 class AdminController extends Controller
 {
+
+    public function __construct()
+    {
+        // $this->middleware(SCLC::class);
+        // $this->middleware(SCLCC::class);
+        // $this->middleware(SelfHelpM::class);
+    }
+
     /**
      * @return mixed
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $orders = Order::orderBy('id', 'DESC')->with('orderstatus', 'restaurant')->take(6)->get();
 
-        $users = User::orderBy('id', 'DESC')->with('roles')->take(6)->get();
+        $displayUsers = User::count();
+
+        $displayRestaurants = Restaurant::count();
+
+        $displaySales = Order::where('orderstatus_id', 5)->get();
+        $displayEarnings = $displaySales;
+
+        $displaySales = count($displaySales);
+
+        $total = 0;
+        foreach ($displayEarnings as $de) {
+            $total += $de->total;
+        }
+        $displayEarnings = $total;
+
+        $orders = Order::orderBy('id', 'DESC')->with('orderstatus', 'restaurant')->take(10)->get();
+
+        $users = User::orderBy('id', 'DESC')->with('roles')->take(9)->get();
 
         $todaysDate = Carbon::now()->format('Y-m-d');
 
@@ -69,164 +90,81 @@ class AdminController extends Controller
             ->pluck('name')
             ->toArray();
         foreach ($orderStatuses as $key => $value) {
-            $orderStatusesName .= "'" . $value . "', ";
+            $orderStatusesName .= "'" . $value . "' ,";
         }
         $orderStatusesName = rtrim($orderStatusesName, ' ,');
         $orderStatusesName = $orderStatusesName . ']';
 
-        $ifAnyOrders = Order::count();
+        $orderStatusOrders = Order::all();
+        $ifAnyOrders = $orderStatusOrders->count();
         if ($ifAnyOrders == 0) {
             $ifAnyOrders = false;
         } else {
             $ifAnyOrders = true;
         }
 
-        $orderStatusOrders = Order::select('orderstatus_id', DB::raw('count(*) as total'))
-            ->groupBy('orderstatus_id')
-            ->pluck('total', 'orderstatus_id')->all();
+        $orderStatusOrders = $orderStatusOrders->groupBy('orderstatus_id')->map(function ($orderCount) {
+            return $orderCount->count();
+        });
 
         $orderStatusesData = '[';
         foreach ($orderStatusOrders as $key => $value) {
             if ($key == 1) {
-                $orderStatusesData .= '{value:' . $value . ", name:'Order Placed'}, ";
+                $orderStatusesData .= '{value:' . $value . ", name: 'Order Placed'},";
             }
             if ($key == 2) {
-                $orderStatusesData .= '{value:' . $value . ", name:'Preparing Order'}, ";
+                $orderStatusesData .= '{value:' . $value . ", name: 'Preparing Order'},";
             }
             if ($key == 3) {
-                $orderStatusesData .= '{value:' . $value . ", name:'Delivery Guy Assigned'}, ";
+                $orderStatusesData .= '{value:' . $value . ", name: 'Delivery Guy Assigned'},";
             }
             if ($key == 4) {
-                $orderStatusesData .= '{value:' . $value . ", name:'Order Picked Up'}, ";
+                $orderStatusesData .= '{value:' . $value . ", name: 'Order Picked Up'},";
             }
             if ($key == 5) {
-                $orderStatusesData .= '{value:' . $value . ", name:'Delivered'}, ";
+                $orderStatusesData .= '{value:' . $value . ", name: 'Delivered'},";
             }
             if ($key == 6) {
-                $orderStatusesData .= '{value:' . $value . ", name:'Canceled'}, ";
+                $orderStatusesData .= '{value:' . $value . ", name: 'Canceled'},";
             }
             if ($key == 7) {
-                $orderStatusesData .= '{value:' . $value . ", name:'Ready For Pick Up'}, ";
+                $orderStatusesData .= '{value:' . $value . ", name: 'Ready For Pick Up'},";
             }
             if ($key == 8) {
-                $orderStatusesData .= '{value:' . $value . ", name:'Awaiting Payment'}, ";
+                $orderStatusesData .= '{value:' . $value . ", name: 'Awaiting Payment'},";
             }
             if ($key == 9) {
-                $orderStatusesData .= '{value:' . $value . ", name:'Payment Failed'}, ";
+                $orderStatusesData .= '{value:' . $value . ", name: 'Payment Failed'},";
             }
         }
         $orderStatusesData = rtrim($orderStatusesData, ',');
         $orderStatusesData .= ']';
 
-        $reviews = Rating::orderBy('id', 'DESC')->with('user', 'order.accept_delivery.user')->take(5)->get();
-
-        if (config('setting.adminDailyTargetRevenue') != null) {
-            $todayRevenue = Order::where('orderstatus_id', '5')->whereBetween('created_at', [
-                Carbon::now()->startOfDay(),
-                Carbon::now(),
-            ])->select(DB::raw('SUM(total) AS revenue'))->first();
-            $todayRevenue = $todayRevenue->revenue ? $todayRevenue->revenue : 0;
-        } else {
-            $todayRevenue = null;
-        }
-
-        $todayOrders = Order::where('orderstatus_id', 5)->select('id', 'orderstatus_id', 'created_at')->whereBetween('created_at', [
-            Carbon::now()->startOfDay(),
-            Carbon::now(),
-        ])->get()->groupBy(function ($date) {
-            return Carbon::parse($date->created_at)->format('H');
-        });
-
-
-        $yesterdayOrders = Order::where('orderstatus_id', 5)->select('id', 'orderstatus_id', 'created_at')->whereBetween('created_at', [
-            Carbon::now()->subDays(1)->startOfDay(),
-            Carbon::now()->subDays(1),
-        ])->get()->groupBy(function ($date) {
-            return Carbon::parse($date->created_at)->format('H');
-        });
-
-
-        $yesterdayOrdersOnly = [];
-        foreach ($yesterdayOrders as $key => $value) {
-            $yesterdayOrdersOnly[(int)$key] = count($value);
-        }
-
-        $todayOrderOnly = [];
-        $todayOrderFullArr = [];
-
-        foreach ($todayOrders as $key => $value) {
-            $todayOrderOnly[(int)$key] = count($value);
-        }
-
-        for ($i = 1; $i <= 24; $i++) {
-            if (!empty($todayOrderOnly[$i])) {
-                $todayOrderFullArr[$i] = $todayOrderOnly[$i];
-            } else {
-                $todayOrderFullArr[$i] = 0;
-            }
-        }
-
-        $todayOrderCount = array_sum($todayOrderOnly);
-        $yesterdayOrderCount = array_sum($yesterdayOrdersOnly);
-
-
-        $todoNotes = TodoNote::where('user_id', Auth::user()->id)->orderBy('id', 'DESC')->get();
-
-        $walletTransactions =  Transaction::orderBy('id', 'DESC')->where('amount', '>', 0)->take(6)->get();
-
-        $latestNews = FoodomaaNews::latest()->first();
-        if ($latestNews) {
-            if ($latestNews->is_read) {
-                $latestNews = null;
-            }
-        } else {
-            $latestNews = null;
-        }
-
         return view('admin.dashboard', array(
+            'displayUsers' => $displayUsers,
+            'displayRestaurants' => $displayRestaurants,
+            'displaySales' => $displaySales,
+            'displayEarnings' => number_format((float) $displayEarnings, 2, '.', ''),
             'orders' => $orders,
             'users' => $users,
             'todaysDate' => $todaysDate,
             'orderStatusesName' => $orderStatusesName,
             'orderStatusesData' => $orderStatusesData,
             'ifAnyOrders' => $ifAnyOrders,
-            'reviews' => $reviews,
-            'todayRevenue' => $todayRevenue,
-            'todayOrderCount' => $todayOrderCount,
-            'yesterdayOrderCount' => $yesterdayOrderCount,
-            'todayOrderFullArr' => array_values($todayOrderFullArr),
-            'todoNotes' => $todoNotes,
-            'walletTransactions' => $walletTransactions,
-            'latestNews' => $latestNews
         ));
-    }
-
-    public function manager()
-    {
-        return view('admin.manager');
     }
 
     public function users()
     {
-        $roles = Role::all()->except(1);
+        $roles = Role::all();
         return view('admin.users', array(
             'roles' => $roles,
         ));
     }
 
-    public function customers()
-    {
-        return view('admin.manageCustomers');
-    }
-
-    public function staffs()
-    {
-        return view('admin.manageStaffs');
-    }
-
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function saveNewUser(Request $request)
     {
         try {
@@ -234,6 +172,7 @@ class AdminController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
+                'delivery_pin' => strtoupper(str_random(5)),
                 'password' => \Hash::make($request->password),
             ]);
 
@@ -260,15 +199,10 @@ class AdminController extends Controller
                 if ($request->tip_commission_rate != null) {
                     $deliveryGuyDetails->tip_commission_rate = $request->tip_commission_rate;
                 }
-                if ($request->cash_limit != null) {
-                    $deliveryGuyDetails->cash_limit = $request->cash_limit;
-                } else {
-                    $deliveryGuyDetails->cash_limit = 0;
-                }
-
                 $deliveryGuyDetails->save();
                 $user->delivery_guy_detail_id = $deliveryGuyDetails->id;
                 $user->save();
+
             }
 
             return redirect()->back()->with(['success' => 'User Created']);
@@ -277,62 +211,77 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param Request $request
+ */
+    public function postSearchUsers(Request $request)
+    {
+        $query = $request['query'];
+
+        $users = User::where('name', 'LIKE', '%' . $query . '%')
+            ->orWhere('email', 'LIKE', '%' . $query . '%')
+            ->with('roles', 'wallet')
+            ->paginate(20);
+
+        $roles = Role::all();
+
+        $count = $users->total();
+
+        return view('admin.users', array(
+            'users' => $users,
+            'query' => $query,
+            'count' => $count,
+            'roles' => $roles,
+        ));
+    }
+
+/**
+ * @param $id
+ */
+// public function getEditUser($id)
+    // {
+    //     $user = User::where('id', $id)->first();
+    //     $roles = Role::get();
+    //     // dd($user->delivery_guy_detail);
+    //     return view('admin.editUser', array(
+    //         'user' => $user,
+    //         'roles' => $roles,
+    //     ));
+    // }
     public function getEditUser($id)
     {
-        $user = User::where('id', $id)->with('orders', 'addresses')->first();
-        $roles = Role::all()->except(1);
-        $ratings = Rating::where('delivery_id', $user->id)->get();
-        $zones = Zone::get(['id', 'name']);
+        $user = User::where('id', $id)->with('orders')->first();
+        $roles = Role::get();
 
+        // dd($user->delivery_guy_detail);
         return view('admin.editUser', array(
             'orders' => $user->orders,
             'user' => $user,
             'roles' => $roles,
-            'rating' => deliveryAvgRating($ratings),
-            'zones' => $zones,
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateUser(Request $request)
     {
         // dd($request->all());
-        $user = User::where('id', $request->id)->with('delivery_collections', 'delivery_collections.delivery_collection_logs')->first();
+        $user = User::where('id', $request->id)->first();
         try {
-            $setDeliveryNickName = false;
-
-            if ($user->hasRole("Customer") && $request->roles == "Delivery Guy") {
-                $setDeliveryNickName = true;
-            }
-
             $user->name = $request->name;
             $user->email = $request->email;
             $user->phone = $request->phone;
             if ($request->has('password') && $request->password != null) {
                 $user->password = \Hash::make($request->password);
             }
-
             if ($request->roles != null) {
                 $user->syncRoles($request->roles);
             }
-
-            if ($setDeliveryNickName) {
-                $request->delivery_name = $request->name;
-            }
-
-            if ($request->zone_id != null) {
-                $user->zone_id = $request->zone_id;
-            }
-
             $user->save();
 
             if ($user->hasRole('Delivery Guy')) {
@@ -356,7 +305,7 @@ class AdminController extends Controller
                     }
 
                     if ($request->tip_commission_rate != null) {
-                        $deliveryGuyDetails->tip_commission_rate = $request->tip_commission_rate;
+                        $user->delivery_guy_detail->tip_commission_rate = $request->tip_commission_rate;
                     }
 
                     if ($request->is_notifiable == 'true') {
@@ -369,15 +318,8 @@ class AdminController extends Controller
                         $deliveryGuyDetails->max_accept_delivery_limit = $request->max_accept_delivery_limit;
                     }
 
-                    if ($request->cash_limit != null) {
-                        $deliveryGuyDetails->cash_limit = $request->cash_limit;
-                    } else {
-                        $deliveryGuyDetails->cash_limit = 0;
-                    }
-
                     $deliveryGuyDetails->save();
                     $user->delivery_guy_detail_id = $deliveryGuyDetails->id;
-
                     $user->save();
                 } else {
                     $user->delivery_guy_detail->name = $request->delivery_name;
@@ -406,45 +348,23 @@ class AdminController extends Controller
                         $user->delivery_guy_detail->max_accept_delivery_limit = $request->max_accept_delivery_limit;
                     }
 
-                    if ($request->cash_limit != null) {
-                        $user->delivery_guy_detail->cash_limit = $request->cash_limit;
-                    } else {
-                        $user->delivery_guy_detail->cash_limit = 0;
-                    }
-
                     $user->delivery_guy_detail->save();
-                }
-
-                //for delivery guy, save zone id it's delivery collection and collection logs if zone present.
-                if ($request->zone_id != null) {
-                    if (!empty($user->delivery_collections)) {
-                        foreach ($user->delivery_collections as $deliveryCollection) {
-                            $deliveryCollection->zone_id = $request->zone_id;
-                            $deliveryCollection->save();
-                            if (!empty($deliveryCollection->delivery_collection_logs)) {
-                                foreach ($deliveryCollection->delivery_collection_logs as $deliveryCollectionLog) {
-                                    $deliveryCollectionLog->zone_id = $request->zone_id;
-                                    $deliveryCollectionLog->save();
-                                }
-                            }
-                        }
-                    }
                 }
             }
 
-            return redirect(route('admin.get.editUser', $user->id) . $request->window_redirect_hash)->with(['success' => 'User Updated']);
+            return redirect()->back()->with(['success' => 'User Updated']);
         } catch (\Illuminate\Database\QueryException $qe) {
             return redirect()->back()->with(['message' => $qe->getMessage()]);
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function banUser($id)
     {
         $user = User::where('id', $id)->firstOrFail();
@@ -454,12 +374,17 @@ class AdminController extends Controller
 
     public function manageDeliveryGuys()
     {
-        return view('admin.manageDeliveryGuys');
+        $users = User::role('Delivery Guy')->orderBy('id', 'DESC')->with('roles')->paginate(20);
+        $count = $users->total();
+        return view('admin.manageDeliveryGuys', array(
+            'users' => $users,
+            'count' => $count,
+        ));
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function getManageDeliveryGuysRestaurants($id)
     {
         $user = User::where('id', $id)->first();
@@ -478,9 +403,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateDeliveryGuysRestaurants(Request $request)
     {
         $user = User::where('id', $request->id)->first();
@@ -500,9 +425,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function getManageRestaurantOwnersRestaurants($id)
     {
         $user = User::where('id', $id)->first();
@@ -520,9 +445,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateManageRestaurantOwnersRestaurants(Request $request)
     {
         $user = User::where('id', $request->id)->first();
@@ -536,69 +461,32 @@ class AdminController extends Controller
         return view('admin.orders');
     }
 
-    /**
-     * @param $order_id
-     */
+/**
+ * @param Request $request
+ */
+    public function postSearchOrders(Request $request)
+    {
+        $query = $request['query'];
+
+        $orders = Order::where('unique_order_id', 'LIKE', '%' . $query . '%')->with('accept_delivery.user', 'restaurant')->paginate(20);
+
+        $count = $orders->total();
+
+        return view('admin.orders', array(
+            'orders' => $orders,
+            'count' => $count,
+        ));
+    }
+
+/**
+ * @param $order_id
+ */
     public function viewOrder($order_id)
-    {
-        if (config('setting.iHaveFoodomaaDeliveryApp') == "true") {
-            $eagleView = new EagleView();
-            $eagleViewData = $eagleView->getViewOrderSemiEagleViewData();
-            if ($eagleViewData == null) {
-                print_r("You have enabled <b>I Have Delivery App</b> in Admin Settings that requires delivery google services file to be correctly set on your server. <br><br><b>delivery-google-services.json</b> file is either missing or incorrect. <br><br> <b><u>Possible Solutions:</u> </b>
-                <ul><li>Make sure the delivery-google-services.json is present on your server</li> <li>Or disable <b>I have Delivery App</b> from Admin Settings</li>");
-                die();
-            }
-        } else {
-            $eagleViewData = null;
-        }
-
-        $order = Order::where('unique_order_id', $order_id)->with('orderitems.order_item_addons', 'rating', 'razorpay_data')->first();
-        // dd($order);
-        $zone_id = session('selectedZone');
-        if ($zone_id) {
-            $users = User::role('Delivery Guy')->with('delivery_guy_detail')->where('zone_id', $zone_id)->get();
-        } else {
-            $users = User::role('Delivery Guy')->with('delivery_guy_detail')->get();
-        }
-
-        if ($order) {
-            $activities = Activity::where('subject_id', $order->id)->with('causer', 'causer.roles')->orderBy('id', 'DESC')->get();
-
-            return view('admin.viewOrder', array(
-                'order' => $order,
-                'users' => $users,
-                'activities' => $activities,
-                'eagleViewData' => $eagleViewData,
-            ));
-        } else {
-            return redirect()->route('admin.orders');
-        }
-    }
-
-    public function getOrderDeliveryGuyInfo($order_id)
-    {
-        $order = Order::where('unique_order_id', $order_id)->with('accept_delivery')->first();
-        if ($order && $order->accept_delivery && $order->accept_delivery->user->delivery_guy_detail->delivery_lat != null) {
-            $response = [
-                'success' => true,
-                'lat' => $order->accept_delivery->user->delivery_guy_detail->delivery_lat,
-                'lng' => $order->accept_delivery->user->delivery_guy_detail->delivery_long,
-            ];
-            return response()->json($response);
-        }
-        $response = ['success' => false];
-        return response()->json($response);
-    }
-    /**
-     * @param $order_id
-     */
-    public function printThermalBill($order_id)
     {
         $order = Order::where('unique_order_id', $order_id)->with('orderitems.order_item_addons')->first();
         $users = User::role('Delivery Guy')->get();
         if ($order) {
-            return view('admin.printOrder', array(
+            return view('admin.viewOrder', array(
                 'order' => $order,
                 'users' => $users,
             ));
@@ -617,75 +505,42 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function getEditSlider($id)
     {
-        $restaurants = Restaurant::with('items')->get();
-        $slider = PromoSlider::where('id', $id)->with('slides')->firstOrFail();
-        $slides = $slider->slides;
-        foreach ($slides as $slide) {
-            if ($slide->model == null) {
-                $link = 'Not Linked';
-            }
-            if ($slide->model == 1) {
-                $slideRestaurant = $slide->restaurant;
-                if ($slideRestaurant) {
-                    $link = 'Linked to: ' . $slideRestaurant->name;
-                } else {
-                    $link = 'Not Linked';
-                }
-            }
+        $restaurants = Restaurant::get();
+        $slider = PromoSlider::where('id', $id)->first();
 
-            if ($slide->model == 2) {
-                $slideItem = $slide->item;
-                if ($slideItem) {
-                    $link = 'Linked to item: ' . $slideItem->name . ' from Store: ' . $slideItem->restaurant->name;
-                } else {
-                    $link = 'Not Linked';
-                }
-            }
-
-            if ($slide->model == 3) {
-                if ($slide->url != null) {
-                    $link = 'Linked to: ' . $slide->url;
-                } else {
-                    $link = 'Not Linked';
-                }
-            }
-
-            $slide->link = $link;
-        }
         if ($slider) {
             return view('admin.editSlider', array(
                 'restaurants' => $restaurants,
                 'slider' => $slider,
-                'slides' => $slides,
+                'slides' => $slider->slides,
             ));
         } else {
             return redirect()->route('admin.sliders');
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateSlider(Request $request)
     {
         $slider = PromoSlider::where('id', $request->id)->first();
         $slider->name = $request->name;
         $slider->position_id = $request->position_id;
         $slider->size = $request->size;
-
         $slider->save();
 
         return redirect()->back()->with(['success' => 'Slider Updated']);
-    }
 
-    /**
-     * @param Request $request
-     */
+    }
+/**
+ * @param Request $request
+ */
     public function createSlider(Request $request)
     {
         $sliderCount = PromoSlider::where('is_active', 1)->count();
@@ -703,9 +558,9 @@ class AdminController extends Controller
         return redirect()->back()->with(['success' => 'New Slider Created']);
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function disableSlider($id)
     {
         $slider = PromoSlider::where('id', $id)->first();
@@ -717,9 +572,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function deleteSlider($id)
     {
         $slider = PromoSlider::where('id', $id)->first();
@@ -729,19 +584,19 @@ class AdminController extends Controller
                 $slide->delete();
             }
             $slider->delete();
-            return redirect()->route('admin.sliders')->with(['success' => 'Operation Successful']);
+            return redirect()->back()->with(['success' => 'Operation Successful']);
         } else {
             return redirect()->route('admin.sliders');
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function saveSlide(Request $request)
     {
         $url = url('/');
-        $url = substr($url, 0, strrpos($url, '/')); //this will give url without " / "
+        $url = substr($url, 0, strrpos($url, '/')); //this will give url without "/public"
 
         $slide = new Slide();
         $slide->promo_slider_id = $request->promo_slider_id;
@@ -757,21 +612,8 @@ class AdminController extends Controller
             ->save(base_path('assets/img/slider/' . $filename));
         $slide->image = '/assets/img/slider/' . $filename;
 
-        $slide->model = $request->model;
-        $slide->restaurant_id = $request->restaurant_id;
-        $slide->item_id = $request->item_id;
-        $slide->url = $request->customUrl;
-
         if ($request->customUrl != null) {
-            if ($request->is_locationset == 'true') {
-                $slide->is_locationset = true;
-            } else {
-                $slide->is_locationset = false;
-            }
-
-            $slide->latitude = $request->latitude;
-            $slide->longitude = $request->longitude;
-            $slide->radius = $request->radius;
+            $slide->url = $request->customUrl;
         }
 
         $slide->save();
@@ -779,64 +621,34 @@ class AdminController extends Controller
         return redirect()->back()->with(['success' => 'New Slide Created']);
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function editSlide($id)
     {
         $slide = Slide::where('id', $id)->with('promo_slider')->first();
-
+        $restaurants = Restaurant::get();
         if ($slide) {
-            if ($slide->model == null) {
-                $link = null;
-            }
-            if ($slide->model == 1) {
-                $slideRestaurant = $slide->restaurant;
-                if ($slideRestaurant) {
-                    $link = '<b>Store - </b>' . $slideRestaurant->name;
-                } else {
-                    $link = null;
-                }
-            }
-
-            if ($slide->model == 2) {
-                $slideItem = $slide->item;
-                if ($slideItem) {
-                    $link = '<b>Item - </b>' . $slideItem->name . '<br><b> From Store - </b>' . $slideItem->restaurant->name;
-                } else {
-                    $link = null;
-                }
-            }
-
-            if ($slide->model == 3) {
-                if ($slide->url != null) {
-                    $link = '<b>Custom URL - </b>' . $slide->url;
-                } else {
-                    $link = null;
-                }
-            }
-
-            $restaurants = Restaurant::with('items')->get();
             return view('admin.editSlide', array(
                 'slide' => $slide,
                 'restaurants' => $restaurants,
-                'link' => $link,
             ));
         } else {
             return redirect()->route('admin.sliders')->with(['message' => 'Slide Not Found']);
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateSlide(Request $request)
     {
-        // dd($request->all());
         $slide = Slide::where('id', $request->id)->first();
         if ($slide) {
             $slide->name = $request->name;
-
+            if ($request->url != null) {
+                $slide->url = $request->url;
+            }
             if ($request->hasFile('image')) {
 
                 $image = $request->file('image');
@@ -847,26 +659,9 @@ class AdminController extends Controller
                     ->save(base_path('assets/img/slider/' . $filename));
                 $slide->image = '/assets/img/slider/' . $filename;
             }
-
-            if ($request->model != null) {
-                $slide->model = $request->model;
-                $slide->restaurant_id = $request->restaurant_id;
-                $slide->item_id = $request->item_id;
+            if ($request->customUrl != null) {
                 $slide->url = $request->customUrl;
-
-                if ($request->customUrl != null) {
-                    if ($request->is_locationset == 'true') {
-                        $slide->is_locationset = true;
-                    } else {
-                        $slide->is_locationset = false;
-                    }
-
-                    $slide->latitude = $request->latitude;
-                    $slide->longitude = $request->longitude;
-                    $slide->radius = $request->radius;
-                }
             }
-
             $slide->save();
             return redirect()->back()->with(['success' => 'Slide Updated']);
         } else {
@@ -874,9 +669,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateSlidePosition(Request $request)
     {
         Slide::setNewOrder($request->newOrder);
@@ -884,9 +679,9 @@ class AdminController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function deleteSlide($id)
     {
         $slide = Slide::where('id', $id)->first();
@@ -898,9 +693,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function disableSlide($id)
     {
         $slide = Slide::where('id', $id)->first();
@@ -914,16 +709,17 @@ class AdminController extends Controller
 
     public function restaurants()
     {
+        $restaurants = Restaurant::where('is_accepted', '1')->with('users.roles')->ordered()->paginate(20);
+        $count = $restaurants->total();
+
         $dapCheck = false;
-        if (Module::find('DeliveryAreaPro') && Module::find('DeliveryAreaPro')->isEnabled()) {
+        if (\Module::find('DeliveryAreaPro') && \Module::find('DeliveryAreaPro')->isEnabled()) {
             $dapCheck = true;
         }
 
-        $pendingCount = Restaurant::orderBy('id', 'DESC')->where('is_accepted', '0')->count();
-        $zones = Zone::get(['id', 'name']);
         return view('admin.restaurants', array(
-            'pendingCount' => $pendingCount,
-            'zones' => $zones,
+            'restaurants' => $restaurants,
+            'count' => $count,
             'dapCheck' => $dapCheck,
         ));
     }
@@ -934,7 +730,7 @@ class AdminController extends Controller
         $count = $restaurants->count();
 
         $dapCheck = false;
-        if (Module::find('DeliveryAreaPro') && Module::find('DeliveryAreaPro')->isEnabled()) {
+        if (\Module::find('DeliveryAreaPro') && \Module::find('DeliveryAreaPro')->isEnabled()) {
             $dapCheck = true;
         }
 
@@ -945,9 +741,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateStorePosition(Request $request)
     {
         Restaurant::setNewOrder($request->newOrder);
@@ -955,83 +751,27 @@ class AdminController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /**
-     * @param $restaurant_id
-     */
-    public function sortMenusAndItems($restaurant_id)
-    {
-
-        $restaurant = Restaurant::where('id', $restaurant_id)->firstOrFail();
-
-        $items = Item::where('restaurant_id', $restaurant_id)
-            ->join('item_categories', function ($join) {
-                $join->on('items.item_category_id', '=', 'item_categories.id');
-            })
-            ->orderBy('item_categories.order_column', 'asc')
-            ->with('addon_categories')
-            ->ordered()
-            ->get(array('items.*', 'item_categories.name as category_name'));
-
-        $itemsArr = [];
-        foreach ($items as $item) {
-            $itemsArr[$item['category_name']][] = $item;
-        }
-
-        // dd($itemsArr);
-        $itemCategories = ItemCategory::whereHas('items', function ($query) use ($restaurant_id) {
-            return $query->where('restaurant_id', $restaurant_id);
-        })->ordered()->get();
-
-        $count = 0;
-
-        return view('admin.sortMenusAndItemsForStore', array(
-            'restaurant' => $restaurant,
-            'items' => $itemsArr,
-            'itemCategories' => $itemCategories,
-            'count' => $count,
-        ));
-    }
-
-    /**
-     * @param Request $request
-     */
-    public function updateItemPositionForStore(Request $request)
-    {
-        Item::setNewOrder($request->newOrder);
-        Artisan::call('cache:clear');
-        return response()->json(['success' => true]);
-    }
-
-    /**
-     * @param Request $request
-     */
-    public function updateMenuCategoriesPositionForStore(Request $request)
-    {
-        ItemCategory::setNewOrder($request->newOrder);
-        Artisan::call('cache:clear');
-        return response()->json(['success' => true]);
-    }
-
     public function pendingAcceptance()
     {
+        $count = Restaurant::count();
+        $restaurants = Restaurant::orderBy('id', 'DESC')->where('is_accepted', '0')->with('users.roles')->paginate(10000);
+        $count = count($restaurants);
+
         $dapCheck = false;
-        if (Module::find('DeliveryAreaPro') && Module::find('DeliveryAreaPro')->isEnabled()) {
+        if (\Module::find('DeliveryAreaPro') && \Module::find('DeliveryAreaPro')->isEnabled()) {
             $dapCheck = true;
         }
 
-        $pendingCount = Restaurant::orderBy('id', 'DESC')->where('is_accepted', '0')->count();
-        $zones = Zone::get(['id', 'name']);
-
         return view('admin.restaurants', array(
+            'restaurants' => $restaurants,
+            'count' => $count,
             'dapCheck' => $dapCheck,
-            'pendingCount' => $pendingCount,
-            'zones' => $zones,
         ));
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function acceptRestaurant($id)
     {
         $restaurant = Restaurant::where('id', $id)->first();
@@ -1043,9 +783,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function searchRestaurants(Request $request)
     {
         $query = $request['query'];
@@ -1056,22 +796,21 @@ class AdminController extends Controller
         $count = $restaurants->total();
 
         $dapCheck = false;
-        if (Module::find('DeliveryAreaPro') && Module::find('DeliveryAreaPro')->isEnabled()) {
+        if (\Module::find('DeliveryAreaPro') && \Module::find('DeliveryAreaPro')->isEnabled()) {
             $dapCheck = true;
         }
-        $zones = Zone::get(['id', 'name']);
+
         return view('admin.restaurants', array(
             'restaurants' => $restaurants,
             'query' => $query,
             'count' => $count,
             'dapCheck' => $dapCheck,
-            'zones' => $zones,
         ));
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function disableRestaurant($id)
     {
         $restaurant = Restaurant::where('id', $id)->first();
@@ -1079,18 +818,15 @@ class AdminController extends Controller
             $restaurant->is_schedulable = false;
             $restaurant->toggleActive();
             $restaurant->save();
-            if (\Illuminate\Support\Facades\Request::ajax()) {
-                return response()->json(['success' => true], 200);
-            }
             return redirect()->back()->with(['success' => 'Operation Successful']);
         } else {
             return redirect()->route('admin.restaurants');
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function deleteRestaurant($id)
     {
         $restaurant = Restaurant::where('id', $id)->first();
@@ -1106,9 +842,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function saveNewRestaurant(Request $request)
     {
         $restaurant = new Restaurant();
@@ -1121,7 +857,7 @@ class AdminController extends Controller
         $filename = $rand_name . '.jpg';
         Image::make($image)
             ->resize(160, 117)
-            ->save(base_path('assets/img/restaurants/' . $filename), config('setting.uploadImageQuality '), 'jpg');
+            ->save(base_path('assets/img/restaurants/' . $filename), config('settings.uploadImageQuality '), 'jpg');
         $restaurant->image = '/assets/img/restaurants/' . $filename;
 
         $restaurant->rating = $request->rating;
@@ -1178,10 +914,6 @@ class AdminController extends Controller
 
         $restaurant->min_order_price = $request->min_order_price;
 
-        if ($request->zone_id != null) {
-            $restaurant->zone_id = $request->zone_id;
-        }
-
         try {
             $restaurant->save();
             return redirect()->back()->with(['success' => 'Restaurant Saved']);
@@ -1190,20 +922,23 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function getRestaurantItems($id)
     {
-        $items = Item::where('restaurant_id', $id)->orderBy('id', 'DESC')->with('item_category', 'restaurant')->paginate(20);
-        $count = $items->total();
+        $items = Item::where('restaurant_id', $id)->paginate(20);
+
+        $count = Item::where('restaurant_id', $id)->count();
 
         $restaurants = Restaurant::all();
+
         $itemCategories = ItemCategory::where('is_enabled', '1')->get();
+
         $addonCategories = AddonCategory::all();
 
         return view('admin.items', array(
@@ -1212,35 +947,23 @@ class AdminController extends Controller
             'restaurants' => $restaurants,
             'itemCategories' => $itemCategories,
             'addonCategories' => $addonCategories,
-            'restaurant_id' => $id,
         ));
-    }
 
-    /**
-     * @param $id
-     */
+    }
+/**
+ * @param $id
+ */
     public function getEditRestaurant($id)
     {
-
-        $restaurant = Restaurant::where('id', $id)->with('users.roles', 'delivery_areas')->ordered()->firstOrFail();
-
+        $restaurant = Restaurant::where('id', $id)->first();
         $restaurantCategories = RestaurantCategory::where('is_active', '1')->get();
 
         $dapCheck = false;
-        if (Module::find('DeliveryAreaPro') && Module::find('DeliveryAreaPro')->isEnabled()) {
+        if (\Module::find('DeliveryAreaPro') && \Module::find('DeliveryAreaPro')->isEnabled()) {
             $dapCheck = true;
         }
 
         $adminPaymentGateways = PaymentGateway::where('is_active', '1')->get();
-
-        $payoutData = StorePayoutDetail::where('restaurant_id', $id)->first();
-        if ($payoutData) {
-            $payoutData = json_decode($payoutData->data);
-        } else {
-            $payoutData = null;
-        }
-
-        $zones = Zone::get(['id', 'name']);
 
         return view('admin.editRestaurant', array(
             'restaurant' => $restaurant,
@@ -1248,27 +971,16 @@ class AdminController extends Controller
             'schedule_data' => json_decode($restaurant->schedule_data),
             'dapCheck' => $dapCheck,
             'adminPaymentGateways' => $adminPaymentGateways,
-            'payoutData' => $payoutData,
-            'rating' => storeAvgRating($restaurant->ratings),
-            'zones' => $zones,
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateRestaurant(Request $request)
     {
         // dd($request->all());
-
-        $restaurant = Restaurant::where('id', $request->id)->with([
-            'items' => function ($query) {
-                $query->select('id', 'restaurant_id', 'zone_id');
-            },
-            'orders' => function ($query) {
-                $query->select('id', 'restaurant_id', 'zone_id');
-            },
-        ])->first();
+        $restaurant = Restaurant::where('id', $request->id)->first();
 
         if ($restaurant) {
             $restaurant->name = $request->name;
@@ -1283,8 +995,9 @@ class AdminController extends Controller
                 $filename = $rand_name . '.jpg';
                 Image::make($image)
                     ->resize(160, 117)
-                    ->save(base_path('assets/img/restaurants/' . $filename), config('setting.uploadImageQuality '), 'jpg');
+                    ->save(base_path('assets/img/restaurants/' . $filename), config('settings.uploadImageQuality '), 'jpg');
                 $restaurant->image = '/assets/img/restaurants/' . $filename;
+
             }
 
             $restaurant->rating = $request->rating;
@@ -1356,62 +1069,6 @@ class AdminController extends Controller
 
             $restaurant->custom_message = $request->custom_message;
 
-            $restaurant->custom_featured_name = $request->custom_featured_name;
-
-            if ($request->accept_scheduled_orders == 'true') {
-                $restaurant->accept_scheduled_orders = true;
-            } else {
-                $restaurant->accept_scheduled_orders = false;
-            }
-
-            if ($request->has('schedule_slot_buffer')) {
-                if ($request->schedule_slot_buffer == null) {
-                    $restaurant->schedule_slot_buffer = 30; //defaults to 30 mins
-                } else {
-                    $restaurant->schedule_slot_buffer = $request->schedule_slot_buffer;
-                }
-            } else {
-                $restaurant->schedule_slot_buffer = $restaurant->schedule_slot_buffer ? $restaurant->schedule_slot_buffer : 0;
-            }
-
-            $restaurant->free_delivery_subtotal = $request->free_delivery_subtotal;
-
-            $restaurant->custom_message_on_list = $request->custom_message_on_list;
-
-            $restaurantZone = $restaurant->zone_id;
-            if ($restaurantZone != $request->zone_id) {
-                //zone id has changed, so update all related tables with the new zone ID
-                $restaurantItemIds = [];
-                //restaurant items
-                foreach ($restaurant->items as $restaurantItem) {
-                    array_push($restaurantItemIds, $restaurantItem->id);
-                }
-                $restaurantOrderIds = [];
-                //restaurant orders
-                foreach ($restaurant->orders as $restaurantOrder) {
-                    array_push($restaurantOrderIds, $restaurantOrder->id);
-                }
-
-                $restaurantEarningsIds = [];
-                //restaurant earnings
-                foreach ($restaurant->restaurant_earnings as $restaurantEarning) {
-                    array_push($restaurantEarningsIds, $restaurantEarning->id);
-                }
-
-                $restaurantPayoutsIds = [];
-                //restaurant payouts
-                foreach ($restaurant->restaurant_payouts as $restaurantPayout) {
-                    array_push($restaurantPayoutsIds, $restaurantPayout->id);
-                }
-
-                DB::table('items')->whereIn('id', $restaurantItemIds)->update(['zone_id' => $request->zone_id]);
-                DB::table('orders')->whereIn('id', $restaurantOrderIds)->update(['zone_id' => $request->zone_id]);
-                DB::table('restaurant_earnings')->whereIn('id', $restaurantEarningsIds)->update(['zone_id' => $request->zone_id]);
-                DB::table('restaurant_payouts')->whereIn('id', $restaurantPayoutsIds)->update(['zone_id' => $request->zone_id]);
-
-                $restaurant->zone_id = $request->zone_id;
-            }
-
             try {
                 if (isset($request->restaurant_category_restaurant)) {
                     $restaurant->restaurant_categories()->sync($request->restaurant_category_restaurant);
@@ -1431,6 +1088,7 @@ class AdminController extends Controller
 
                     $restaurant->slug = Str::slug($request->store_url);
                     $restaurant->save();
+
                 } catch (\Illuminate\Database\QueryException $qe) {
                     $errorCode = $qe->errorInfo[1];
                     if ($errorCode == 1062) {
@@ -1446,14 +1104,14 @@ class AdminController extends Controller
             } catch (Exception $e) {
                 return redirect()->back()->with(['message' => $e->getMessage()]);
             } catch (\Throwable $th) {
-                return redirect()->back()->with(['message' => $th->getMessage()]);
+                return redirect()->back()->with(['message' => $th]);
             }
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateSlug(Request $request)
     {
         $restaurant = Restaurant::where('id', $request->id)->firstOrFail();
@@ -1463,6 +1121,7 @@ class AdminController extends Controller
             $restaurant->slug = Str::slug($request->store_url);
             $restaurant->save();
             return redirect()->back()->with(['success' => 'URL Updated']);
+
         } catch (\Illuminate\Database\QueryException $qe) {
             $errorCode = $qe->errorInfo[1];
             if ($errorCode == 1062) {
@@ -1472,48 +1131,37 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
+
     }
 
-    public function items(Request $request)
+    public function items()
     {
+        $items = Item::orderBy('id', 'DESC')->with('item_category', 'restaurant')->paginate(20);
+        $count = $items->total();
+
         $restaurants = Restaurant::all();
         $itemCategories = ItemCategory::where('is_enabled', '1')->get();
         $addonCategories = AddonCategory::all();
 
-        if ($request->has('store_id')) {
-            $store_id = $request->store_id;
-        } else {
-            $store_id = null;
-        }
-
         return view('admin.items', array(
+            'items' => $items,
+            'count' => $count,
             'restaurants' => $restaurants,
             'itemCategories' => $itemCategories,
             'addonCategories' => $addonCategories,
-            'store_id' => $store_id ? $store_id : null,
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function searchItems(Request $request)
     {
         $query = $request['query'];
 
-        if ($request->has('restaurant_id')) {
-            $items = Item::where('restaurant_id', $request->restaurant_id)
-                ->where('name', 'LIKE', '%' . $query . '%')
-                ->with('item_category', 'restaurant')
-                ->paginate(20);
-        } else {
-            $items = Item::where('name', 'LIKE', '%' . $query . '%')
-                ->with('item_category', 'restaurant')
-                ->paginate(20);
-        }
-
+        $items = Item::where('name', 'LIKE', '%' . $query . '%')->with('item_category', 'restaurant')->paginate(20);
         $count = $items->total();
 
         $restaurants = Restaurant::get();
@@ -1530,9 +1178,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function saveNewItem(Request $request)
     {
         // dd($request->all());
@@ -1545,15 +1193,13 @@ class AdminController extends Controller
         $item->restaurant_id = $request->restaurant_id;
         $item->item_category_id = $request->item_category_id;
 
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $rand_name = time() . str_random(10);
-            $filename = $rand_name . '.jpg';
-            Image::make($image)
-                ->resize(486, 355)
-                ->save(base_path('assets/img/items/' . $filename), config('setting.uploadImageQuality '), 'jpg');
-            $item->image = '/assets/img/items/' . $filename;
-        }
+        $image = $request->file('image');
+        $rand_name = time() . str_random(10);
+        $filename = $rand_name . '.jpg';
+        Image::make($image)
+            ->resize(486, 355)
+            ->save(base_path('assets/img/items/' . $filename), config('settings.uploadImageQuality '), 'jpg');
+        $item->image = '/assets/img/items/' . $filename;
 
         if ($request->is_recommended == 'true') {
             $item->is_recommended = true;
@@ -1573,22 +1219,16 @@ class AdminController extends Controller
             $item->is_new = false;
         }
 
-        if ($request->is_veg == 'veg') {
+        if ($request->is_veg == 'true') {
             $item->is_veg = true;
-        } elseif ($request->is_veg == 'nonveg') {
-            $item->is_veg = false;
         } else {
-            $item->is_veg = null;
+            $item->is_veg = false;
         }
 
         $item->desc = $request->desc;
 
         try {
             $item->save();
-
-            $item->zone_id = $item->restaurant->zone_id ? $item->restaurant->zone_id : null;
-            $item->save();
-
             if (isset($request->addon_category_item)) {
                 $item->addon_categories()->sync($request->addon_category_item);
             }
@@ -1598,18 +1238,19 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
+
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function getEditItem($id)
     {
         $item = Item::where('id', $id)->first();
         $restaurants = Restaurant::get();
-        $itemCategories = ItemCategory::get();
+        $itemCategories = ItemCategory::where('is_enabled', '1')->get();
         $addonCategories = AddonCategory::all();
 
         return view('admin.editItem', array(
@@ -1620,16 +1261,16 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function disableItem($id)
     {
         $item = Item::where('id', $id)->first();
         if ($item) {
             $item->toggleActive()->save();
             if (\Illuminate\Support\Facades\Request::ajax()) {
-                return response()->json(['success' => true, 'currentStatus' => $item->is_active]);
+                return response()->json(['success' => true]);
             }
             return redirect()->back()->with(['success' => 'Operation Successful']);
         } else {
@@ -1637,12 +1278,11 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateItem(Request $request)
     {
-        // dd($request->all());
         $item = Item::where('id', $request->id)->first();
 
         if ($item) {
@@ -1659,7 +1299,7 @@ class AdminController extends Controller
                 $filename = $rand_name . '.jpg';
                 Image::make($image)
                     ->resize(486, 355)
-                    ->save(base_path('assets/img/items/' . $filename), config('setting.uploadImageQuality '), 'jpg');
+                    ->save(base_path('assets/img/items/' . $filename), config('settings.uploadImageQuality '), 'jpg');
                 $item->image = '/assets/img/items/' . $filename;
             }
 
@@ -1684,47 +1324,32 @@ class AdminController extends Controller
                 $item->is_new = false;
             }
 
-            if ($request->is_veg == 'veg') {
+            if ($request->is_veg == 'true') {
                 $item->is_veg = true;
-            } elseif ($request->is_veg == 'nonveg') {
-                $item->is_veg = false;
             } else {
-                $item->is_veg = null;
+                $item->is_veg = false;
             }
 
             $item->desc = $request->desc;
 
-            $item->zone_id = $item->restaurant->zone_id ? $item->restaurant->zone_id : null;
-
             try {
                 $item->save();
-
-                if ($request->addon_category_item == null) {
-                    $item->addon_categories()->sync($request->addon_category_item);
-                }
-
                 if (isset($request->addon_category_item)) {
                     $item->addon_categories()->sync($request->addon_category_item);
                 }
-
+                // if ($request->remove_all_addons == '1') {
+                //     $item->addon_categories()->sync($request->addon_category_item);
+                // }
                 return redirect()->back()->with(['success' => 'Item Updated']);
+
             } catch (\Illuminate\Database\QueryException $qe) {
                 return redirect()->back()->with(['message' => $qe->getMessage()]);
             } catch (Exception $e) {
                 return redirect()->back()->with(['message' => $e->getMessage()]);
             } catch (\Throwable $th) {
-                return redirect()->back()->with(['message' => $th->getMessage()]);
+                return redirect()->back()->with(['message' => $th]);
             }
         }
-    }
-
-    public function removeItemImage($id)
-    {
-        $item = Item::where('id', $id)->firstOrFail();
-
-        $item->image = null;
-        $item->save();
-        return redirect()->back()->with(['success' => 'Item image removed']);
     }
 
     public function addonCategories()
@@ -1740,9 +1365,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function searchAddonCategories(Request $request)
     {
         $query = $request['query'];
@@ -1758,9 +1383,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function saveNewAddonCategory(Request $request)
     {
         $addonCategory = new AddonCategory();
@@ -1769,7 +1394,6 @@ class AdminController extends Controller
         $addonCategory->type = $request->type;
         $addonCategory->description = $request->description;
         $addonCategory->user_id = Auth::user()->id;
-        $addonCategory->addon_limit = $request->addon_limit ? $request->addon_limit : 0;
 
         try {
             $addonCategory->save();
@@ -1789,7 +1413,7 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
     }
 
@@ -1798,9 +1422,9 @@ class AdminController extends Controller
         return view('admin.newAddonCategory');
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function deleteAddon($id)
     {
         $addon = Addon::find($id);
@@ -1809,9 +1433,9 @@ class AdminController extends Controller
         return redirect()->back()->with(['success' => 'Addon Deleted']);
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function getEditAddonCategory($id)
     {
         $addonCategory = AddonCategory::where('id', $id)->with('addons')->first();
@@ -1820,11 +1444,12 @@ class AdminController extends Controller
             'addonCategory' => $addonCategory,
             'addons' => $addonCategory->addons,
         ));
+
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateAddonCategory(Request $request)
     {
         // dd($request->all());
@@ -1835,7 +1460,6 @@ class AdminController extends Controller
             $addonCategory->name = $request->name;
             $addonCategory->type = $request->type;
             $addonCategory->description = $request->description;
-            $addonCategory->addon_limit = $request->addon_limit ? $request->addon_limit : 0;
 
             try {
                 $addonCategory->save();
@@ -1867,7 +1491,7 @@ class AdminController extends Controller
             } catch (Exception $e) {
                 return redirect()->back()->with(['message' => $e->getMessage()]);
             } catch (\Throwable $th) {
-                return redirect()->back()->with(['message' => $th->getMessage()]);
+                return redirect()->back()->with(['message' => $th]);
             }
         }
     }
@@ -1887,9 +1511,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function searchAddons(Request $request)
     {
         $query = $request['query'];
@@ -1907,9 +1531,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function saveNewAddon(Request $request)
     {
         // dd($request->all());
@@ -1928,13 +1552,14 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
+
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function getEditAddon($id)
     {
         $addon = Addon::where('id', $id)->first();
@@ -1945,9 +1570,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateAddon(Request $request)
     {
         $addon = Addon::where('id', $request->id)->first();
@@ -1966,14 +1591,14 @@ class AdminController extends Controller
             } catch (Exception $e) {
                 return redirect()->back()->with(['message' => $e->getMessage()]);
             } catch (\Throwable $th) {
-                return redirect()->back()->with(['message' => $th->getMessage()]);
+                return redirect()->back()->with(['message' => $th]);
             }
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function disableAddon($id)
     {
         $addon = Addon::where('id', $id)->firstOrFail();
@@ -1985,9 +1610,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function addonsOfAddonCategory($id)
     {
         $addons = Addon::orderBy('id', 'DESC')->where('addon_category_id', $id)->with('addon_category')->paginate(20);
@@ -2014,9 +1639,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function createItemCategory(Request $request)
     {
         $itemCategory = new ItemCategory();
@@ -2032,13 +1657,13 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function disableCategory($id)
     {
         $itemCategory = ItemCategory::where('id', $id)->first();
@@ -2053,9 +1678,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateItemCategory(Request $request)
     {
         $itemCategory = ItemCategory::where('id', $request->id)->firstOrFail();
@@ -2072,9 +1697,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function saveNewPage(Request $request)
     {
         $page = new Page();
@@ -2090,13 +1715,13 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function getEditPage($id)
     {
         $page = Page::where('id', $id)->first();
@@ -2110,9 +1735,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updatePage(Request $request)
     {
         $page = Page::where('id', $request->id)->first();
@@ -2129,16 +1754,16 @@ class AdminController extends Controller
             } catch (Exception $e) {
                 return redirect()->back()->with(['message' => $e->getMessage()]);
             } catch (\Throwable $th) {
-                return redirect()->back()->with(['message' => $th->getMessage()]);
+                return redirect()->back()->with(['message' => $th]);
             }
         } else {
             return redirect()->route('admin.pages');
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function deletePage($id)
     {
         $page = Page::where('id', $id)->first();
@@ -2162,9 +1787,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function viewRestaurantPayout($id)
     {
         $restaurantPayout = RestaurantPayout::where('id', $id)->first();
@@ -2185,9 +1810,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateRestaurantPayout(Request $request)
     {
         $restaurantPayout = RestaurantPayout::where('id', $request->id)->first();
@@ -2205,11 +1830,18 @@ class AdminController extends Controller
             } catch (Exception $e) {
                 return redirect()->back()->with(['message' => $e->getMessage()]);
             } catch (\Throwable $th) {
-                return redirect()->back()->with(['message' => $th->getMessage()]);
+                return redirect()->back()->with(['message' => $th]);
             }
+
         }
     }
 
+/**
+ * @return mixed
+ */
+/**
+ * @param $duplicate
+ */
     public function fixUpdateIssues()
     {
         try {
@@ -2231,6 +1863,7 @@ class AdminController extends Controller
                     $duplicate->order->save(); //save the order
                     $duplicate->delete(); //delete the duplicate entry in db
                 }
+
             }
 
             // ** MIGRATE ** //
@@ -2238,14 +1871,16 @@ class AdminController extends Controller
             Artisan::call('migrate', [
                 '--force' => true,
             ]);
-            Artisan::call('module:migrate', [
-                '--force' => true,
-            ]);
             // ** MIGRATE END ** //
 
             // ** SETTINGS ** //
-            $data = file_get_contents(storage_path('data/data.json'));
+            // get the latest settings json file from the server...
+            $data = Curl::to('https://stackcanyon.com/products/foodoma/updates/settings.json')->get();
             $data = json_decode($data);
+            if (!$data) {
+                $data = file_get_contents(storage_path('data/data.json'));
+                $data = json_decode($data);
+            }
             $dbSet = [];
             foreach ($data as $s) {
                 //check if the setting key already exists, if exists, do nothing..
@@ -2315,24 +1950,6 @@ class AdminController extends Controller
                 $paytmPaymentGateway->save();
             }
 
-            $hasFlutterwave = PaymentGateway::where('name', 'Flutterwave')->first();
-            if (!$hasFlutterwave) {
-                $flutterwavePaymentGateway = new PaymentGateway();
-                $flutterwavePaymentGateway->name = 'Flutterwave';
-                $flutterwavePaymentGateway->description = 'Flutterwave Payment Gateway';
-                $flutterwavePaymentGateway->is_active = 0;
-                $flutterwavePaymentGateway->save();
-            }
-
-            $hasKhalti = PaymentGateway::where('name', 'Khalti')->first();
-            if (!$hasKhalti) {
-                $khaltiPaymentGateway = new PaymentGateway();
-                $khaltiPaymentGateway->name = 'Khalti';
-                $khaltiPaymentGateway->description = 'Khalti Payment Gateway';
-                $khaltiPaymentGateway->is_active = 0;
-                $khaltiPaymentGateway->save();
-            }
-
             $hasMsg91 = SmsGateway::where('gateway_name', 'MSG91')->first();
             if (!$hasMsg91) {
                 //if not, then install new sms gateway gateway "MSG91"
@@ -2351,7 +1968,7 @@ class AdminController extends Controller
 
             // ** ORDERSTATUS ** //
             DB::table('orderstatuses')->truncate();
-            DB::statement("INSERT INTO `orderstatuses` (`id`, `name`) VALUES (1, 'Order Placed'), (2, 'Preparing Order'), (3, 'Delivery Guy Assigned'), (4, 'Order Picked Up'), (5, 'Delivered'), (6, 'Canceled'), (7, 'Ready For Pick Up'), (8, 'Awaiting Payment'), (9, 'Payment Failed'), (10, 'Scheduled Order'), (11, 'Confirmed Order')");
+            DB::statement("INSERT INTO `orderstatuses` (`id`, `name`) VALUES (1, 'Order Placed'), (2, 'Preparing Order'), (3, 'Delivery Guy Assigned'), (4, 'Order Picked Up'), (5, 'Delivered'), (6, 'Canceled'), (7, 'Ready For Pick Up'), (8, 'Awaiting Payment'), (9, 'Payment Failed')");
 
             /* Save new keys for translations languages */
             $langData = file_get_contents(storage_path('language/english.json'));
@@ -2373,109 +1990,6 @@ class AdminController extends Controller
                 $translation->data = json_encode($merged);
                 $translation->save();
             }
-
-            /* Create Permissions */
-            Schema::disableForeignKeyConstraints();
-            DB::table('permissions')->truncate();
-            Schema::enableForeignKeyConstraints();
-
-            app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-            Permission::create(['name' => 'dashboard_view', 'readable_name' => 'View Admin Dashboard']);
-
-            Permission::create(['name' => 'stores_view', 'readable_name' => 'View Stores']);
-            Permission::create(['name' => 'stores_edit', 'readable_name' => 'Edit Stores']);
-            Permission::create(['name' => 'stores_sort', 'readable_name' => 'Sort Stores']);
-            Permission::create(['name' => 'approve_stores', 'readable_name' => 'Approve Pending Stores']);
-            Permission::create(['name' => 'stores_add', 'readable_name' => 'Add Store']);
-            Permission::create(['name' => 'login_as_store_owner', 'readable_name' => 'Login as Store Owner']);
-
-            Permission::create(['name' => 'addon_categories_view', 'readable_name' => 'View Addon Categories']);
-            Permission::create(['name' => 'addon_categories_edit', 'readable_name' => 'Edit Addon Categories']);
-            Permission::create(['name' => 'addon_categories_add', 'readable_name' => 'Add Addon Category']);
-
-            Permission::create(['name' => 'addons_view', 'readable_name' => 'View Addons']);
-            Permission::create(['name' => 'addons_edit', 'readable_name' => 'Edit Addons']);
-            Permission::create(['name' => 'addons_add', 'readable_name' => 'Add Addon']);
-            Permission::create(['name' => 'addons_actions', 'readable_name' => 'Addon Actions']);
-
-            Permission::create(['name' => 'menu_categories_view', 'readable_name' => 'View Menu Categories']);
-            Permission::create(['name' => 'menu_categories_edit', 'readable_name' => 'Edit Menu Categories']);
-            Permission::create(['name' => 'menu_categories_add', 'readable_name' => 'Add Menu Category']);
-            Permission::create(['name' => 'menu_categories_actions', 'readable_name' => 'Menu Category Actions']);
-
-            Permission::create(['name' => 'items_view', 'readable_name' => 'View Items']);
-            Permission::create(['name' => 'items_edit', 'readable_name' => 'Edit Items']);
-            Permission::create(['name' => 'items_add', 'readable_name' => 'Add Item']);
-            Permission::create(['name' => 'items_actions', 'readable_name' => 'Item Actions']);
-
-            Permission::create(['name' => 'all_users_view', 'readable_name' => 'View All Users']);
-            Permission::create(['name' => 'all_users_edit', 'readable_name' => 'Edit All Users']);
-            Permission::create(['name' => 'all_users_wallet', 'readable_name' => 'Users Wallet Transactions']);
-
-            Permission::create(['name' => 'delivery_guys_view', 'readable_name' => 'View Delivery Guy Users']);
-            Permission::create(['name' => 'delivery_guys_manage_stores', 'readable_name' => 'Manage Delivery Guy Stores']);
-
-            Permission::create(['name' => 'store_owners_view', 'readable_name' => 'View Store Owner Users']);
-            Permission::create(['name' => 'store_owners_manage_stores', 'readable_name' => 'Manage Store Owner Stores']);
-
-            Permission::create(['name' => 'order_view', 'readable_name' => 'View Orders']);
-            Permission::create(['name' => 'order_actions', 'readable_name' => 'Order Actions']);
-
-            Permission::create(['name' => 'promo_sliders_manage', 'readable_name' => 'Manage Promo Sliders']);
-            Permission::create(['name' => 'store_category_sliders_manage', 'readable_name' => 'Manage Category Sliders']);
-            Permission::create(['name' => 'coupons_manage', 'readable_name' => 'Manage Coupons']);
-            Permission::create(['name' => 'pages_manage', 'readable_name' => 'Manage Pages']);
-            Permission::create(['name' => 'popular_location_manage', 'readable_name' => 'Manage Popular Geo Locations']);
-            Permission::create(['name' => 'send_notification_manage', 'readable_name' => 'Send Notifications']);
-            Permission::create(['name' => 'store_payouts_manage', 'readable_name' => 'Manage Store Payouts']);
-            Permission::create(['name' => 'translations_manage', 'readable_name' => 'Manage Translations']);
-            Permission::create(['name' => 'delivery_collection_manage', 'readable_name' => 'Manage Delivery Collection']);
-            Permission::create(['name' => 'delivery_collection_logs_view', 'readable_name' => 'View Delivery Collection Logs']);
-            Permission::create(['name' => 'wallet_transactions_view', 'readable_name' => 'View Wallet Transactions']);
-            Permission::create(['name' => 'reports_view', 'readable_name' => 'View Reports']);
-
-            Permission::create(['name' => 'settings_manage', 'readable_name' => 'Manage Settings']);
-
-            Permission::create(['name' => 'login_as_customer', 'readable_name' => 'Login as Customer']);
-
-            $user = User::where('id', '1')->first();
-            $user->givePermissionTo(Permission::all());
-            /* END Create Permission and add all permissions to Admin */
-
-            /*restaurant zone fixes */
-            $restaurants = Restaurant::with('items', 'orders', 'restaurant_earnings', 'restaurant_payouts')->get();
-            foreach ($restaurants as $restaurant) {
-                $restaurantItemIds = [];
-                //restaurant items
-                foreach ($restaurant->items as $restaurantItem) {
-                    array_push($restaurantItemIds, $restaurantItem->id);
-                }
-                $restaurantOrderIds = [];
-                //restaurant orders
-                foreach ($restaurant->orders as $restaurantOrder) {
-                    array_push($restaurantOrderIds, $restaurantOrder->id);
-                }
-
-                $restaurantEarningsIds = [];
-                //restaurant earnings
-                foreach ($restaurant->restaurant_earnings as $restaurantEarning) {
-                    array_push($restaurantEarningsIds, $restaurantEarning->id);
-                }
-
-                $restaurantPayoutsIds = [];
-                //restaurant payouts
-                foreach ($restaurant->restaurant_payouts as $restaurantPayout) {
-                    array_push($restaurantPayoutsIds, $restaurantPayout->id);
-                }
-
-                DB::table('items')->whereIn('id', $restaurantItemIds)->update(['zone_id' => $restaurant->zone_id]);
-                DB::table('orders')->whereIn('id', $restaurantOrderIds)->update(['zone_id' => $restaurant->zone_id]);
-                DB::table('restaurant_earnings')->whereIn('id', $restaurantEarningsIds)->update(['zone_id' => $restaurant->zone_id]);
-                DB::table('restaurant_payouts')->whereIn('id', $restaurantPayoutsIds)->update(['zone_id' => $restaurant->zone_id]);
-            }
-            /* END */
-
             /* END Save new keys for translations languages */
             /** CLEAR LARAVEL CACHES **/
             Artisan::call('cache:clear');
@@ -2488,13 +2002,14 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
+
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function addMoneyToWallet(Request $request)
     {
         $user = User::where('id', $request->user_id)->first();
@@ -2506,20 +2021,20 @@ class AdminController extends Controller
                 $alert = new PushNotify();
                 $alert->sendWalletAlert($request->user_id, $request->add_amount, $request->add_amount_description, $type = 'deposit');
 
-                return redirect()->back()->with(['success' => config('setting.walletName') . ' Updated']);
+                return redirect()->back()->with(['success' => config('settings.walletName') . ' Updated']);
             } catch (\Illuminate\Database\QueryException $qe) {
                 return redirect()->back()->with(['message' => $qe->getMessage()]);
             } catch (Exception $e) {
                 return redirect()->back()->with(['message' => $e->getMessage()]);
             } catch (\Throwable $th) {
-                return redirect()->back()->with(['message' => $th->getMessage()]);
+                return redirect()->back()->with(['message' => $th]);
             }
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function substractMoneyFromWallet(Request $request)
     {
         $user = User::where('id', $request->user_id)->first();
@@ -2532,17 +2047,18 @@ class AdminController extends Controller
                     $alert = new PushNotify();
                     $alert->sendWalletAlert($request->user_id, $request->substract_amount, $request->substract_amount_description, $type = 'withdraw');
 
-                    return redirect()->back()->with(['success' => config('setting.walletName') . ' Updated']);
+                    return redirect()->back()->with(['success' => config('settings.walletName') . ' Updated']);
                 } catch (\Illuminate\Database\QueryException $qe) {
                     return redirect()->back()->with(['message' => $qe->getMessage()]);
                 } catch (Exception $e) {
                     return redirect()->back()->with(['message' => $e->getMessage()]);
                 } catch (\Throwable $th) {
-                    return redirect()->back()->with(['message' => $th->getMessage()]);
+                    return redirect()->back()->with(['message' => $th]);
                 }
             } else {
                 return redirect()->back()->with(['message' => 'Substract amount is less that the user balance amount.']);
             }
+
         }
     }
 
@@ -2556,11 +2072,11 @@ class AdminController extends Controller
             'transactions' => $transactions,
             'count' => $count,
         ));
-    }
 
-    /**
-     * @param Request $request
-     */
+    }
+/**
+ * @param Request $request
+ */
     public function searchWalletTransactions(Request $request)
     {
         $query = $request['query'];
@@ -2577,10 +2093,9 @@ class AdminController extends Controller
         ));
     }
 
-    /**
-     * @param Request $request
-     * @param TranslationHelper $translationHelper
-     */
+/**
+ * @param Request $request
+ */
     public function cancelOrderFromAdmin(Request $request, TranslationHelper $translationHelper)
     {
         $keys = ['orderRefundWalletComment', 'orderPartialRefundWalletComment'];
@@ -2589,7 +2104,6 @@ class AdminController extends Controller
         $order = Order::where('id', $request->order_id)->first();
 
         $user = User::where('id', $order->user_id)->first();
-        $admin = Auth::user();
 
         try {
             if ($order->orderstatus_id != 5 || $order->orderstatus_id != 6) {
@@ -2597,33 +2111,19 @@ class AdminController extends Controller
 
                 //check refund type
 
-                switch ($request->refund_type) {
-                    case 'NOREFUND':
-                        if ($order->wallet_amount != null) {
-                            $user->deposit($order->wallet_amount * 100, ['description' => $translationData->orderRefundWalletComment . $order->unique_order_id]);
-                        }
-                        activity()
-                            ->performedOn($order)
-                            ->causedBy($admin)
-                            ->withProperties(['type' => 'Order_Canceled'])->log('Order canceled');
-                        break;
+                // if refund_type === NOREFUND -> refund the wallet amount if present.
+                if ($request->refund_type == 'NOREFUND' && $order->wallet_amount != null) {
+                    $user->deposit($order->wallet_amount * 100, ['description' => $translationData->orderRefundWalletComment . $order->unique_order_id]);
+                }
 
-                    case 'FULL':
-                        $user->deposit($order->total * 100, ['description' => $translationData->orderRefundWalletComment . $order->unique_order_id]);
-                        activity()
-                            ->performedOn($order)
-                            ->causedBy($admin)
-                            ->withProperties(['type' => 'Order_Canceled'])->log('Order canceled with Full Refund');
+                //give full refund, even if not paid with wallet
+                if ($request->refund_type == 'FULL') {
+                    $user->deposit($order->total * 100, ['description' => $translationData->orderRefundWalletComment . $order->unique_order_id]);
+                }
 
-                        break;
-
-                    case 'HALF':
-                        $user->deposit($order->total / 2 * 100, ['description' => $translationData->orderPartialRefundWalletComment . $order->unique_order_id]);
-                        activity()
-                            ->performedOn($order)
-                            ->causedBy($admin)
-                            ->withProperties(['type' => 'Order_Canceled'])->log('Order canceled with Half Refund');
-                        break;
+                //give half refund, even if not paid with wallet
+                if ($request->refund_type == 'HALF') {
+                    $user->deposit($order->total / 2 * 100, ['description' => $translationData->orderPartialRefundWalletComment . $order->unique_order_id]);
                 }
 
                 //cancel order
@@ -2631,7 +2131,7 @@ class AdminController extends Controller
                 $order->save();
 
                 //throw notification to user
-                if (config('setting.enablePushNotificationOrders') == 'true') {
+                if (config('settings.enablePushNotificationOrders') == 'true') {
                     $notify = new PushNotify();
                     $notify->sendPushNotification('6', $order->user_id, $order->unique_order_id);
                 }
@@ -2643,38 +2143,44 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
+
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function acceptOrderFromAdmin(Request $request)
     {
-        $user = Auth::user();
-        $order = Order::where('id', $request->id)->with('restaurant')->first();
 
-        if ($order->orderstatus_id == '1' || $order->orderstatus_id == '11') {
+        $order = Order::where('id', $request->id)->first();
+
+        if ($order->orderstatus_id == '1') {
             $order->orderstatus_id = 2;
             $order->save();
-
-            if (config('setting.enablePushNotificationOrders') == 'true') {
-                //to user
-                $notify = new PushNotify();
-                $notify->sendPushNotification('2', $order->user_id, $order->unique_order_id);
+            // Send SMS Notification to Delivery Guy
+            if (config('settings.smsDeliveryNotify') == 'true') {
+                //get restaurant
+                $restaurant = Restaurant::where('id', $order->restaurant_id)->first();
+                if ($restaurant) {
+                    //get all pivot users of restaurant (delivery guy/ res owners)
+                    $pivotUsers = $restaurant->users()
+                        ->wherePivot('restaurant_id', $order->restaurant_id)
+                        ->get();
+                    //filter only res owner and send notification.
+                    foreach ($pivotUsers as $pU) {
+                        if ($pU->hasRole('Delivery Guy')) {
+                            //send Notification to Delivery Guy
+                            $message = config('settings.defaultSmsDeliveryMsg');
+                            $otp = null;
+                            $smsnotify = new Sms();
+                            $smsnotify->processSmsAction('OD_NOTIFY', $pU->phone, $otp, $message);
+                        }
+                    }
+                }
             }
-
-            //send notification and sms to delivery only when order type is Delivery...
-            if ($order->delivery_type == '1') {
-                sendPushNotificationToDelivery($order->restaurant->id, $order);
-                sendSmsToDelivery($order->restaurant->id);
-            }
-
-            activity()
-                ->performedOn($order)
-                ->causedBy($user)
-                ->withProperties(['type' => 'Order_Accepted'])->log('Order accepted');
+            // END Send SMS Notification to Delivery Guy
 
             return redirect()->back()->with(array('success' => 'Order Accepted'));
         } else {
@@ -2682,175 +2188,66 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function assignDeliveryFromAdmin(Request $request)
     {
-        // dd($request->all());
-        $user = Auth::user();
-
-        $deliveryUser = User::where('id', $request->user_id)->first();
-        if (!$deliveryUser) {
-            abort(404, 'Delivery Guy not found');
-        }
-
-        DB::beginTransaction();
         try {
-            $order = Order::where('id', $request->order_id)
-                ->with('restaurant')
-                ->lockForUpdate()
-                ->first();
-
             $assignment = new AcceptDelivery;
-            $assignment->order_id = $order->id;
-            $assignment->user_id = $deliveryUser->id;
+            $assignment->order_id = $request->order_id;
+            $assignment->user_id = $request->user_id;
             $assignment->customer_id = $request->customer_id;
             $assignment->is_complete = 0;
             $assignment->created_at = Carbon::now();
             $assignment->updated_at = Carbon::now();
             $assignment->save();
 
+            $order = Order::where('id', $request->order_id)->first();
             $order->orderstatus_id = 3;
             $order->save();
-
-            activity()
-                ->performedOn($order)
-                ->causedBy($user)
-                ->withProperties(['type' => 'Order_Assigned'])->log('Order assigned to Delivery Guy');
-
-            DB::commit();
-
-            if (config('setting.enablePushNotificationOrders') == 'true') {
-                $notify = new PushNotify();
-                $notify->sendPushNotification('3', $order->user_id, $order->unique_order_id);
-            }
-
-            // Send SMS Notification to Delivery Guy
-            if (config('setting.smsDeliveryNotify') == 'true') {
-                $message = config('setting.defaultSmsDeliveryMsg');
-                $otp = null;
-                $smsnotify = new Sms();
-                $smsnotify->processSmsAction('OD_NOTIFY', $deliveryUser->phone, $otp, $message);
-            }
-
-            // Send Push Notification to Delivery Guy
-            if (config('setting.enablePushNotificationOrders') == 'true') {
-                if (config('setting.hasSocketPush') != 'true') {
-                    $notify = new PushNotify();
-                    $notify->sendPushNotification('TO_DELIVERY', $deliveryUser->id, $order->unique_order_id);
-                } else {
-                    if (config('setting.iHaveFoodomaaDeliveryApp') == "true") {
-                    stopPlayingNotificationSoundDeliveryAppHelper($order);
-                    $deliveryGuyIds = [$deliveryUser->id];
-                    $notify = new SocketPush();
-                    $notify->pushNewOrder($order->unique_order_id, $deliveryGuyIds);
-                    }
-                }
-            }
-
             return redirect()->back()->with(array('success' => 'Order Assigned'));
-        } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollback();
+        } catch (Illuminate\Database\QueryException $e) {
             $errorCode = $e->errorInfo[1];
             if ($errorCode == 1062) {
-                return redirect()->back()->with(array('message' => 'Delivery already accepted'));
+                return redirect()->back()->with(array('message' => 'Something Went Wrong'));
             }
         }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function reAssignDeliveryFromAdmin(Request $request)
     {
-        $user = Auth::user();
-
-        $deliveryUser = User::where('id', $request->user_id)->first();
-        if (!$deliveryUser) {
-            abort(404, 'Delivery Guy not found');
-        }
-
-        $order = Order::where('id', $request->order_id)->firstOrFail();
-
-        switch ($order->orderstatus_id) {
-            case '5':
-                return redirect()->back()->with(array('message' => 'Cannot assign delivery guy to a completed order.'));
-            case '6':
-                return redirect()->back()->with(array('message' => 'Cannot assign delivery guy to a cancelled order.'));
-        }
 
         $assignment = AcceptDelivery::where('order_id', $request->order_id)->first();
-        $assignment->user_id = $deliveryUser->id;
+        $assignment->user_id = $request->user_id;
         $assignment->is_complete = 0;
         $assignment->updated_at = Carbon::now();
         $assignment->save();
 
-        // Send SMS Notification to Delivery Guy
-        if (config('setting.smsDeliveryNotify') == 'true') {
-            $message = config('setting.defaultSmsDeliveryMsg');
-            $otp = null;
-            $smsnotify = new Sms();
-            $smsnotify->processSmsAction('OD_NOTIFY', $deliveryUser->phone, $otp, $message);
-        }
-
-        // Send Push Notification to Delivery Guy
-        if (config('setting.enablePushNotificationOrders') == 'true') {
-            if (config('setting.hasSocketPush') != 'true') {
-                $notify = new PushNotify();
-                $notify->sendPushNotification('TO_DELIVERY', $deliveryUser->id, $order->unique_order_id);
-            } else {
-                if (config('setting.iHaveFoodomaaDeliveryApp') == "true") {
-                    stopPlayingNotificationSoundDeliveryAppHelper($order);
-                    $deliveryGuyIds = [$deliveryUser->id];
-                    $notify = new SocketPush();
-                    $notify->pushNewOrder($order->unique_order_id, $deliveryGuyIds);
-                }
-            }
-        }
-
-        activity()
-            ->performedOn($order)
-            ->causedBy($user)
-            ->withProperties(['type' => 'Order_Reassigned'])->log('Order re-assigned to Delivery Guy');
-
         return redirect()->back()->with(array('success' => 'Order reassigned successfully'));
     }
 
-    public function popularGeoLocations(Request $request)
+    public function popularGeoLocations()
     {
         $locations = PopularGeoPlace::orderBy('id', 'DESC')->paginate(20);
-        $count = $locations->total();
-
-        $primaryLocation = PopularGeoPlace::where('is_default', '1')->first();
-        if (!$primaryLocation) {
-            if ($count > 0) {
-                $message = "Create atleast one primary business location or set one as primary location (click the check mark button)";
-                $request->session()->flash('message', $message);
-            } else {
-                $message = "Create atleast one primary business location";
-                $request->session()->flash('message', $message);
-            }
-        }
-
+        $locationsAll = PopularGeoPlace::all();
+        $count = count($locationsAll);
         return view('admin.popularGeoLocations', array(
             'locations' => $locations,
             'count' => $count,
         ));
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function saveNewPopularGeoLocation(Request $request)
     {
-        $existing = PopularGeoPlace::count();
-        if ($existing == 0) {
-            $setPrimary = true;
-        } else {
-            $setPrimary = false;
-        }
 
+        // dd($request->all());
         $location = new PopularGeoPlace();
 
         $location->name = $request->name;
@@ -2864,8 +2261,6 @@ class AdminController extends Controller
             $location->is_active = false;
         }
 
-        $location->is_default = $setPrimary;
-
         try {
             $location->save();
             return redirect()->back()->with(['success' => 'Location Saved']);
@@ -2874,23 +2269,17 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function disablePopularGeoLocation($id)
     {
         $location = PopularGeoPlace::where('id', $id)->first();
-
         if ($location) {
-
-            if ($location->is_default) {
-                return redirect()->back()->with(['message' => 'Primary location cannot be disabled.']);
-            }
-
             $location->toggleActive()->save();
             return redirect()->back()->with(['success' => 'Location Disabled']);
         } else {
@@ -2898,44 +2287,20 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function deletePopularGeoLocation($id)
     {
         $location = PopularGeoPlace::where('id', $id)->first();
 
         if ($location) {
-            if ($location->is_default) {
-                return redirect()->back()->with(['message' => 'Primary location cannot be deleted.']);
-            }
-
             $location->delete();
 
             return redirect()->route('admin.popularGeoLocations')->with(['success' => 'Location Deleted']);
         } else {
             return redirect()->route('admin.popularGeoLocations');
         }
-    }
-
-    public function makeDefaultLocation($id)
-    {
-        $location = PopularGeoPlace::where('id', $id)->firstOrFail();
-
-        //remove default of other
-        $currentDefaults = PopularGeoPlace::where('is_default', '1')->get();
-        if (!empty($currentDefaults)) {
-            foreach ($currentDefaults as $currentDefault) {
-                $currentDefault->is_default = 0;
-                $currentDefault->save();
-            }
-        }
-
-        $location->is_active = 1;
-        $location->is_default = 1;
-        $location->save();
-
-        return redirect()->back()->with(['success' => 'Primary location updated successfully.']);
     }
 
     public function translations()
@@ -2954,9 +2319,9 @@ class AdminController extends Controller
         return view('admin.newTranslation');
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function saveNewTranslation(Request $request)
     {
         // dd($request->all());
@@ -2975,13 +2340,13 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function editTranslation($id)
     {
 
@@ -2997,11 +2362,11 @@ class AdminController extends Controller
         } else {
             return redirect()->route('admin.translations')->with(['message' => 'Translation Not Found']);
         }
-    }
 
-    /**
-     * @param Request $request
-     */
+    }
+/**
+ * @param Request $request
+ */
     public function updateTranslation(Request $request)
     {
         $translation = Translation::where('id', $request->translation_id)->first();
@@ -3017,13 +2382,14 @@ class AdminController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with(['message' => $e->getMessage()]);
         } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
+            return redirect()->back()->with(['message' => $th]);
         }
+
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function disableTranslation($id)
     {
         $translation = Translation::where('id', $id)->first();
@@ -3035,9 +2401,9 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function deleteTranslation($id)
     {
         $translation = Translation::where('id', $id)->first();
@@ -3049,33 +2415,35 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function makeDefaultLanguage($id)
     {
-        $translation = Translation::where('id', $id)->firstOrFail();
-
-        //remove default of other
-        $currentDefaults = Translation::where('is_default', '1')->get();
-        // dd($currentDefault);
-        if (!empty($currentDefaults)) {
-            foreach ($currentDefaults as $currentDefault) {
-                $currentDefault->is_default = 0;
-                $currentDefault->save();
+        $translation = Translation::where('id', $id)->first();
+        if ($translation) {
+            //remove default of other
+            $currentDefaults = Translation::where('is_default', '1')->get();
+            // dd($currentDefault);
+            if (!empty($currentDefaults)) {
+                foreach ($currentDefaults as $currentDefault) {
+                    $currentDefault->is_default = 0;
+                    $currentDefault->save();
+                }
             }
-        }
 
-        //make this default
-        $translation->is_default = 1;
-        $translation->is_active = 1;
-        $translation->save();
-        return redirect()->back()->with(['success' => 'Operation Successful']);
+            //make this default
+            $translation->is_default = 1;
+            $translation->save();
+            return redirect()->back()->with(['success' => 'Operation Successful']);
+        } else {
+            return redirect()->route('admin.translations');
+        }
     }
 
-    /**
-     * @param Request $request
-     */
+/**
+ * @param Request $request
+ */
     public function updateRestaurantScheduleData(Request $request)
     {
         $data = $request->except(['_token', 'restaurant_id']);
@@ -3090,6 +2458,7 @@ class AdminController extends Controller
                     if ($key % 2 == 0) {
                         $t1 = $time;
                         $str .= '{"open" :' . '"' . $time . '"';
+
                     } else {
                         $t2 = $time;
                         $str .= '"close" :' . '"' . $time . '"}';
@@ -3126,11 +2495,12 @@ class AdminController extends Controller
         $restaurant->save();
 
         return redirect()->back()->with(['success' => 'Scheduling data saved successfully']);
+
     }
 
-    /**
-     * @param $id
-     */
+/**
+ * @param $id
+ */
     public function impersonate($id)
     {
         $user = User::where('id', $id)->first();
@@ -3142,61 +2512,33 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * @param $order_id
-     */
     public function approvePaymentOfOrder($order_id)
     {
-        $user = Auth::user();
-
-        $order = Order::where('id', $order_id)->with('restaurant')->firstOrFail();
+        $order = Order::where('id', $order_id)->firstOrFail();
 
         if ($order->orderstatus_id == '8') {
 
-            if ($order->restaurant->auto_acceptable) {
+            $restaurant = Restaurant::where('id', $order->restaurant_id)->first();
+
+            if ($restaurant->auto_acceptable) {
                 $orderstatus_id = '2';
-                if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled() && $order->schedule_date != null && $order->schedule_slot != null) {
-                    $orderstatus_id = '10';
+                if (config('settings.enablePushNotificationOrders') == 'true') {
+                    //to user
+                    $notify = new PushNotify();
+                    $notify->sendPushNotification('2', $order->user_id, $order->unique_order_id);
                 }
+                $this->sendPushNotificationStoreOwner($order->restaurant_id);
             } else {
                 $orderstatus_id = '1';
-                if (Module::find('OrderSchedule') && Module::find('OrderSchedule')->isEnabled()) {
-                    if ($order->schedule_date != null && $order->schedule_slot != null) {
-                        $orderstatus_id = '10';
-                    }
+                if (config('settings.smsRestaurantNotify') == 'true') {
+                    $restaurant_id = $order->restaurant_id;
+                    $this->smsToRestaurant($restaurant_id, $order->total);
                 }
+                $this->sendPushNotificationStoreOwner($order->restaurant_id);
             }
 
             $order->orderstatus_id = $orderstatus_id;
             $order->save();
-
-            if ($order->restaurant->auto_acceptable) {
-                if ($orderstatus_id == '2') {
-                    //to user
-                    $notify = new PushNotify();
-                    $notify->sendPushNotification('2', $order->user_id, $order->unique_order_id);
-                    //to delivery
-                    sendSmsToDelivery($order->restaurant_id);
-                    sendPushNotificationToDelivery($order->restaurant_id, $order);
-                }
-
-                sendPushNotificationToStoreOwner($order->restaurant_id, $order->unique_order_id);
-            } else {
-                sendSmsToStoreOwner($order->restaurant_id, $order->total);
-                sendPushNotificationToStoreOwner($order->restaurant_id, $order->unique_order_id);
-            }
-
-            activity()
-                ->performedOn($order)
-                ->causedBy($user)
-                ->withProperties(['type' => 'Payment_Approved'])->log('Order payment approved');
-
-            if ($order->orderstatus_id == "2") {
-                activity()
-                    ->performedOn($order)
-                    ->causedBy(User::find(1))
-                    ->withProperties(['type' => 'Order_Accepted_Auto'])->log('Order auto accepted');
-            }
 
             return redirect()->back()->with(['success' => 'Payment Approved']);
         } else {
@@ -3204,84 +2546,60 @@ class AdminController extends Controller
         }
     }
 
-
-    /**
-     * @param Request $request
-     */
-    public function updateStorePayoutDetails(Request $request)
+    public function smsToRestaurant($restaurant_id, $orderTotal)
     {
-        $storePayoutDetail = StorePayoutDetail::where('restaurant_id', $request->restaurant_id)->first();
-        if ($storePayoutDetail) {
-            $storePayoutDetail->data = json_encode($request->except(['restaurant_id', '_token']));
-        } else {
-            $storePayoutDetail = new StorePayoutDetail();
-            $storePayoutDetail->restaurant_id = $request->restaurant_id;
-            $storePayoutDetail->data = json_encode($request->except(['restaurant_id', '_token']));
-        }
-        try {
-            $storePayoutDetail->save();
-            return redirect()->back()->with(['success' => 'Payout Data Saved']);
-        } catch (\Illuminate\Database\QueryException $qe) {
-            return redirect()->back()->with(['message' => $qe->getMessage()]);
-        } catch (Exception $e) {
-            return redirect()->back()->with(['message' => $e->getMessage()]);
-        } catch (\Throwable $th) {
-            return redirect()->back()->with(['message' => $th->getMessage()]);
-        }
-    }
-
-    /**
-     * @param $id
-     */
-    public function confirmScheduledOrder($id)
-    {
-        $user = Auth::user();
-
-        $order = Order::where('id', $id)->firstOrFail();
-
-        if ($order->orderstatus_id == '10') {
-            $order->orderstatus_id = 11;
-            $order->save();
-
-            activity()
-                ->performedOn($order)
-                ->causedBy($user)
-                ->withProperties(['type' => 'Confirm_Scheduled_Order'])->log('Scheduled order confirmed');
-
-            return redirect()->back()->with(array('success' => 'Scheduled order confirmed.'));
-        } else {
-            return redirect()->back()->with(array('message' => 'Something went wrong'));
-        }
-    }
-
-    public function acceptNotice()
-    {
-        $setting = Setting::where('key', 'moduleRedownloadNotice')->first();
-        $setting->value = "true";
-        $setting->save();
-        Artisan::call('cache:clear');
-
-        $response = [
-            'success' => true,
-        ];
-        return response()->json($response, 200);
-    }
-
-    public function deleteUserAddress(Request $request)
-    {
-        $user = User::where('id', $request->user_id)->firstOrFail();
-
-        $defaultAddressId = $user->default_address_id;
-        if ($defaultAddressId != $request->address_id) {
-            $address = Address::where('id', $request->address_id)->first();
-            if ($address) {
-                $address->delete();
-                return redirect(route('admin.get.editUser', $request->user_id) . $request->window_redirect_hash)->with(['success' => 'Address deleted']);
-            } else {
-                return redirect(route('admin.get.editUser', $request->user_id) . $request->window_redirect_hash)->with(['message' => 'Address not found']);
+        //get restaurant
+        $restaurant = Restaurant::where('id', $restaurant_id)->first();
+        if ($restaurant) {
+            if ($restaurant->is_notifiable) {
+                //get all pivot users of restaurant (Store Ownerowners)
+                $pivotUsers = $restaurant->users()
+                    ->wherePivot('restaurant_id', $restaurant_id)
+                    ->get();
+                //filter only res owner and send notification.
+                foreach ($pivotUsers as $pU) {
+                    if ($pU->hasRole('Store Owner')) {
+                        // Include Order orderTotal or not ?
+                        switch (config('settings.smsRestOrderValue')) {
+                            case 'true':
+                                $message = config('settings.defaultSmsRestaurantMsg') . round($orderTotal);
+                                break;
+                            case 'false':
+                                $message = config('settings.defaultSmsRestaurantMsg');
+                                break;
+                        }
+                        // As its not an OTP based message Nulling OTP
+                        $otp = null;
+                        $smsnotify = new Sms();
+                        $smsnotify->processSmsAction('OD_NOTIFY', $pU->phone, $otp, $message);
+                    }
+                }
             }
-        } else {
-            return redirect(route('admin.get.editUser', $request->user_id) . $request->window_redirect_hash)->with(['message' => 'Primary address cannot be deleted']);
+        }
+    }
+
+    public function sendPushNotificationStoreOwner($restaurant_id)
+    {
+        $restaurant = Restaurant::where('id', $restaurant_id)->first();
+        if ($restaurant) {
+            //get all pivot users of restaurant (Store Ownerowners)
+            $pivotUsers = $restaurant->users()
+                ->wherePivot('restaurant_id', $restaurant_id)
+                ->get();
+            //filter only res owner and send notification.
+            foreach ($pivotUsers as $pU) {
+                if ($pU->hasRole('Store Owner')) {
+                    $message = config('settings.restaurantNewOrderNotificationMsg');
+                    OneSignal::sendNotificationToExternalUser(
+                        $message,
+                        $pU->id,
+                        $url = null,
+                        $data = null,
+                        $buttons = null,
+                        $schedule = null
+                    );
+                }
+            }
         }
     }
 };

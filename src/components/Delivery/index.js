@@ -65,7 +65,7 @@ class Delivery extends Component {
 				/>
 
 				<Orders />
-				{navigator.userAgent !== "FoodomaaAndroidWebViewUA" && <ShareLiveLocation />}
+				<ShareLiveLocation />
 			</React.Fragment>
 		);
 	}

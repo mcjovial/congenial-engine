@@ -3,14 +3,14 @@
 namespace App;
 
 use Event;
-use Spatie\EloquentSortable\Sortable;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
-use ChristianKuri\LaravelFavorite\Traits\Favoriteable;
+use willvincent\Rateable\Rateable;
 
 class Restaurant extends Model implements Sortable
 {
-    use SortableTrait, Favoriteable;
+    use Rateable, SortableTrait;
 
     /**
      * @var array
@@ -23,24 +23,7 @@ class Restaurant extends Model implements Sortable
     /**
      * @var array
      */
-    protected $casts = [
-        'is_active' => 'integer',
-        'is_accepted' => 'integer',
-        'is_featured' => 'integer',
-        'delivery_type' => 'integer',
-        'delivery_radius' => 'integer',
-        'base_delivery_distance' => 'integer',
-        'extra_delivery_distance' => 'integer',
-        'distance' => 'float',
-        'is_operational' => 'boolean',
-        'is_favorited' => 'boolean',
-        'is_orderscheduling' => 'boolean',
-        'is_scheduled' => 'integer',
-        'accept_scheduled_orders' => 'integer',
-        'schedule_slot_buffer' => 'integer',
-        'free_delivery_subtotal' => 'float',
-        'is_pureveg' => 'integer',
-    ];
+    protected $casts = ['is_active' => 'integer', 'is_accepted' => 'integer', 'is_featured' => 'integer', 'delivery_type' => 'integer', 'delivery_radius' => 'integer', 'base_delivery_distance' => 'integer', 'extra_delivery_distance' => 'integer', 'distance' => 'float', 'is_operational' => 'boolean'];
 
     /**
      * @var array
@@ -50,7 +33,6 @@ class Restaurant extends Model implements Sortable
     public static function boot()
     {
         parent::boot();
-        static::addGlobalScope(new \App\Scopes\ZoneScope);
 
         static::created(function ($restaurant) {
             Event::dispatch('store.created', $restaurant);
@@ -143,66 +125,19 @@ class Restaurant extends Model implements Sortable
         return $this->belongsToMany(User::class);
     }
 
-    /**
-     * @return mixed
-     */
     public function payment_gateways()
     {
         return $this->belongsToMany(\App\PaymentGateway::class);
     }
 
-    /**
-     * @return mixed
-     */
     public function payment_gateways_active()
     {
         return $this->belongsToMany(\App\PaymentGateway::class)->where('payment_gateways.is_active', '1');
     }
 
-    /**
-     * @return mixed
-     */
     public function store_payout_details()
     {
         return $this->hadMany('App\StorePayoutDetail');
     }
 
-    /**
-     * @return mixed
-     */
-    public function ratings()
-    {
-        return $this->hasMany('App\Rating');
-    }
-
-    /**
-     * @return mixed
-     */
-    public function avgRating()
-    {
-        // return number_format((float) $this->ratings->avg('rating_store'), 1, '.', '');
-
-        $avg = $this->ratings->avg('rating_store');
-        return $avg;
-    }
-
-    public function zone()
-    {
-        return $this->belongsTo('App\Zone');
-    }
-
-    public function scopeExclude($query, $value = [])
-    {
-        return $query->select(array_diff($this->columns, (array) $value));
-    }
-
-    public function restaurant_earnings()
-    {
-        return $this->hasMany('App\RestaurantEarning');
-    }
-
-    public function restaurant_payouts()
-    {
-        return $this->hasMany('App\RestaurantPayout');
-    }
 }

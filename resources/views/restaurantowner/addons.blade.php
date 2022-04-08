@@ -5,17 +5,14 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
+            <h4><i class="icon-circle-right2 mr-2"></i>
                 @if(empty($query))
-                <span class="font-weight-bold mr-2">{{ __('storeDashboard.total')}}</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }}</span>
+                <span class="font-weight-bold mr-2">{{__('storeDashboard.total')}}</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $count }}</span>
                 @else
-                <span class="font-weight-bold mr-2">{{ __('storeDashboard.total')}}</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }}</span>
-                <br>
-                <span class="font-weight-normal mr-2">{{__('storeDashboard.sphResultsFor')}} "{{ $query }}"</span>
+                <span class="font-weight-bold mr-2">{{__('storeDashboard.total')}}</span>
+                <span class="badge badge-primary badge-pill animated flipInX mr-2">{{ $count }}</span>
+                <span class="font-weight-bold mr-2">{{__('storeDashboard.sphResultsFor')}} "{{ $query }}"</span>
                 @endif
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
@@ -24,8 +21,8 @@
             <div class="breadcrumb">
                 <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left mr-2" id="addNewAddon"
                     data-toggle="modal" data-target="#addNewAddonModal">
-                    <b><i class="icon-plus2"></i></b>
-                    {{__('storeDashboard.btnAddNewAddon')}}
+                <b><i class="icon-plus2"></i></b>
+                {{__('storeDashboard.btnAddNewAddon')}} 
                 </button>
             </div>
         </div>
@@ -66,12 +63,12 @@
                             <td class="text-center">
                                 <div class="btn-group btn-group-justified align-items-center">
                                     <a href="{{ route('restaurant.editAddon', $addon->id) }}"
-                                        class="btn btn-sm btn-primary"> {{__('storeDashboard.edit')}}</a>
+                                        class="badge badge-primary badge-icon"> {{__('storeDashboard.edit')}} <i
+                                        class="icon-database-edit2 ml-1"></i></a>
                                     <div class="checkbox checkbox-switchery ml-1" style="padding-top: 0.8rem;">
                                         <label>
-                                            <input value="true" type="checkbox" class="action-switch"
-                                                @if($addon->is_active) checked="checked" @endif
-                                            data-id="{{ $addon->id }}">
+                                        <input value="true" type="checkbox" class="action-switch"
+                                        @if($addon->is_active) checked="checked" @endif data-id="{{ $addon->id }}">
                                         </label>
                                     </div>
                                 </div>
@@ -91,38 +88,31 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><span class="font-weight-bold">{{__('storeDashboard.btnAddNewAddon')}}</span>
-                </h5>
+                <h5 class="modal-title"><span class="font-weight-bold">{{__('storeDashboard.btnAddNewAddon')}}</span></h5>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
-                <form action="{{ route('restaurant.saveNewAddon') }}" method="POST" enctype="multipart/form-data"
-                    enctype="multipart/form-data">
+                <form action="{{ route('restaurant.saveNewAddon') }}" method="POST" enctype="multipart/form-data" enctype="multipart/form-data">
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.apInputName')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.apInputName')}}:</label>
                         <div class="col-lg-9">
                             <input type="text" class="form-control form-control-lg" name="name"
                                 placeholder="{{__('storeDashboard.apInputNamePH')}}" required>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.apInputPrice')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.apInputPrice')}}:</label>
                         <div class="col-lg-9">
                             <input type="text" class="form-control form-control-lg price" name="price"
-                                placeholder="{{__('storeDashboard.apInputPricePH')}} {{ config('setting.currencyFormat') }}"
-                                required>
+                                placeholder="{{__('storeDashboard.apInputPricePH')}} {{ config('settings.currencyFormat') }}" required>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span
-                                class="text-danger">*</span>{{__('storeDashboard.apInputAddonCategory')}}:</label>
+                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>{{__('storeDashboard.apInputAddonCategory')}}:</label>
                         <div class="col-lg-9">
                             <select class="form-control select-search select" name="addon_category_id" required>
                                 @foreach ($addonCategories as $addonCategory)
-                                <option value="{{ $addonCategory->id }}" class="text-capitalize">
-                                    {{ $addonCategory->name }}</option>
+                                <option value="{{ $addonCategory->id }}" class="text-capitalize">{{ $addonCategory->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -130,8 +120,8 @@
                     @csrf
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                            {{__('storeDashboard.save')}}
-                            <i class="icon-database-insert ml-1"></i></button>
+                        {{__('storeDashboard.save')}}
+                        <i class="icon-database-insert ml-1"></i></button>
                     </div>
                 </form>
             </div>

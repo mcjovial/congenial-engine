@@ -4,7 +4,6 @@ import {
 	GET_RESTAURANTS_CATEGORIES,
 	GET_DELIVERY_RESTAURANTS,
 	GET_SELFPICKUP_RESTAURANTS,
-	GET_FAVORITE_RESTAURANTS
 } from "./actionTypes";
 
 const initialState = {
@@ -12,7 +11,6 @@ const initialState = {
 	is_operational: "",
 	filtered_restaurants: [],
 	restaurants_categories: [],
-	favoriteRestaurants: []
 };
 
 export default function(state = initialState, action) {
@@ -29,10 +27,6 @@ export default function(state = initialState, action) {
 
 		case GET_SELFPICKUP_RESTAURANTS:
 			return { ...state, restaurants: action.payload };
-			
-		case GET_FAVORITE_RESTAURANTS:
-			return { ...state, favoriteRestaurants: action.payload };
-
 		default:
 			return state;
 	}

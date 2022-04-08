@@ -49,10 +49,6 @@ class CheckVersion extends Component {
 							let updatingMessage = localStorage.getItem("updatingMessage");
 							let userPreferedLanguage = localStorage.getItem("userPreferedLanguage");
 
-							let activeRestaurant =
-								localStorage.getItem("activeRestaurant") !== null
-									? localStorage.getItem("activeRestaurant")
-									: 1;
 							//clear
 							localStorage.clear();
 
@@ -66,7 +62,6 @@ class CheckVersion extends Component {
 							localStorage.setItem("storeColor", storeColor);
 							localStorage.setItem("storeLogo", storeLogo);
 							localStorage.setItem("updatingMessage", updatingMessage);
-							localStorage.setItem("activeRestaurant", activeRestaurant);
 							if (userPreferedLanguage !== null) {
 								localStorage.setItem("userPreferedLanguage", userPreferedLanguage);
 							}

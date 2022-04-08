@@ -12,52 +12,38 @@
         vertical-align: middle;
         margin: -3px 5px 0 0;
     }
-
     .pulse-warning {
         background: #ffc107;
     }
-
     .pulse-danger {
         background: #ff5722;
     }
-
     @keyframes pulse {
         0% {
-            box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.5);
+        box-shadow: 0 0 0 0 rgba(255,87,34, 0.5);
         }
-
         50% {
-            box-shadow: 0 0 0 26px rgba(255, 87, 34, 0);
+        box-shadow: 0 0 0 26px rgba(255,87,34, 0);
         }
-
         100% {
-            box-shadow: 0 0 0 0 rgba(255, 87, 34, 0);
+        box-shadow: 0 0 0 0 rgba(255,87,34, 0);
         }
     }
-
     .linked-item {
         color: #4e535a;
     }
-
     .linked-item:hover {
         color: #8360c3;
         text-decoration: underline;
         opacity: 1;
     }
-
-    @media (min-width: 1200px) {
-        .container {
-            max-width: 95%;
-        }
-    }
 </style>
 
-<div class="content mt-3">
+<div class="content mt-2">
     <div class="d-flex justify-content-between my-2">
-        <h3><strong>Order Management</strong></h3>
+        <h3><strong>  <i class="icon-basket mr-1"></i> Order Management</strong></h3>
         <div>
-            <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" id="clearFilterAndState"> <b><i
-                        class=" icon-reload-alt"></i></b> Reset All Filters</button>
+            <button type="button" class="btn btn-secondary btn-labeled btn-labeled-left" id="clearFilterAndState"> <b><i class=" icon-reload-alt"></i></b> Reset All Filters</button>
         </div>
     </div>
     <div class="card">
@@ -154,9 +140,9 @@
                         var checkMin = m > 0 ? true : false;
                         var checkSec = s > 0 ? true : false;
                         var formattedTime = checkDay ? d+ " day" : "";
-                formattedTime += checkHour ? " " +h+ " hr" : "";
-                formattedTime += checkMin ? " " +m+ " min" : "";
-                formattedTime += checkSec ? " " +s+ " sec" : "";
+                        formattedTime += checkHour ? " " +h+ " hour" : "";
+                        formattedTime += checkMin ? " " +m+ " minute" : "";
+                        formattedTime += checkSec ? " " +s+ " second" : "";
 
                         $(this).text(formattedTime);
                     });

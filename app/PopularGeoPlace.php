@@ -6,15 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class PopularGeoPlace extends Model
 {
-
-    /**
-     * @var array
-     */
-    protected $casts = [
-        'is_active' => 'integer',
-        'is_default' => 'integer',
-    ];
-
     /**
      * @return mixed
      */

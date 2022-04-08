@@ -6,7 +6,6 @@ import {
 	getSingleItem,
 	resetInfo,
 	resetItems,
-	getRestaurantInfoForLoggedInUser,
 } from "../../../../services/items/actions";
 
 import Customization from "../Customization";
@@ -48,10 +47,7 @@ class SingleItem extends Component {
 		this.props.getSettings();
 		this.props.getAllLanguages();
 
-		const { user } = this.props;
-		user.success
-			? this.props.getRestaurantInfoForLoggedInUser(this.props.restaurant)
-			: this.props.getRestaurantInfo(this.props.restaurant);
+		this.props.getRestaurantInfo(this.props.restaurant);
 
 		this.props.getSingleItem(this.props.itemId).then((response) => {
 			if (response) {
@@ -178,7 +174,6 @@ class SingleItem extends Component {
 											</React.Fragment>
 										</LazyLoad>
 									)}
-
 									<div className="single-item-meta">
 										<div className="item-actions pull-right pb-0 mt-2">
 											<div
@@ -255,14 +250,14 @@ class SingleItem extends Component {
 													<React.Fragment>
 														{single_item.is_veg ? (
 															<img
-																src="/assets/img/various/veg-icon-bg.png"
+																src="/assets/img/various/veg-icon.png"
 																alt="Veg"
 																style={{ width: "1rem" }}
 																className="mr-1"
 															/>
 														) : (
 															<img
-																src="/assets/img/various/non-veg-icon-bg.png"
+																src="/assets/img/various/non-veg-icon.png"
 																alt="Non-Veg"
 																style={{ width: "1rem" }}
 																className="mr-1"
@@ -370,7 +365,6 @@ const mapStateToProps = (state) => ({
 	settings: state.settings.settings,
 	languages: state.languages.languages,
 	language: state.languages.language,
-	user: state.user.user,
 });
 
 export default connect(
@@ -386,6 +380,5 @@ export default connect(
 		getSettings,
 		getAllLanguages,
 		getSingleLanguageData,
-		getRestaurantInfoForLoggedInUser,
 	}
 )(SingleItem);

@@ -5,10 +5,9 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
-                <span class="font-weight-bold mr-2">{{ __('storeDashboard.total')}}</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }}</span>
+            <h4><i class="icon-circle-right2 mr-2"></i>
+                <span class="font-weight-bold mr-2">{{__('storeDashboard.total')}}</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $count }}</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
@@ -50,7 +49,8 @@
                             <td class="text-center">
                                 <div class="btn-group btn-group-justified align-items-center">
                                     <a href="javascript:void(0)" data-toggle="modal" data-target="#editItemCategory" data-catid="{{ $itemCategory->id }}" data-catname="{{ $itemCategory->name }}"
-                                            class="btn btn-sm btn-primary editItemCategory"> {{ __('storeDashboard.edit')}} </a>
+                                            class="badge badge-primary badge-icon editItemCategory"> EDIT <i
+                                                class="icon-database-edit2 ml-1"></i></a>
                                    <div class="checkbox checkbox-switchery ml-1" style="padding-top: 0.8rem;">
                                        <label>
                                        <input value="true" type="checkbox" class="action-switch"
@@ -99,23 +99,23 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><span class="font-weight-bold">{{ __('storeDashboard.editItemCategoryName') }}</span></h5>
+                <h5 class="modal-title"><span class="font-weight-bold">Add New Item Category</span></h5>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
                 <form action="{{ route('restaurant.updateItemCategory') }}" method="POST">
                     <input type="hidden" name="id" id="itemCatId">
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label">{{  __('storeDashboard.mcpModalLabelName')}}:</label>
+                        <label class="col-lg-3 col-form-label">Name:</label>
                         <div class="col-lg-9">
                             <input type="text" class="form-control form-control-lg" name="name"
-                                placeholder="{{ __('storeDashboard.mcpModalPlaceHolderName') }}" required id="itemCatName">
+                                placeholder="Enter Category Name" required id="itemCatName">
                         </div>
                     </div>
                     @csrf
                     <div class="text-right">
                         <button type="submit" class="btn btn-primary">
-                        {{ __('storeDashboard.save') }}
+                        SAVE
                         <i class="icon-database-insert ml-1"></i>
                         </button>
                     </div>

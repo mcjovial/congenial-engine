@@ -4,15 +4,10 @@ import ContentLoader from "react-content-loader";
 import { Helmet } from "react-helmet";
 import PaypalExpressBtn from "react-paypal-express-checkout";
 import PaystackButton from "react-paystack";
-
-import { RAZORPAY_CREATE_ORDER_URL } from "../../../../configs";
-import { RAZORPAY_PROCESS_VERIFY_URL } from "../../../../configs";
-
+import { RAZORPAY_PAYMENT_URL } from "../../../../configs";
 import { PAYMONGO_PAYMENT_URL } from "../../../../configs";
 import { MERCADOPAGO_PAYMENT_URL } from "../../../../configs";
 import { PAYTM_PAYMENT_URL } from "../../../../configs";
-
-import { KHALTI_PAYMENT_VERIFICATION_URL } from "../../../../configs";
 
 import { connect } from "react-redux";
 import { formatPrice } from "../../../helpers/formatPrice";
@@ -30,9 +25,6 @@ import StripeIdeal from "./Stripe/StripeIdeal";
 import StripeFpx from "./Stripe/StripeFpx";
 
 import { PaymentInputsContainer } from "react-payment-inputs";
-import { Redirect } from "react-router";
-import FlutterWave from "./Flutterwave";
-import KhaltiCheckout from "khalti-checkout-web";
 
 class PaymentList extends Component {
 	static contextTypes = {
@@ -63,10 +55,6 @@ class PaymentList extends Component {
 		showPaymongoForm: false,
 		paymongoRedirect: "",
 		paymongo_processing: false,
-
-		cashChange: "",
-		regexp: /^[0-9\b]+$/,
-		showCod: false,
 	};
 
 	componentDidMount() {
@@ -89,34 +77,13 @@ class PaymentList extends Component {
 		if (localStorage.getItem("userSelected") === "SELFPICKUP") {
 			this.setState({ delivery_charges: 0.0 });
 		} else {
-			if (parseFloat(this.props.restaurant_info.free_delivery_subtotal) > 0) {
-				if (
-					parseFloat(this.props.cartTotal.totalPrice) >=
-					parseFloat(this.props.restaurant_info.free_delivery_subtotal)
-				) {
-					console.log("Free Delivery 😍");
-					this.setState({ delivery_charges: 0 });
-				} else {
-					this.setState({ delivery_charges: this.props.restaurant_info.delivery_charges });
-				}
-			} else {
-				this.setState({ delivery_charges: this.props.restaurant_info.delivery_charges });
-			}
-		}
-
-		if (localStorage.getItem("userSelected") === "SELFPICKUP") {
-			if (localStorage.getItem("enCODonSF") === "true") {
-				this.setState({ showCod: true });
-			} else {
-				this.setState({ showCod: false });
-			}
-		} else {
-			this.setState({ showCod: true });
+			this.setState({ delivery_charges: this.props.restaurant_info.delivery_charges });
 		}
 	}
 
 	componentWillReceiveProps(nextProps) {
 		if (nextProps.gatewayStatus) {
+			// this.props.handleLoading(false);
 			this.setState({ payment_gateway_loading: false });
 		}
 
@@ -147,46 +114,17 @@ class PaymentList extends Component {
 				window.location = PAYTM_PAYMENT_URL + "/" + nextProps.checkout.data.id;
 				return null;
 			}
-
-			if (nextProps.checkout.data.payment_mode === "RAZORPAY") {
-				console.log(nextProps.checkout);
-
-				if (navigator.userAgent === "FoodomaaAndroidWebViewUA") {
-					if (window.Android !== "undefined") {
-						window.Android.startRazorpaySdkProcess(
-							nextProps.checkout.data.id,
-							nextProps.checkout.data.unique_order_id,
-							nextProps.user.data.name,
-							nextProps.user.data.email,
-							nextProps.user.data.phone
-						);
-					}
-				} else {
-					this.__handleRazorPay(nextProps.checkout.data.id, nextProps.checkout.data.unique_order_id);
-				}
-
-				return null;
-			}
 		}
-		console.log("Google Loading: " + nextProps.googleLoadingStatus);
-		if (nextProps.googleLoadingStatus === false) {
-			//if  > 0 then user can pay with wallet (Amount will be deducted)
-			if (
-				nextProps.user.data.wallet_balance > 0 &&
-				nextProps.user.data.wallet_balance < parseFloat(this.getTotalAfterCalculation())
-			) {
-				// console.log("Can pay partial with wallet");
-				this.setState({ canPayPartialWithWallet: true, canPayFullWithWallet: false });
-			}
-			// console.log("Outside:" + parseFloat(this.getTotalAfterCalculation()));
-			if (
-				nextProps.user.data.wallet_balance > 0 &&
-				nextProps.user.data.wallet_balance >= parseFloat(this.getTotalAfterCalculation())
-			) {
-				console.log("Inside:" + parseFloat(this.getTotalAfterCalculation()));
-				// console.log("Can pay full with wallet");
-				this.setState({ canPayFullWithWallet: true, canPayPartialWithWallet: false });
-			}
+
+		//if  > 0 then user can pay with wallet (Amount will be deducted)
+		if (nextProps.user.data.wallet_balance > 0) {
+			// console.log("Can pay partial with wallet");
+			this.setState({ canPayPartialWithWallet: true, canPayFullWithWallet: false });
+		}
+
+		if (nextProps.user.data.wallet_balance >= parseFloat(this.getTotalAfterCalculation())) {
+			// console.log("Can pay full with wallet");
+			this.setState({ canPayFullWithWallet: true, canPayPartialWithWallet: false });
 		}
 	}
 
@@ -199,14 +137,15 @@ class PaymentList extends Component {
 			if (localStorage.getItem("enGDMA") === "true") {
 				if (localStorage.getItem("userSelected") === "DELIVERY") {
 					this.props.handleProcessDistanceCalcLoading(true);
-
-					calculateDistanceGoogle(
-						restaurant_info.longitude,
-						restaurant_info.latitude,
-						user.data.default_address.longitude,
-						user.data.default_address.latitude,
-						this.props.google,
-						function(distance) {
+				}
+				calculateDistanceGoogle(
+					restaurant_info.longitude,
+					restaurant_info.latitude,
+					user.data.default_address.longitude,
+					user.data.default_address.latitude,
+					this.props.google,
+					function(distance) {
+						if (localStorage.getItem("userSelected") === "DELIVERY") {
 							if (self.props.restaurant_info.delivery_charge_type === "DYNAMIC") {
 								self.setState({ distance: distance }, () => {
 									//check if restaurant has dynamic delivery charge..
@@ -215,16 +154,16 @@ class PaymentList extends Component {
 							}
 							self.props.handleProcessDistanceCalcLoading(false);
 						}
-					);
-				}
+					}
+				);
 			} else {
+				const distance = calculateDistance(
+					restaurant_info.longitude,
+					restaurant_info.latitude,
+					user.data.default_address.longitude,
+					user.data.default_address.latitude
+				);
 				if (localStorage.getItem("userSelected") === "DELIVERY") {
-					const distance = calculateDistance(
-						restaurant_info.longitude,
-						restaurant_info.latitude,
-						user.data.default_address.longitude,
-						user.data.default_address.latitude
-					);
 					if (this.props.restaurant_info.delivery_charge_type === "DYNAMIC") {
 						this.setState({ distance: distance }, () => {
 							//check if restaurant has dynamic delivery charge..
@@ -241,7 +180,7 @@ class PaymentList extends Component {
 
 		const distanceFromUserToRestaurant = this.state.distance;
 		// console.log("Distance from user to restaurant: " + distanceFromUserToRestaurant + " km");
-		let delivery_charges_calc = 0;
+
 		if (distanceFromUserToRestaurant > restaurant_info.base_delivery_distance) {
 			const extraDistance = distanceFromUserToRestaurant - restaurant_info.base_delivery_distance;
 			// console.log("Extra Distance: " + extraDistance + " km");
@@ -255,41 +194,28 @@ class PaymentList extends Component {
 				dynamicDeliveryCharge = Math.ceil(dynamicDeliveryCharge);
 			}
 
-			delivery_charges_calc = dynamicDeliveryCharge;
-			console.log("dynamic: " + delivery_charges_calc);
+			// console.log("Total Charge: " + dynamicDeliveryCharge);
+			this.setState({ delivery_charges: dynamicDeliveryCharge }, () => {
+				this.processPayWithWalletBlocks();
+			});
 		} else {
-			delivery_charges_calc = restaurant_info.base_delivery_charge;
-			console.log("fixed: " + delivery_charges_calc);
+			this.setState({ delivery_charges: restaurant_info.base_delivery_charge }, () => {
+				this.processPayWithWalletBlocks();
+			});
 		}
-
-		if (parseFloat(restaurant_info.free_delivery_subtotal) > 0) {
-			if (parseFloat(this.props.cartTotal.totalPrice) >= parseFloat(restaurant_info.free_delivery_subtotal)) {
-				console.log("Free Delivery 😍");
-				this.setState({ delivery_charges: 0 });
-			} else {
-				this.setState({ delivery_charges: delivery_charges_calc });
-			}
-		} else {
-			this.setState({ delivery_charges: delivery_charges_calc });
-		}
-
-		// this.processPayWithWalletBlocks();
 	};
 
-	// processPayWithWalletBlocks = () => {
-	// 	if (
-	// 		this.props.user.data.wallet_balance > 0 &&
-	// 		this.props.user.data.wallet_balance < parseFloat(this.getTotalAfterCalculation())
-	// 	) {
-	// 		console.log("Can pay partial with wallet");
-	// 		this.setState({ canPayPartialWithWallet: true, canPayFullWithWallet: false });
-	// 	}
+	processPayWithWalletBlocks = () => {
+		if (this.props.user.data.wallet_balance > 0) {
+			console.log("Can pay partial with wallet");
+			this.setState({ canPayPartialWithWallet: true, canPayFullWithWallet: false });
+		}
 
-	// 	if (this.props.user.data.wallet_balance >= parseFloat(this.getTotalAfterCalculation())) {
-	// 		console.log("Can pay full with wallet");
-	// 		this.setState({ canPayFullWithWallet: true, canPayPartialWithWallet: false });
-	// 	}
-	// };
+		if (this.props.user.data.wallet_balance >= parseFloat(this.getTotalAfterCalculation())) {
+			console.log("Can pay full with wallet");
+			this.setState({ canPayFullWithWallet: true, canPayPartialWithWallet: false });
+		}
+	};
 
 	/* Stripe */
 	onOpened = () => {
@@ -344,11 +270,6 @@ class PaymentList extends Component {
 	/* END PayStack */
 
 	__placeOrder = (payment_token, method, pending_payment = false) => {
-		let navBar = document.getElementById("checkoutNavPageTitle");
-		if (navBar) {
-			document.getElementById("checkoutNavPageTitle").remove();
-		}
-
 		// disable all button Onclick with pointer events
 		let paymentgatewaysblock = document.getElementsByClassName("paymentGatewayBlock");
 		for (let i = 0; i < paymentgatewaysblock.length; i++) {
@@ -378,7 +299,6 @@ class PaymentList extends Component {
 						this.state.walletChecked,
 						parseFloat(this.state.distance),
 						pending_payment,
-						null,
 						null
 					)
 					.then((response) => {
@@ -407,8 +327,7 @@ class PaymentList extends Component {
 						this.state.walletChecked,
 						parseFloat(this.state.distance),
 						pending_payment,
-						tipAmount,
-						this.state.cashChange
+						tipAmount
 					)
 					.then((response) => {
 						if (response) {
@@ -443,12 +362,6 @@ class PaymentList extends Component {
 				progressBar.style.width = progress + "%";
 			}, 20);
 
-			const progressBarMessage = document.getElementById("checkoutMessageOnProcess");
-			progressBarMessage.classList.remove("hidden");
-
-			const checkoutIdleMessage = document.getElementById("checkoutMessageOnIdle");
-			checkoutIdleMessage.classList.add("hidden");
-
 			this.setState({ stripe_opened: false });
 		}
 	};
@@ -464,13 +377,7 @@ class PaymentList extends Component {
 		for (let i = 0; i < paymentgatewaysblock.length; i++) {
 			paymentgatewaysblock[i].classList.remove("no-click");
 		}
-		const progressBarMessage = document.getElementById("checkoutMessageOnProcess");
-		progressBarMessage.classList.add("hidden");
-
-		const checkoutIdleMessage = document.getElementById("checkoutMessageOnIdle");
-		checkoutIdleMessage.classList.remove("hidden");
 	};
-
 	// Calculating total with/without coupon/tax
 	getTotalAfterCalculation = () => {
 		const { coupon, restaurant_info, user } = this.props;
@@ -530,97 +437,38 @@ class PaymentList extends Component {
 		if (tips && tips.value > 0) {
 			calc = parseFloat(calc) + parseFloat(tips.value);
 		}
-
 		return formatPrice(calc);
 	};
 
-	/* Khalti Payment Gateway */
-	__handleKhaltiPayment = () => {
-		this.props.handleLoading(true);
-		var self = this;
-		let config = {
-			publicKey: localStorage.getItem("khaltiPublicKey"),
-			productIdentity: localStorage.getItem("storeName"),
-			productName: localStorage.getItem("storeName"),
-			productUrl: localStorage.getItem("storeUrl"),
-			eventHandler: {
-				onSuccess(payload) {
-					// hit merchant api for initiating verfication
-					console.log(payload);
-
-					self.__handleKhaltiPaymentSuccess(payload);
-				},
-				// onError handler is optional
-				onError(error) {
-					// handle errors
-					console.log(error);
-					alert("Something went wrong. Please try again.");
-				},
-				onClose() {
-					self.props.handleLoading(false);
-				},
-			},
-			// one can set the order of payment options and also the payment options based on the order and items in the array
-			// paymentPreference: ["MOBILE_BANKING", "KHALTI", "EBANKING", "CONNECT_IPS", "SCT"],
-		};
-		let checkout = new KhaltiCheckout(config);
-		const totalAmount = this.getTotalAfterCalculation() * 100; //in paisa
-		checkout.show({ amount: totalAmount });
-	};
-
-	__handleKhaltiPaymentSuccess = (payload) => {
-		Axios.get(KHALTI_PAYMENT_VERIFICATION_URL, {
-			params: {
-				token: payload.token,
-				amount: payload.amount,
-			},
-		})
-			.then((response) => {
-				console.log("Verification Response: ", response);
-				if (response.data.success) {
-					console.log("success.. place order now");
-					this.__placeOrder(response.data.idx, "KHALTI");
-				}
-			})
-			.catch(function(error) {
-				alert("Something went wrong.");
-				this.props.handleLoading(false);
-			});
-	};
-
 	/* Razorpay */
-	__handleRazorPay = (foodomaa_order_id, foodomaa_unique_order_id) => {
+	__handleRazorPay = () => {
 		let self = this;
 		this.setState({ razorpay_opened: true });
+		const totalAmount = formatPrice(parseFloat(this.getTotalAfterCalculation()));
 
-		Axios.post(RAZORPAY_CREATE_ORDER_URL, {
-			order_id: foodomaa_order_id,
+		Axios.post(RAZORPAY_PAYMENT_URL, {
+			totalAmount: totalAmount,
 		})
 			.then((res) => {
-				console.log(res);
 				// console.log(res.data.response.id);
 				if (res.data.razorpay_success) {
 					const options = {
 						key: localStorage.getItem("razorpayKeyId"),
+						amount: totalAmount,
 						name: localStorage.getItem("storeName"),
 						currency: localStorage.getItem("currencyId"),
 						order_id: res.data.response.id,
 						handler(response) {
-							Axios.post(RAZORPAY_PROCESS_VERIFY_URL, {
-								order_id: foodomaa_order_id,
-								razorpay_order_id: response.razorpay_order_id,
-								razorpay_payment_id: response.razorpay_payment_id,
-								razorpay_signature: response.razorpay_signature,
-							}).then((res) => {
-								if (res && res.data && res.data.success) {
-									self.context.router.history.push("/running-order/" + foodomaa_unique_order_id);
-								}
-							});
+							// console.log("Final Response", response);
+							self.setState({ razorpay_opened: false, razorpay_success: true });
+							const payment_token = "";
+							const method = "RAZORPAY";
+							self.__placeOrder(payment_token, method);
 						},
 						modal: {
 							ondismiss: function() {
+								console.log("closed");
 								self.setState({ razorpay_opened: false, razorpay_success: false });
-								self.context.router.history.push("/my-orders");
 							},
 						},
 						prefill: {
@@ -746,41 +594,6 @@ class PaymentList extends Component {
 		const redirectUrl = url + "&order_id=" + this.props.checkout.id;
 		window.location.replace(redirectUrl);
 	};
-
-	/* FlutterWave */
-	__processFlutterWave = () => {
-		let paymentgatewaysblock = document.getElementsByClassName("paymentGatewayBlock");
-		for (let i = 0; i < paymentgatewaysblock.length; i++) {
-			paymentgatewaysblock[i].classList.add("no-click");
-		}
-		let flutterWaveBtn = document.getElementsByClassName("flutterwave-btn")[0];
-		flutterWaveBtn.click();
-	};
-	/*END FlutterWave */
-
-	__showCashChangeBlock = (e) => {
-		this.refs.cashAmountBlock.classList.remove("hidden");
-		let paymentgatewaysblock = document.getElementsByClassName("paymentGatewayBlock");
-		for (let i = 0; i < paymentgatewaysblock.length; i++) {
-			paymentgatewaysblock[i].classList.add("hidden");
-		}
-		this.refs.paymentListTitle.innerHTML = localStorage.getItem("cashChangeTitle");
-	};
-
-	__handleCashInput = (e) => {
-		let cashChange = e.target.value;
-		// if value is not blank, then test the regex
-		if (cashChange === "" || this.state.regexp.test(cashChange)) {
-			if (cashChange.length <= 8) {
-				this.setState({ [e.target.name]: cashChange });
-			}
-		}
-	};
-	__handleCashInputConfirm = (e) => {
-		e.target.disabled = true;
-		this.__placeOrder("", "COD");
-	};
-
 	render() {
 		const client = {
 			sandbox: localStorage.getItem("paypalSandboxKey"),
@@ -788,13 +601,6 @@ class PaymentList extends Component {
 		};
 
 		this.props.toPay(formatPrice(parseFloat(this.getTotalAfterCalculation())));
-
-		if (this.props.restaurant_info) {
-			if (!this.props.restaurant_info.is_active) {
-				console.log("store is closed");
-				return <Redirect to={"/cart"} />;
-			}
-		}
 
 		return (
 			<React.Fragment>
@@ -950,12 +756,9 @@ class PaymentList extends Component {
 										</div>
 									</React.Fragment>
 								)}
-
 								<hr />
 								<div className="col-12 text-center mb-0 mt-4">
-									<h4 className="text-muted" ref="paymentListTitle">
-										{localStorage.getItem("checkoutPaymentListTitle")}
-									</h4>
+									<h4 className="text-muted">{localStorage.getItem("checkoutPaymentListTitle")}</h4>
 								</div>
 
 								{this.state.canPayFullWithWallet && (
@@ -1000,7 +803,6 @@ class PaymentList extends Component {
 										<hr />
 									</React.Fragment>
 								)}
-
 								<div className="col-12">
 									{localStorage.getItem("stripeAcceptIdealPayment") === "true" && (
 										<React.Fragment>
@@ -1085,11 +887,10 @@ class PaymentList extends Component {
 										</React.Fragment>
 									)}
 								</div>
-
 								{this.props.paymentgateways.map((gateway) => (
 									<React.Fragment key={gateway.id}>
-										{gateway.name === "Stripe" && (
-											<div className="col-12 paymentGatewayBlock stripe-gateway-block">
+										<div className="col-12 paymentGatewayBlock">
+											{gateway.name === "Stripe" && (
 												<React.Fragment>
 													<div
 														className="col-12 p-0"
@@ -1127,120 +928,27 @@ class PaymentList extends Component {
 														</div>
 													)}
 												</React.Fragment>
-											</div>
-										)}
-
-										{this.state.showCod && (
-											<React.Fragment>
-												{gateway.name === "COD" && (
-													<React.Fragment>
-														{localStorage.getItem("showCashChange") === "true" ? (
-															<React.Fragment>
-																<div
-																	className="col-12 paymentGatewayBlock"
-																	onClick={() => this.__showCashChangeBlock()}
-																>
-																	<div className="block block-link-shadow text-left shadow-light">
-																		<div className="block-content block-content-full clearfix py-3 payment-select-block">
-																			<div className="float-right mt-10">
-																				<img
-																					src="/assets/img/various/cod.png"
-																					alt={gateway.name}
-																					className="img-fluid"
-																				/>
-																			</div>
-																			<div className="font-size-h3 font-w600">
-																				{localStorage.getItem(
-																					"checkoutCodText"
-																				)}
-																			</div>
-																			<div className="font-size-sm font-w600 text-muted">
-																				{localStorage.getItem(
-																					"checkoutCodSubText"
-																				)}
-																			</div>
-																		</div>
-																	</div>
-																</div>
-																<div className="col-12 hidden" ref="cashAmountBlock">
-																	<div className="text-left">
-																		<input
-																			type="tel"
-																			name="cashChange"
-																			value={this.state.cashChange}
-																			className="form-control cash-change-input"
-																			placeholder={localStorage.getItem(
-																				"cashChangeInputPlaceholder"
-																			)}
-																			onChange={this.__handleCashInput}
-																		/>
-																		<button
-																			className="btn btn-main"
-																			style={{
-																				backgroundColor: localStorage.getItem(
-																					"cartColorBg"
-																				),
-																			}}
-																			onClick={this.__handleCashInputConfirm}
-																		>
-																			{localStorage.getItem(
-																				"cashChangeConfirmButton"
-																			)}
-																		</button>
-																		<p className="pt-2">
-																			{localStorage.getItem("cashChangeHelpText")}
-																		</p>
-																	</div>
-																</div>
-															</React.Fragment>
-														) : (
-															<div
-																className="col-12 paymentGatewayBlock"
-																onClick={() => this.__placeOrder("", "COD")}
-															>
-																<div className="block block-link-shadow text-left shadow-light">
-																	<div className="block-content block-content-full clearfix py-3 payment-select-block">
-																		<div className="float-right mt-10">
-																			<img
-																				src="/assets/img/various/cod.png"
-																				alt={gateway.name}
-																				className="img-fluid"
-																			/>
-																		</div>
-																		<div className="font-size-h3 font-w600">
-																			{localStorage.getItem("checkoutCodText")}
-																		</div>
-																		<div className="font-size-sm font-w600 text-muted">
-																			{localStorage.getItem("checkoutCodSubText")}
-																		</div>
-																	</div>
-																</div>
-															</div>
-														)}
-													</React.Fragment>
-												)}
-											</React.Fragment>
-										)}
-
-										{gateway.name === "Khalti" && (
+											)}
+										</div>
+										{gateway.name === "COD" && (
 											<div
 												className="col-12 paymentGatewayBlock"
-												onClick={() => this.__handleKhaltiPayment()}
+												onClick={() => this.__placeOrder("", "COD")}
 											>
 												<div className="block block-link-shadow text-left shadow-light">
 													<div className="block-content block-content-full clearfix py-3 payment-select-block">
 														<div className="float-right mt-10">
 															<img
-																src="/assets/img/various/khalti.png"
+																src="/assets/img/various/cod.png"
 																alt={gateway.name}
 																className="img-fluid"
 															/>
 														</div>
 														<div className="font-size-h3 font-w600">
-															{localStorage.getItem("checkoutKhaltiText")}
+															{localStorage.getItem("checkoutCodText")}
 														</div>
 														<div className="font-size-sm font-w600 text-muted">
-															{localStorage.getItem("checkoutKhaltiSubText")}
+															{localStorage.getItem("checkoutCodSubText")}
 														</div>
 													</div>
 												</div>
@@ -1270,43 +978,10 @@ class PaymentList extends Component {
 												</div>
 											</div>
 										)}
-										{gateway.name === "Flutterwave" && (
-											<React.Fragment>
-												<FlutterWave
-													user={this.props.user}
-													total={formatPrice(parseFloat(this.getTotalAfterCalculation()))}
-													placeOrder={this.__placeOrder}
-													reset={this.resetPage}
-												/>
-												<div
-													className="col-12 paymentGatewayBlock"
-													onClick={() => this.__processFlutterWave()}
-												>
-													<div className="block block-link-shadow text-left shadow-light">
-														<div className="block-content block-content-full clearfix py-3 payment-select-block">
-															<div className="float-right mt-10">
-																<img
-																	src="/assets/img/various/flutterwave.png"
-																	alt={gateway.name}
-																	className="img-fluid"
-																/>
-															</div>
-															<div className="font-size-h3 font-w600">
-																{localStorage.getItem("checkoutFlutterwaveText")}
-															</div>
-															<div className="font-size-sm font-w600 text-muted">
-																{localStorage.getItem("checkoutFlutterwaveSubText")}
-															</div>
-														</div>
-													</div>
-												</div>
-											</React.Fragment>
-										)}
 										{gateway.name === "Razorpay" && (
 											<div
 												className="col-12 paymentGatewayBlock"
-												// onClick={() => this.__handleRazorPay()}
-												onClick={() => this.__placeOrder("", "RAZORPAY")}
+												onClick={() => this.__handleRazorPay()}
 											>
 												<div className="block block-link-shadow text-left shadow-light">
 													<div className="block-content block-content-full clearfix py-3 payment-select-block">
@@ -1329,11 +1004,6 @@ class PaymentList extends Component {
 										)}
 										{gateway.name === "PayStack" && (
 											<div className="col-12 mb-4 mt-4 paymentGatewayBlock">
-												<img
-													src="/assets/img/various/paystack.png"
-													alt={gateway.name}
-													className="paystack-absolute-logo"
-												/>
 												<PaystackButton
 													text={localStorage.getItem("paystackPayText")}
 													class="payButton"
@@ -1517,20 +1187,6 @@ class PaymentList extends Component {
 						}}
 					/>
 				</div>
-				<div className="mb-0 px-15" id="checkoutMessageOnIdle">
-					{localStorage.getItem("checkoutMessageOnIdle") !== "<p><br></p>" &&
-						localStorage.getItem("checkoutMessageOnIdle") !== "null" &&
-						(localStorage.getItem("checkoutMessageOnIdle") !== "" && (
-							<div
-								dangerouslySetInnerHTML={{
-									__html: localStorage.getItem("checkoutMessageOnIdle"),
-								}}
-							/>
-						))}
-				</div>
-				<p id="checkoutMessageOnProcess" className="checkout-message-on-process mb-0 mt-15 text-center hidden">
-					{localStorage.getItem("checkoutMessageOnProcess")}
-				</p>
 			</React.Fragment>
 		);
 	}

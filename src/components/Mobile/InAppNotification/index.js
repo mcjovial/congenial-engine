@@ -9,7 +9,7 @@ class InAppNotification extends Component {
 		open: false,
 		inAppNotificationData: [],
 	};
-	audio = new Audio("/assets/audio/customer-notification.mp3");
+	audio = new Audio("/assets/audio/notification1.mp3");
 
 	componentDidMount() {
 		if (firebase.messaging.isSupported()) {

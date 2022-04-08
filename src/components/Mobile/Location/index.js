@@ -9,12 +9,12 @@ import { Redirect } from "react-router";
 import { connect } from "react-redux";
 import { geocodeByPlaceId } from "react-google-places-autocomplete";
 import { getPopularLocations } from "../../../services/popularLocations/actions";
+import { GET_ADDRESS_FROM_COORDINATES } from "../../../configs";
+import Axios from "axios";
 
 import { getAddresses, setDefaultAddress } from "../../../services/addresses/actions";
-import { clearRestaurantList } from "../../../services/restaurant/actions";
 import AddressList from "../Account/Addresses/AddressList";
 import Ink from "react-ink";
-import GpsSelector from "./PopularPlaces/GpsSelector";
 
 class Location extends Component {
 	state = {
@@ -33,6 +33,10 @@ class Location extends Component {
 			this.searchInput.focus();
 		}
 
+		// setTimeout(() => {
+		// 	this.setState({ google_script_loaded: true });
+		// }, 2000);
+
 		const existingScript = document.getElementById("googleMaps");
 		if (!existingScript) {
 			const script = document.createElement("script");
@@ -46,11 +50,6 @@ class Location extends Component {
 				this.setState({ google_script_loaded: true });
 			};
 		}
-
-		const { user } = this.props;
-		if (user.success) {
-			this.props.getAddresses(user.data.id, user.data.auth_token, this.state.restaurant_id);
-		}
 	}
 
 	componentWillUnmount() {
@@ -60,6 +59,61 @@ class Location extends Component {
 			existingScript.parentNode.removeChild(existingScript);
 		}
 	}
+
+	handleGeoLocationClick = (results) => {
+		// console.log(results);
+		const saveGeoLocation = new Promise((resolve) => {
+			localStorage.setItem("geoLocation", JSON.stringify(results[0]));
+			resolve("GeoLocation Saved");
+		});
+		saveGeoLocation.then(() => {
+			this.setState({ gps_loading: false });
+			this.context.router.history.push("/my-location");
+		});
+	};
+
+	getMyLocation = () => {
+		const location = navigator && navigator.geolocation;
+		console.log("LOCATION", location);
+		this.setState({ gps_loading: true });
+		if (location) {
+			location.getCurrentPosition(
+				(position) => {
+					this.reverseLookup(position.coords.latitude, position.coords.longitude);
+				},
+				(error) => {
+					this.setState({ gps_loading: false });
+					console.log(error);
+					alert(localStorage.getItem("gpsAccessNotGrantedMsg"));
+				}
+			);
+		}
+	};
+
+	reverseLookup = (lat, lng) => {
+		Axios.post(GET_ADDRESS_FROM_COORDINATES, {
+			lat: lat,
+			lng: lng,
+		})
+			.then((response) => {
+				console.log(response);
+				const myLocation = [
+					{
+						formatted_address: response.data,
+						geometry: {
+							location: {
+								lat: lat,
+								lng: lng,
+							},
+						},
+					},
+				];
+				this.handleGeoLocationClick(myLocation);
+			})
+			.catch(function(error) {
+				console.warn(error.response.data);
+			});
+	};
 
 	componentWillReceiveProps(nextProps) {
 		if (this.props.popular_locations !== nextProps.popular_locations) {
@@ -88,45 +142,11 @@ class Location extends Component {
 						localStorage.removeItem("fromCart");
 						this.context.router.history.push("/cart");
 					} else {
-						//remove restaurants list...
-						this.props.clearRestaurantList();
 						this.context.router.history.push("/");
 					}
 				});
 			});
 		}
-	};
-
-	handlePopularLocationClick = (location) => {
-		const userSetAddress = {
-			lat: location.latitude,
-			lng: location.longitude,
-			address: location.name,
-			house: null,
-			tag: null,
-			businessLocation: true,
-		};
-		localStorage.setItem("userSetAddress", JSON.stringify(userSetAddress));
-
-		const saveUserSetAddress = new Promise((resolve) => {
-			localStorage.setItem("userSetAddress", JSON.stringify(userSetAddress));
-			localStorage.setItem("userAlreadySelectedLocation", "true");
-			resolve("Location Saved");
-		});
-		saveUserSetAddress.then(() => {
-			// this.context.router.history.push("/");
-			window.location.replace("/");
-		});
-	};
-
-	handleGeoLocationClick = (results) => {
-		const saveGeoLocation = new Promise((resolve) => {
-			localStorage.setItem("geoLocation", JSON.stringify(results[0]));
-			resolve("GeoLocation Saved");
-		});
-		saveGeoLocation.then(() => {
-			this.context.router.history.push("/my-location");
-		});
 	};
 
 	render() {
@@ -150,7 +170,11 @@ class Location extends Component {
 					twittertitle={localStorage.getItem("seoTwitterTitle")}
 					twitterdescription={localStorage.getItem("seoTwitterDescription")}
 				/>
-
+				{this.state.gps_loading && (
+					<div className="height-100 overlay-loading ongoing-payment-spin">
+						<div className="spin-load" />
+					</div>
+				)}
 				<div className="col-12 p-0 pt-0">
 					{this.state.google_script_loaded && (
 						<GooglePlacesAutocomplete
@@ -219,17 +243,20 @@ class Location extends Component {
 							)}
 						/>
 					)}
+
+					<button
+						className="btn btn-rounded btn-gps btn-md ml-15 mt-4 pl-0 py-15"
+						style={{ color: localStorage.getItem("storeColor") }}
+						onClick={this.getMyLocation}
+					>
+						<i className="si si-pointer" /> {localStorage.getItem("useCurrentLocationText")}
+					</button>
 				</div>
-				<GpsSelector fetchGpsAutomaticallyAndroid={false} />
-
-				{localStorage.getItem("fromCart") === null && (
-					<PopularPlaces
-						loading={this.state.loading_popular_location}
-						handlePopularLocationClick={this.handlePopularLocationClick}
-						locations={popular_locations}
-					/>
-				)}
-
+				<PopularPlaces
+					loading={this.state.loading_popular_location}
+					handleGeoLocationClick={this.handleGeoLocationClick}
+					locations={popular_locations}
+				/>
 				{user.success && addresses.length > 0 && (
 					<React.Fragment>
 						<div className="p-15 mt-10 location-saved-address">
@@ -261,5 +288,5 @@ const mapStateToProps = (state) => ({
 
 export default connect(
 	mapStateToProps,
-	{ getPopularLocations, getAddresses, setDefaultAddress, clearRestaurantList }
+	{ getPopularLocations, getAddresses, setDefaultAddress }
 )(Location);

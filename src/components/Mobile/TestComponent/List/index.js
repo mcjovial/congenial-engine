@@ -1,14 +1,14 @@
 import React, { Component } from "react";
 import Axios from "axios";
 
-import { addProduct, removeProduct } from "../../../../services/cart/actions";
+import { addProduct, removeProduct } from "../../../services/cart/actions";
 
 import Collapsible from "react-collapsible";
 import ContentLoader from "react-content-loader";
-import Customization from "../../Items/Customization";
+import Customization from "../Items/Customization";
 // import Fade from "react-reveal/Fade";
 import Ink from "react-ink";
-import ItemBadge from "../../Items/ItemList/ItemBadge";
+import ItemBadge from "../Items/ItemList/ItemBadge";
 import LazyLoad from "react-lazyload";
 import { Link } from "react-router-dom";
 
@@ -16,10 +16,9 @@ import { Link } from "react-router-dom";
 import ShowMore from "react-show-more";
 
 import { connect } from "react-redux";
-import { searchItem, clearSearch } from "../../../../services/items/actions";
+import { searchItem, clearSearch } from "../../../services/items/actions";
 
 import { List, AutoSizer, CellMeasurer, CellMeasurerCache, WindowScroller } from "react-virtualized";
-import { getRestaurantInfo, getRestaurantItems } from "../../../../services/items/actions";
 
 class TestComponent extends Component {
 	constructor(props) {
@@ -41,24 +40,7 @@ class TestComponent extends Component {
 
 	componentDidMount() {
 		document.addEventListener("mousedown", this.handleClickOutside);
-
-		this.props.getRestaurantInfo("the-halal-guys-yoxsvgo8eluufwd").then((response) => {
-			if (response) {
-				if (response.payload.id) {
-					//get items
-					this.props.getRestaurantItems("the-halal-guys-yoxsvgo8eluufwd");
-				}
-			}
-		});
 	}
-
-	componentWillReceiveProps(nextProps) {
-		console.log(nextProps.restaurant_items);
-		// if (this.props.restaurant_items !== nextProps.restaurant_items) {
-		this.setState({ data: nextProps.restaurant_items.items });
-		// }
-	}
-
 	forceStateUpdate = () => {
 		setTimeout(() => {
 			this.forceUpdate();
@@ -90,22 +72,22 @@ class TestComponent extends Component {
 		}
 	};
 
-	// static getDerivedStateFromProps(props, state) {
-	// 	if (props.data !== state.data) {
-	// 		if (state.filterText !== null) {
-	// 			return {
-	// 				data: props.data,
-	// 			};
-	// 		} else {
-	// 			return {
-	// 				items_backup: props.data,
-	// 				data: props.data,
-	// 				filter_items: props.data.items,
-	// 			};
-	// 		}
-	// 	}
-	// 	return null;
-	// }
+	static getDerivedStateFromProps(props, state) {
+		if (props.data !== state.data) {
+			if (state.filterText !== null) {
+				return {
+					data: props.data,
+				};
+			} else {
+				return {
+					items_backup: props.data,
+					data: props.data,
+					filter_items: props.data.items,
+				};
+			}
+		}
+		return null;
+	}
 
 	inputFocus = () => {
 		this.refs.searchGroup.classList.add("search-shadow-light");
@@ -215,14 +197,14 @@ class TestComponent extends Component {
 															<React.Fragment>
 																{item.is_veg ? (
 																	<img
-																		src="/assets/img/various/veg-icon-bg.png"
+																		src="/assets/img/various/veg-icon.png"
 																		alt="Veg"
 																		style={{ width: "1rem" }}
 																		className="mr-1"
 																	/>
 																) : (
 																	<img
-																		src="/assets/img/various/non-veg-icon-bg.png"
+																		src="/assets/img/various/non-veg-icon.png"
 																		alt="Non-Veg"
 																		style={{ width: "1rem" }}
 																		className="mr-1"
@@ -404,7 +386,6 @@ class TestComponent extends Component {
 	render() {
 		const { data } = this.state;
 		console.log(data);
-		console.log(data.length);
 		return (
 			<React.Fragment>
 				<div className="p-15">
@@ -434,11 +415,9 @@ class TestComponent extends Component {
 
 const mapStateToProps = (state) => ({
 	cartProducts: state.cart.products,
-	restaurant_info: state.items.restaurant_info,
-	restaurant_items: state.items.restaurant_items,
 });
 
 export default connect(
 	mapStateToProps,
-	{ addProduct, removeProduct, searchItem, clearSearch, getRestaurantInfo, getRestaurantItems }
+	{ addProduct, removeProduct, searchItem, clearSearch }
 )(TestComponent);

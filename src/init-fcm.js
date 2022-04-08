@@ -5,12 +5,7 @@ import * as firebase from "firebase/app";
 let messaging;
 
 if (firebase.messaging.isSupported()) {
-	if (
-		localStorage.getItem("firebasePublic") !== "null" &&
-		localStorage.getItem("firebaseSenderId") !== "null" &&
-		localStorage.getItem("firebasePublic") !== null &&
-		localStorage.getItem("firebaseSenderId") !== null
-	) {
+	if (localStorage.getItem("firebasePublic") !== null && localStorage.getItem("firebaseSenderId") !== null) {
 		const initializedFirebaseApp = firebase.initializeApp({
 			messagingSenderId: localStorage.getItem("firebaseSenderId"),
 		});

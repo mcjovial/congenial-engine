@@ -43,14 +43,14 @@ class CartItems extends Component {
 							<React.Fragment>
 								{item.is_veg ? (
 									<img
-										src="/assets/img/various/veg-icon-bg.png"
+										src="/assets/img/various/veg-icon.png"
 										alt="Veg"
 										style={{ width: "1rem" }}
 										className="mr-1"
 									/>
 								) : (
 									<img
-										src="/assets/img/various/non-veg-icon-bg.png"
+										src="/assets/img/various/non-veg-icon.png"
 										alt="Non-Veg"
 										style={{ width: "1rem" }}
 										className="mr-1"
@@ -62,26 +62,15 @@ class CartItems extends Component {
 						<span className={`${!item.is_active && "text-danger"}`}>
 							<strong> {item.name}</strong>
 						</span>
+
 						{item.selectedaddons && (
 							<React.Fragment>
 								<br />
 								{item.selectedaddons.map((addonArray, index) => (
 									<React.Fragment key={item.id + addonArray.addon_id}>
-										{localStorage.getItem("showAddonPricesOnCart") === "true" ? (
-											<span style={{ color: "#adadad", fontSize: "0.8rem" }}>
-												<p className="p-0 m-0">
-													{addonArray.addon_name +
-														"- " +
-														localStorage.getItem("currencyFormat") +
-														addonArray.price}
-												</p>
-												{/* {(index ? ", " : "") + addonArray.addon_name + "- " + addonArray.price } */}
-											</span>
-										) : (
-											<span style={{ color: "#adadad", fontSize: "0.8rem" }}>
-												{(index ? ", " : "") + addonArray.addon_name}
-											</span>
-										)}
+										<span style={{ color: "#adadad", fontSize: "0.8rem" }}>
+											{(index ? ", " : "") + addonArray.addon_name}
+										</span>
 									</React.Fragment>
 								))}
 							</React.Fragment>

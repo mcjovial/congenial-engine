@@ -20,13 +20,9 @@ class ShareLiveLocation extends Component {
 						this.__sendGpsLocation(position);
 					},
 					(error) => {
-						if (navigator.userAgent === "FoodomaaAndroidWebViewUA" && window.Android !== "undefined") {
-							this.setState({ gpsAccessError: false });
-						} else {
-							console.log("Inside error");
-							console.log(error);
-							this.setState({ gpsAccessError: true });
-						}
+						console.log("Inside error");
+						console.log(error);
+						this.setState({ gpsAccessError: true });
 					},
 					{
 						enableHighAccuracy: true,

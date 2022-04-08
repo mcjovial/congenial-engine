@@ -75,7 +75,7 @@ final class Headers
     }
 
     /**
-     * @param array<Address|string> $addresses
+     * @param (Address|string)[] $addresses
      *
      * @return $this
      */
@@ -143,7 +143,7 @@ final class Headers
      */
     public function addHeader(string $name, $argument, array $more = []): self
     {
-        $parts = explode('\\', self::HEADER_CLASS_MAP[strtolower($name)] ?? UnstructuredHeader::class);
+        $parts = explode('\\', self::HEADER_CLASS_MAP[$name] ?? UnstructuredHeader::class);
         $method = 'add'.ucfirst(array_pop($parts));
         if ('addUnstructuredHeader' === $method) {
             $method = 'addTextHeader';
@@ -217,7 +217,7 @@ final class Headers
 
     public static function isUniqueHeader(string $name): bool
     {
-        return \in_array(strtolower($name), self::UNIQUE_HEADERS, true);
+        return \in_array($name, self::UNIQUE_HEADERS, true);
     }
 
     /**
@@ -254,6 +254,9 @@ final class Headers
         return $arr;
     }
 
+    /**
+     * @internal
+     */
     public function getHeaderBody($name)
     {
         return $this->has($name) ? $this->get($name)->getBody() : null;
@@ -271,6 +274,9 @@ final class Headers
         }
     }
 
+    /**
+     * @internal
+     */
     public function getHeaderParameter(string $name, string $parameter): ?string
     {
         if (!$this->has($name)) {

@@ -10,10 +10,7 @@ import {
 	SEND_PASSWORD_RESET_EMAIL,
 	VERIFY_PASSWORD_RESET_OTP,
 	CHANGE_USER_PASSWORD,
-	SAVE_VAT_NUMBER,
-	GENERATE_OTP_FOR_LOGIN,
 } from "./actionTypes";
-
 import {
 	LOGIN_USER_URL,
 	REGISTER_USER_URL,
@@ -27,17 +24,12 @@ import {
 	CHANGE_USER_PASSWORD_URL,
 	CHANGE_USER_AVATAR_URL,
 	CHECK_BAN_URL,
-	SAVE_VAT_NUMBER_URL,
-	ADMIN_LOGIN_AS_CUSTOMER_URL,
-	REGISTER_GUEST_USER_URL,
-	LOGIN_USER_WITH_OTP_URL,
-	GENERATE_OTP_FOR_LOGIN_URL,
 } from "../../configs";
 import { GET_ADDRESSES } from "../addresses/actionTypes";
 
 import Axios from "axios";
 
-export const loginUser = (name, email, password, accessToken, phone, provider, address, otp) => (dispatch) => {
+export const loginUser = (name, email, password, accessToken, phone, provider, address) => (dispatch) => {
 	Axios.post(LOGIN_USER_URL, {
 		name: name,
 		email: email,
@@ -46,7 +38,6 @@ export const loginUser = (name, email, password, accessToken, phone, provider, a
 		phone: phone,
 		provider: provider,
 		address: address,
-		otp: otp,
 	})
 		.then((response) => {
 			const user = response.data;
@@ -57,14 +48,13 @@ export const loginUser = (name, email, password, accessToken, phone, provider, a
 		});
 };
 
-export const registerUser = (name, email, phone, password, address, otp) => (dispatch) => {
+export const registerUser = (name, email, phone, password, address) => (dispatch) => {
 	Axios.post(REGISTER_USER_URL, {
 		name: name,
 		email: email,
 		phone: phone,
 		password: password,
 		address: address,
-		otp: otp,
 	})
 		.then((response) => {
 			const user = response.data;
@@ -242,106 +232,6 @@ export const checkBan = (token) => () => {
 		.then((response) => {
 			const data = response.data;
 			return data;
-		})
-		.catch(function(error) {
-			console.log(error);
-		});
-};
-
-export const saveVATNumber = (token, vatNumber) => (dispatch) => {
-	return Axios.post(SAVE_VAT_NUMBER_URL, {
-		token: token,
-		tax_number: vatNumber,
-	})
-		.then((response) => {
-			const data = response.data;
-			return dispatch({ type: SAVE_VAT_NUMBER, payload: data });
-		})
-		.catch(function(error) {
-			console.log(error);
-		});
-};
-
-export const loginAsCustomer = (user_id) => (dispatch) => {
-	Axios.defaults.withCredentials = true;
-
-	return Axios.post(ADMIN_LOGIN_AS_CUSTOMER_URL, {
-		user_id: user_id,
-	})
-		.then((response) => {
-			const user = response.data;
-			const addresses = response.data.addresses;
-
-			// return [dispatch({ type: LOGIN_USER, payload: user })];
-			return [
-				dispatch({
-					type: LOGIN_USER,
-					payload: user,
-				}),
-				dispatch({
-					type: GET_ADDRESSES,
-					payload: addresses,
-				}),
-			];
-		})
-		.catch(function(error) {
-			console.log(error);
-		});
-};
-
-export const registerGuestUser = (name, phone, email, password) => (dispatch) => {
-	Axios.defaults.withCredentials = true;
-	Axios.post(REGISTER_GUEST_USER_URL, {
-		name: name,
-		phone: phone,
-		email: email,
-		password: password,
-	})
-		.then((response) => {
-			const user = response.data;
-			const addresses = response.data.addresses;
-
-			return [
-				dispatch({
-					type: REGISTER_USER,
-					payload: user,
-				}),
-				dispatch({
-					type: GET_ADDRESSES,
-					payload: addresses,
-				}),
-			];
-		})
-		.catch(function(error) {
-			console.log(error);
-		});
-};
-
-export const loginWithOtp = (phone, otp, name, email, address) => (dispatch) => {
-	Axios.post(LOGIN_USER_WITH_OTP_URL, {
-		phone: phone,
-		otp: otp,
-		name: name,
-		email: email,
-		address: address,
-	})
-		.then((response) => {
-			const user = response.data;
-			return dispatch({ type: LOGIN_USER, payload: user });
-		})
-		.catch(function(error) {
-			console.log(error);
-		});
-};
-
-export const generateOtpForLogin = (phone, email) => (dispatch) => {
-	return Axios.post(GENERATE_OTP_FOR_LOGIN_URL, {
-		phone: phone,
-		email: email,
-	})
-		.then((response) => {
-			const user = response.data;
-			return dispatch({ type: GENERATE_OTP_FOR_LOGIN, payload: user });
 		})
 		.catch(function(error) {
 			console.log(error);

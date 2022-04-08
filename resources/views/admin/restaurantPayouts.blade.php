@@ -5,10 +5,9 @@
 <div class="page-header">
     <div class="page-header-content header-elements-md-inline">
         <div class="page-title d-flex">
-            <h4>
-                <span class="font-weight-bold mr-2">Total</span>
-                <i class="icon-circle-right2 mr-2"></i>
-                <span class="font-weight-bold mr-2">{{ $count }}</span>
+            <h4><i class="icon-circle-right2 mr-2"></i>
+                <span class="font-weight-bold mr-2">TOTAL</span>
+                <span class="badge badge-primary badge-pill animated flipInX">{{ $count }}</span>
             </h4>
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
@@ -42,7 +41,7 @@
                             <th>
                                 Created At
                             </th>
-                            <th class="text-center" style="width: 10%;"><i class="
+                           <th class="text-center" style="width: 10%;"><i class="
                                 icon-circle-down2"></i></th>
                         </tr>
                     </thead>
@@ -51,9 +50,7 @@
                         <tr>
                             <td>{{ $restaurantPayout->restaurant->name }}</td>
                             <td>{{ $restaurantPayout->amount }}</td>
-                            <td><span
-                                    class="badge badge-flat border-grey-800 text-default text-capitalize">{{ $restaurantPayout->status }}</span>
-                            </td>
+                            <td><span class="badge badge-flat border-grey-800 text-default text-capitalize">{{ $restaurantPayout->status }}</span></td>
                             <td>
                                 @if($restaurantPayout->transaction_mode != NULL)
                                 {{ $restaurantPayout->transaction_mode }}
@@ -68,17 +65,18 @@
                                 ----
                                 @endif
                             </td>
-                            <td>
+                             <td>
                                 @if($restaurantPayout->message != NULL)
                                 {{ $restaurantPayout->message }}
                                 @else
                                 ----
                                 @endif
                             </td>
-                            <td>{{ $restaurantPayout->created_at->format('Y-m-d  - h:i A') }}</td>
+                            <td>{{ $restaurantPayout->created_at->diffForHumans() }}</td>
                             <td class="text-center">
                                 <a href="{{ route('admin.viewRestaurantPayout', $restaurantPayout->id) }}"
-                                    class="btn btn-sm btn-primary"> View</a>
+                                    class="badge badge-primary badge-icon"> VIEW <i
+                                    class="icon-file-eye ml-1"></i></a>
                             </td>
                         </tr>
                         @endforeach
