@@ -9,7 +9,6 @@
 		"apexcharts": "^3.22.2",
 		"axios": "^0.18.0",
 		"cra-append-sw": "^2.6.1",
-		"firebase": "^6.4.0",
 		"fuzzy-search": "^3.2.1",
 		"google-maps-react": "^2.0.2",
 		"moment": "^2.24.0",
