@@ -40,7 +40,7 @@ class SettingController extends Controller
         if (Cache::has('app-settings')) {
             $settings = Cache::get('app-settings');
         } else {
-            $settings = Setting::whereNotIn('key', ['categoriesFiltersText', 'categoriesNoRestaurantsFoundText', 'exlporeByRestaurantText', 'setNewPasswordButtonText', 'newPasswordLabelText', 'enterNewPasswordText', 'dontHaveResetOtpButtonText', 'verifyResetOtpButtonText', 'enterResetOtpMessageText', 'alreadyHaveResetOtpButtonText', 'sendOtpOnEmailButtonText', 'resetPasswordPageSubTitle', 'resetPasswordPageTitle', 'invalidOtpErrorMessage', 'userNotFoundErrorMessage', 'updatingMessage', 'exploreNoResults', 'stripeSecretKey', 'paystackPrivateKey', 'twilioSid', 'twilioAccessToken', 'twilioServiceId', 'twilioFromPhone', 'minPayout', 'otpMessage', 'smsRestaurantNotify', 'smsDeliveryNotify', 'defaultSmsRestaurantMsg', 'smsRestOrderValue', 'smsOrderNotify', 'defaultSmsDeliveryMsg', 'restaurantNotificationAudioTrack', 'restaurantNewOrderRefreshRate', 'firebaseSecret', 'razorpayKeySecret', 'deliveryAcceptTimeThreshold', 'restaurantAcceptTimeThreshold', 'enDevMode', 'deliveryGuyCommissionFrom', 'itemPercentageDiscountText', 'itemsMenuButtonText', 'itemSearchPlaceholder', 'itemSearchNoResultText', 'itemSearchText', 'deliveryCommissionMessage', 'deliveryCompletedText', 'deliveryOnGoingText', 'deliveryEarningsText', 'deliveryFooterAccount', 'deliveryFooterAcceptedTitle', 'deliveryFooterNewTitle', 'changeLanguageText', 'searchAtleastThreeCharsMsg', 'orderCancelledText', 'socialLoginOrText', 'deliveryCashOnDelivery', 'deliveryOrderPlacedText', 'cancelOrderMainButton', 'cancelGoBackBtn', 'yesCancelOrderBtn', 'orderCancellationConfirmationText', 'exploreItemsText', 'exploreRestautantsText', 'notAcceptingOrdersMsg', 'yourLocationText', 'gpsAccessNotGrantedMsg', 'useCurrentLocationText', 'addressDoesnotDeliverToText', 'cartRestaurantNotOperational', 'willNotBeRefundedText', 'willBeRefundedText', 'cartCouponOffText', 'deliveryGuyNewOrderNotificationMsgSub', 'deliveryGuyNewOrderNotificationMsg', 'restaurantNewOrderNotificationMsgSub', 'restaurantNewOrderNotificationMsg', 'walletRedeemBtnText', 'orderPartialRefundWalletComment', 'orderRefundWalletComment', 'orderPartialPaymentWalletComment', 'orderPaymentWalletComment', 'payFullWithWalletText', 'willbeDeductedText', 'payPartialWithWalletText', 'walletWithdrawText', 'walletDepositText', 'noWalletTransactionsText', 'accountMyWallet', 'showLessButtonText', 'showMoreButtonText', 'certificateCodeText', 'pureVegText', 'readyForPickupStatusText', 'canceledStatusText', 'deliveredStatusText', 'orderPickedUpStatusText', 'deliveryGuyAssignedStatusText', 'preparingOrderStatusText', 'orderPlacedStatusText', 'trackOrderText', 'ongoingOrderMsg', 'itemsRemovedMsg', 'taxText', 'deliveryOrdersRefreshBtn', 'allowLocationAccessMessage', 'checkoutRazorpaySubText', 'checkoutRazorpayText', 'callNowButton', 'deliveryGuyAfterName', 'vehicleText', 'selectedSelfPickupMessage', 'noRestaurantMessage', 'deliveryTypeSelfPickup', 'deliveryTypeDelivery', 'runningOrderReadyForPickupSub', 'runningOrderReadyForPickup', 'emailPassDonotMatch', 'socialWelcomeText', 'verifyOtpBtnText', 'resendOtpCountdownMsg', 'resendOtpMsg', 'otpSentMsg', 'invalidOtpMsg', 'enterPhoneToVerify', 'emailPhoneAlreadyRegistered', 'minimumLengthValidationMessage', 'phoneValidationMsg', 'emailValidationMsg', 'nameValidationMsg', 'fieldValidationMsg', 'paystackPayText', 'customizationDoneBtnText', 'customizableItemText', 'customizationHeading', 'deliveryLogoutConfirmation', 'deliveryLogoutDelivery', 'deliveryAlreadyAccepted', 'deliveryInvalidDeliveryPin', 'deliveryOrderCompletedButton', 'deliveryDeliveredButton', 'deliveryPickedUpButton', 'deliveryAcceptOrderButton', 'deliveryDeliveryPinPlaceholder', 'deliveryOnlinePayment', 'deliveryDeliveryAddress', 'deliveryGetDirectionButton', 'deliveryRestaurantAddress', 'deliveryOrderItems', 'deliveryWelcomeMessage', 'deliveryAcceptedOrdersTitle', 'deliveryNewOrdersTitle', 'restaurantFeaturedText', 'gdprConfirmButton', 'gdprMessage', 'runningOrderDeliveredSub', 'runningOrderDelivered', 'deliveryNoNewOrders', 'deliveryNoOrdersAccepted', 'runningOrderDeliveryPin', 'desktopFooterAddress', 'desktopFooterSocialHeader', 'desktopAchievementFourSub', 'desktopAchievementFourTitle', 'desktopAchievementThreeSub', 'desktopAchievementThreeTitle', 'desktopAchievementTwoSub', 'desktopAchievementTwoTitle', 'desktopAchievementOneSub', 'desktopAchievementOneTitle', 'desktopUseAppButton', 'desktopSubHeading', 'desktopHeading', 'accountMyAccount', 'regsiterAlreadyHaveAccount', 'loginDontHaveAccount', 'firstScreenRegisterBtn', 'registerRegisterSubTitle', 'registerRegisterTitle', 'registerErrorMessage', 'loginLoginNameLabel', 'loginLoginPhoneLabel', 'checkoutCodSubText', 'checkoutCodText', 'checkoutStripeSubText', 'checkoutStripeText', 'checkoutPaymentInProcess', 'cartSetYourAddress', 'cartToPayText', 'cartCouponText', 'cartDeliveryCharges', 'cartRestaurantCharges', 'cartItemTotalText', 'cartBillDetailsText', 'cartItemsInCartText', 'floatCartViewCartText', 'floatCartItemsText', 'itemsPageRecommendedText', 'homePageForTwoText', 'homePageMinsText', 'loginLoginPasswordLabel', 'loginLoginEmailLabel', 'loginLoginSubTitle', 'loginLoginTitle', 'pleaseWaitText', 'loginErrorMessage', 'firstScreenLoginBtn', 'firstScreenWelcomeMessage', 'runningOrderCanceledSub', 'runningOrderCanceledTitle', 'runningOrderDeliveryAssignedSub', 'runningOrderDeliveryAssignedTitle', 'checkoutSelectPayment', 'checkoutPaymentListTitle', 'orderTextTotal', 'noOrdersText', 'runningOrderRefreshButton', 'runningOrderOnwaySub', 'runningOrderOnwayTitle', 'runningOrderPreparingSub', 'runningOrderPreparingTitle', 'runningOrderPlacedSub', 'runningOrderPlacedTitle', 'checkoutPlaceOrder', 'checkoutPageTitle', 'cartPageTitle', 'cartSetAddressText', 'noAddressText', 'deleteAddressText', 'editAddressText', 'cartSuggestionPlaceholder', 'cartInvalidCoupon', 'cartApplyCoupon', 'addressTagPlaceholder', 'editAddressTag', 'editAddressLandmark', 'editAddressHouse', 'editAddressAddress', 'buttonSaveAddress', 'buttonNewAddress', 'cartChangeLocation', 'cartDeliverTo', 'cartLoginButtonText', 'cartLoginSubHeader', 'cartLoginHeader', 'cartMakePayment', 'accountLogout', 'accountHelpFaq', 'accountMyOrders', 'accountManageAddress', 'restaurantSearchPlaceholder', 'cartEmptyText', 'newBadgeText', 'popularBadgeText', 'recommendedBadgeText', 'searchPopularPlaces', 'searchAreaPlaceholder', 'restaurantCountText', 'footerAccount', 'footerCart', 'footerExplore', 'footerNearme', 'firstScreenLoginText', 'firstScreenSetupLocation', 'firstScreenSubHeading', 'firstScreenHeading', 'registrationPolicyMessage', 'locationSavedAddresses', 'restaurantMinOrderMessage', 'footerAlerts', 'markAllAlertReadText', 'noNewAlertsText', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'sendgrid_api_key', 'mail_driver', 'cartItemNotAvailable', 'cartRemoveItemButton', 'deliveryTotalEarningsText', 'deliveryUsePhoneToAccessMsg', 'restaurantNotActiveMsg', 'uploadImageQuality', 'msg91SenderId', 'msg91AuthKey', 'sendEmailFromEmailName', 'sendEmailFromEmailAddress', 'mapApiKey', 'firebaseSDKSnippet', 'deliveryMaxOrderReachedMsg', 'chooseAvatarText', 'customCartMessage', 'customHomeMessage', 'inAppCloseButton', 'inAppOpenLinkButton', 'iOSPWAPopupTitle', 'iOSPWAPopupBody', 'iOSPWAPopupShareButtonLabel', 'iOSPWAPopupAddButtonLabel', 'iOSPWAPopupCloseButtonLabel', 'offlineTitleMessage', 'offlineSubTitleMessage', 'userInActiveMessage', 'googleApiKeyNoRestriction', 'mockSearchPlaceholder', 'tooManyApiCallMessage', 'paymongoSK', 'awaitingPaymentStatusText', 'paymentFailedStatusText', 'awaitingPaymentTitle', 'awaitingPaymentSubTitle', 'checkoutStripeIdealText', 'checkoutStripeIdealSubText', 'checkoutStripeFpxText', 'checkoutStripeFpxSubText', 'checkoutMercadoPagoText', 'checkoutMercadoPagoSubText', 'checkoutPayMongoText', 'checkoutPayMongoSubText', 'checkoutPayText', 'checkoutCardNumber', 'checkoutCardExpiration', 'checkoutCardCvv', 'checkoutCardPostalCode', 'checkoutCardFullname', 'checkoutIdealSelectBankText', 'checkoutFpxSelectBankText', 'mercadopagoAccessToken', 'couponNotLoggedin', 'paytm_environment', 'paytm_merchant_id', 'paytm_merchant_key', 'paytm_merchant_website', 'paytm_channel', 'paytm_industry_type', 'checkoutPaytmText', 'checkoutPaytmSubText', 'deliveryCollectionText', 'allowPaymentGatewaySelection', 'orderDetailsPaymentMode', 'oneSignalAppId', 'oneSignalRestApiKey', 'sortSelfpickupStoresByDistance', 'deliveryEarningCommissionText', 'applyCouponButtonText', 'tipText', 'tipsForDeliveryText', 'tipsThanksText', 'tipsOtherText', 'deliveryTipTransactionMessage', 'deliveryEarningTipText', 'deliveryEarningTotalEarningText', 'deliveryLastSevenDaysEarningTitle'])->get(['key', 'value']);
+            $settings = Setting::whereNotIn('key', ['categoriesFiltersText', 'categoriesNoRestaurantsFoundText', 'exlporeByRestaurantText', 'setNewPasswordButtonText', 'newPasswordLabelText', 'enterNewPasswordText', 'dontHaveResetOtpButtonText', 'verifyResetOtpButtonText', 'enterResetOtpMessageText', 'alreadyHaveResetOtpButtonText', 'sendOtpOnEmailButtonText', 'resetPasswordPageSubTitle', 'resetPasswordPageTitle', 'invalidOtpErrorMessage', 'userNotFoundErrorMessage', 'updatingMessage', 'exploreNoResults', 'stripeSecretKey', 'paystackPrivateKey', 'twilioSid', 'twilioAccessToken', 'twilioServiceId', 'twilioFromPhone', 'minPayout', 'otpMessage', 'smsRestaurantNotify', 'smsDeliveryNotify', 'defaultSmsRestaurantMsg', 'smsRestOrderValue', 'smsOrderNotify', 'defaultSmsDeliveryMsg', 'restaurantNotificationAudioTrack', 'restaurantNewOrderRefreshRate', 'firebaseSecret', 'razorpayKeySecret', 'deliveryAcceptTimeThreshold', 'restaurantAcceptTimeThreshold', 'enDevMode', 'deliveryGuyCommissionFrom', 'itemPercentageDiscountText', 'itemsMenuButtonText', 'itemSearchPlaceholder', 'itemSearchNoResultText', 'itemSearchText', 'deliveryCommissionMessage', 'deliveryCompletedText', 'deliveryOnGoingText', 'deliveryEarningsText', 'deliveryFooterAccount', 'deliveryFooterAcceptedTitle', 'deliveryFooterNewTitle', 'changeLanguageText', 'searchAtleastThreeCharsMsg', 'orderCancelledText', 'socialLoginOrText', 'deliveryCashOnDelivery', 'deliveryOrderPlacedText', 'cancelOrderMainButton', 'cancelGoBackBtn', 'yesCancelOrderBtn', 'orderCancellationConfirmationText', 'exploreItemsText', 'exploreRestautantsText', 'notAcceptingOrdersMsg', 'yourLocationText', 'gpsAccessNotGrantedMsg', 'useCurrentLocationText', 'addressDoesnotDeliverToText', 'cartRestaurantNotOperational', 'willNotBeRefundedText', 'willBeRefundedText', 'cartCouponOffText', 'deliveryGuyNewOrderNotificationMsgSub', 'deliveryGuyNewOrderNotificationMsg', 'restaurantNewOrderNotificationMsgSub', 'restaurantNewOrderNotificationMsg', 'walletRedeemBtnText', 'orderPartialRefundWalletComment', 'orderRefundWalletComment', 'orderPartialPaymentWalletComment', 'orderPaymentWalletComment', 'payFullWithWalletText', 'willbeDeductedText', 'payPartialWithWalletText', 'walletWithdrawText', 'walletDepositText', 'noWalletTransactionsText', 'accountMyWallet', 'showLessButtonText', 'showMoreButtonText', 'certificateCodeText', 'pureVegText', 'readyForPickupStatusText', 'canceledStatusText', 'deliveredStatusText', 'orderPickedUpStatusText', 'deliveryGuyAssignedStatusText', 'preparingOrderStatusText', 'orderPlacedStatusText', 'trackOrderText', 'ongoingOrderMsg', 'itemsRemovedMsg', 'taxText', 'deliveryOrdersRefreshBtn', 'allowLocationAccessMessage', 'checkoutRazorpaySubText', 'checkoutRazorpayText', 'callNowButton', 'deliveryGuyAfterName', 'vehicleText', 'selectedSelfPickupMessage', 'noRestaurantMessage', 'deliveryTypeSelfPickup', 'deliveryTypeDelivery', 'runningOrderReadyForPickupSub', 'runningOrderReadyForPickup', 'emailPassDonotMatch', 'socialWelcomeText', 'verifyOtpBtnText', 'resendOtpCountdownMsg', 'resendOtpMsg', 'otpSentMsg', 'invalidOtpMsg', 'enterPhoneToVerify', 'emailPhoneAlreadyRegistered', 'minimumLengthValidationMessage', 'phoneValidationMsg', 'emailValidationMsg', 'nameValidationMsg', 'fieldValidationMsg', 'paystackPayText', 'customizationDoneBtnText', 'customizableItemText', 'customizationHeading', 'deliveryLogoutConfirmation', 'deliveryLogoutDelivery', 'deliveryAlreadyAccepted', 'deliveryInvalidDeliveryPin', 'deliveryOrderCompletedButton', 'deliveryDeliveredButton', 'deliveryPickedUpButton', 'deliveryAcceptOrderButton', 'deliveryDeliveryPinPlaceholder', 'deliveryOnlinePayment', 'deliveryDeliveryAddress', 'deliveryGetDirectionButton', 'deliveryRestaurantAddress', 'deliveryOrderItems', 'deliveryWelcomeMessage', 'deliveryAcceptedOrdersTitle', 'deliveryNewOrdersTitle', 'restaurantFeaturedText', 'gdprConfirmButton', 'gdprMessage', 'runningOrderDeliveredSub', 'runningOrderDelivered', 'deliveryNoNewOrders', 'deliveryNoOrdersAccepted', 'runningOrderDeliveryPin', 'desktopFooterAddress', 'desktopFooterSocialHeader', 'desktopAchievementFourSub', 'desktopAchievementFourTitle', 'desktopAchievementThreeSub', 'desktopAchievementThreeTitle', 'desktopAchievementTwoSub', 'desktopAchievementTwoTitle', 'desktopAchievementOneSub', 'desktopAchievementOneTitle', 'desktopUseAppButton', 'desktopSubHeading', 'desktopHeading', 'accountMyAccount', 'regsiterAlreadyHaveAccount', 'loginDontHaveAccount', 'firstScreenRegisterBtn', 'registerRegisterSubTitle', 'registerRegisterTitle', 'registerErrorMessage', 'loginLoginNameLabel', 'loginLoginPhoneLabel', 'checkoutCodSubText', 'checkoutCodText', 'checkoutStripeSubText', 'checkoutStripeText', 'checkoutPaymentInProcess', 'cartSetYourAddress', 'cartToPayText', 'cartCouponText', 'cartDeliveryCharges', 'cartRestaurantCharges', 'cartItemTotalText', 'cartBillDetailsText', 'cartItemsInCartText', 'floatCartViewCartText', 'floatCartItemsText', 'itemsPageRecommendedText', 'homePageForTwoText', 'homePageMinsText', 'loginLoginPasswordLabel', 'loginLoginEmailLabel', 'loginLoginSubTitle', 'loginLoginTitle', 'pleaseWaitText', 'loginErrorMessage', 'firstScreenLoginBtn', 'firstScreenWelcomeMessage', 'runningOrderCanceledSub', 'runningOrderCanceledTitle', 'runningOrderDeliveryAssignedSub', 'runningOrderDeliveryAssignedTitle', 'checkoutSelectPayment', 'checkoutPaymentListTitle', 'orderTextTotal', 'noOrdersText', 'runningOrderRefreshButton', 'runningOrderOnwaySub', 'runningOrderOnwayTitle', 'runningOrderPreparingSub', 'runningOrderPreparingTitle', 'runningOrderPlacedSub', 'runningOrderPlacedTitle', 'checkoutPlaceOrder', 'checkoutPageTitle', 'cartPageTitle', 'cartSetAddressText', 'noAddressText', 'deleteAddressText', 'editAddressText', 'cartSuggestionPlaceholder', 'cartInvalidCoupon', 'cartApplyCoupon', 'addressTagPlaceholder', 'editAddressTag', 'editAddressLandmark', 'editAddressHouse', 'editAddressAddress', 'buttonSaveAddress', 'buttonNewAddress', 'cartChangeLocation', 'cartDeliverTo', 'cartLoginButtonText', 'cartLoginSubHeader', 'cartLoginHeader', 'cartMakePayment', 'accountLogout', 'accountHelpFaq', 'accountMyOrders', 'accountManageAddress', 'restaurantSearchPlaceholder', 'cartEmptyText', 'newBadgeText', 'popularBadgeText', 'recommendedBadgeText', 'searchPopularPlaces', 'searchAreaPlaceholder', 'restaurantCountText', 'footerAccount', 'footerCart', 'footerExplore', 'footerNearme', 'firstScreenLoginText', 'firstScreenSetupLocation', 'firstScreenSubHeading', 'firstScreenHeading', 'registrationPolicyMessage', 'locationSavedAddresses', 'restaurantMinOrderMessage', 'footerAlerts', 'markAllAlertReadText', 'noNewAlertsText', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption', 'sendgrid_api_key', 'mail_driver', 'cartItemNotAvailable', 'cartRemoveItemButton', 'deliveryTotalEarningsText', 'deliveryUsePhoneToAccessMsg', 'restaurantNotActiveMsg', 'uploadImageQuality', 'msg91SenderId', 'msg91AuthKey', 'sendEmailFromEmailName', 'sendEmailFromEmailAddress', 'mapApiKey', 'firebaseSDKSnippet', 'deliveryMaxOrderReachedMsg', 'chooseAvatarText', 'customCartMessage', 'customHomeMessage', 'inAppCloseButton', 'inAppOpenLinkButton', 'iOSPWAPopupTitle', 'iOSPWAPopupBody', 'iOSPWAPopupShareButtonLabel', 'iOSPWAPopupAddButtonLabel', 'iOSPWAPopupCloseButtonLabel', 'offlineTitleMessage', 'offlineSubTitleMessage', 'userInActiveMessage', 'googleApiKeyNoRestriction', 'mockSearchPlaceholder', 'tooManyApiCallMessage', 'paymongoSK', 'awaitingPaymentStatusText', 'paymentFailedStatusText', 'awaitingPaymentTitle', 'awaitingPaymentSubTitle', 'checkoutStripeIdealText', 'checkoutStripeIdealSubText', 'checkoutStripeFpxText', 'checkoutStripeFpxSubText', 'checkoutMercadoPagoText', 'checkoutMercadoPagoSubText', 'checkoutPayMongoText', 'checkoutPayMongoSubText', 'checkoutPayText', 'checkoutCardNumber', 'checkoutCardExpiration', 'checkoutCardCvv', 'checkoutCardPostalCode', 'checkoutCardFullname', 'checkoutIdealSelectBankText', 'checkoutFpxSelectBankText', 'mercadopagoAccessToken', 'couponNotLoggedin', 'paytm_environment', 'paytm_merchant_id', 'paytm_merchant_key', 'paytm_merchant_website', 'paytm_channel', 'paytm_industry_type', 'checkoutPaytmText', 'checkoutPaytmSubText', 'deliveryCollectionText', 'allowPaymentGatewaySelection', 'orderDetailsPaymentMode', 'oneSignalAppId', 'oneSignalRestApiKey', 'sortSelfpickupStoresByDistance', 'deliveryEarningCommissionText', 'applyCouponButtonText', 'tipText', 'tipsForDeliveryText', 'tipsThanksText', 'tipsOtherText', 'deliveryTipTransactionMessage', 'deliveryEarningTipText', 'deliveryEarningTotalEarningText', 'deliveryLastSevenDaysEarningTitle', 'cartRemoveTipText', 'cartTipAmountPlaceholderText', 'cartTipPercentagePlaceholderText', 'deliveryPickedupOrdersTitle', 'deliveryNoPickedupOrdersMsg', 'deliveryFooterPickedup', 'desktopTryItOnPhoneTitle', 'desktopTryItOnPhoneSubTitle', 'orderAmountPaidWithWallet', 'orderAmountRemainingToPay', 'deliveryToggleLightDarkMode', 'checkoutFlutterwaveText', 'checkoutFlutterwaveSubText', 'cartDeliveryTypeChangeButtonText', 'cartChooseDeliveryTypeTitle', 'accountMyFavouriteStores', 'favouriteStoresPageTitle', 'cartReplaceItemTitle', 'cartReplaceItemSubTitle', 'cartReplaceItemActionNo', 'cartReplaceItemActionYes', 'cartDeliveryTypeOptionAvailableText', 'cartDeliveryTypeSelectedText', 'accountTaxVatText', 'customerVatSave', 'pwaInstallFooterMessage', 'pwaInstallFooterInstallText', 'msg91OtpDltTemplateId', 'msg91NewOrderDltTemplateId', 'msg91NewOrderDeliveryDltTemplateId', 'reviewsPageTitle', 'rarModDeliveryRatingTitle', 'rarReviewBoxTitleDeliveryFeedback', 'rarModRestaurantRatingTitle', 'rarReviewBoxTitleStoreFeedback', 'rarReviewBoxTextPlaceHolderText', 'orderRateOrderButton', 'ratingsRequiredMessage', 'rarSubmitButtonText', 'rarModRatingPageTitle', 'checkoutKhaltiText', 'checkoutKhaltiSubText', 'cashChangeTitle', 'cashChangeInputPlaceholder', 'cashChangeConfirmButton', 'cashChangeHelpText', 'khaltiSecretKey', 'deliveryAppRequestedCashChangeMsg', 'deliveryAppYouAreOnlineBtn', 'deliveryAppYouAreOfflineBtn', 'checkoutMessageOnProcess', 'orderInvoiceEmailSubject', 'sendOrderInvoiceOverEmail', 'checkoutMessageOnIdle', 'modOSScheduleThisOrderText', 'modOSScheduleForText', 'modOSSelectDateTimeText', 'modOSDoneBtnText', 'modOSRemoveBtnText', 'scheduledOrderStatusText', 'modOSSlotNotAvalText', 'confirmedOrderStatusText', 'razorpayWebhookSecret', 'adminCustomCss', 'useGpsMessage', 'useGpsButtonText', 'moduleRedownloadNotice', 'freeDeliveryPrefixText', 'freeDeliverySuffixText', 'awaitingPaymentTimerText', 'intentDomains', 'razorpayMerchantId', 'adminDailyTargetRevenue'])->get(['key', 'value']);
             $this->processSuperCache('app-settings', $settings);
         }
 
@@ -105,11 +105,14 @@ class SettingController extends Controller
     public function saveSettings(Request $request, Factory $cache)
     {
         // dd($request->all());
-        $allSettings = $request->except(['logo', 'favicon', 'splashLogo', 'seoOgImage', 'seoTwitterImage', 'firstScreenHeroImage', 'showPromoSlider', 'showMap', 'enablePushNotification', 'enablePushNotificationOrders', 'showGdpr', 'enableGoogleAnalytics', 'taxApplicable', 'enSOV', 'enSPU', 'enableFacebookLogin', 'enableGoogleLogin', 'enableDeliveryPin', 'timezone', 'enDevMode', 'hidePriceWhenZero', 'enableDeliveryGuyEarning', 'enPassResetEmail', 'showPercentageDiscount', 'showVegNonVegBadge', 'showFromNowDate', 'enDelChrRnd', 'expandAllItemMenu', 'smsRestaurantNotify', 'smsRestOrderValue', 'smsDeliveryNotify', 'smsOrderNotify', 'showOrderAddonsDelivery', 'showDeliveryFullAddressOnList', 'showUserInfoBeforePickup', 'recommendedLayoutV2', 'flatApartmentAddressRequired', 'showInActiveItemsToo', 'enGDMA', 'showPriceAndOrderCommentsDelivery', 'useSimpleSpinner', 'randomizeStores', 'showCouponDescriptionOnSuccess', 'stripeAcceptAliPay', 'stripeAcceptBitCoin', 'enIOSPWAPopup', 'mockSearchOnHomepage', 'stripeInlineCardCheckout', 'stripeAcceptIdealPayment', 'stripeAcceptFpxPayment', 'stripeCheckoutPostalCode', 'googleFullAddress', 'showDeliveryCollection', 'allowPaymentGatewaySelection', 'sortSelfpickupStoresByDistance', 'countQuantityAsTotalItemsOnCart', 'tips', 'tips_percentage', 'showTipsAmount', 'showTipsPercentage']);
-        // dd($allSettings);
+        $allSettings = $request->except(['logo', 'favicon', 'splashLogo', 'seoOgImage', 'seoTwitterImage', 'firstScreenHeroImage', 'showPromoSlider', 'showMap', 'enablePushNotification', 'enablePushNotificationOrders', 'showGdpr', 'enableGoogleAnalytics', 'taxApplicable', 'enSOV', 'enSPU', 'enableFacebookLogin', 'enableGoogleLogin', 'enableDeliveryPin', 'timezone', 'enDevMode', 'hidePriceWhenZero', 'enableDeliveryGuyEarning', 'enPassResetEmail', 'showPercentageDiscount', 'showVegNonVegBadge', 'showFromNowDate', 'enDelChrRnd', 'expandAllItemMenu', 'smsRestaurantNotify', 'smsRestOrderValue', 'smsDeliveryNotify', 'smsOrderNotify', 'showOrderAddonsDelivery', 'showDeliveryFullAddressOnList', 'showUserInfoBeforePickup', 'recommendedLayoutV2', 'flatApartmentAddressRequired', 'showInActiveItemsToo', 'enGDMA', 'showPriceAndOrderCommentsDelivery', 'useSimpleSpinner', 'randomizeStores', 'showCouponDescriptionOnSuccess', 'stripeAcceptAliPay', 'stripeAcceptBitCoin', 'enIOSPWAPopup', 'mockSearchOnHomepage', 'stripeInlineCardCheckout', 'stripeAcceptIdealPayment', 'stripeAcceptFpxPayment', 'stripeCheckoutPostalCode', 'googleFullAddress', 'showDeliveryCollection', 'allowPaymentGatewaySelection', 'sortSelfpickupStoresByDistance', 'countQuantityAsTotalItemsOnCart', 'tips', 'tips_percentage', 'showTipsAmount', 'showTipsPercentage', 'showTryItOnPhone', 'showAddonPricesOnCart', 'showCustomerVatNumber', 'showPwaInstallPromptFooter', 'showCashChange', 'sortDeliveryStoresByDistance', 'enCODonSF', 'sendOrderInvoiceOverEmail', 'hideCustomerDetailsFromStoreOwner', 'iHaveFoodomaaAndroidApp', 'iHaveFoodomaaDeliveryApp', 'iHaveFoodomaaStoreApp', 'hasSocketPush']);
+
         foreach ($allSettings as $key => $value) {
             $setting = Setting::where('key', $key)->first();
             if ($setting != null) {
+                if ($setting->key == "firebaseRealtimeDatabaseUrl") {
+                    $value = rtrim($value, "/");
+                }
                 $setting->value = $value;
                 $setting->save();
             }
@@ -196,8 +199,8 @@ class SettingController extends Controller
             $image = $request->file('logo');
             $filename = 'logo' . '.png';
             $smallFile = 'logo-sm' . '.png';
-            Image::make($image)->resize(320, 89)->save(base_path('/assets/img/logos/' . $filename), 100, 'png');
-            Image::make($image)->resize(120, 33)->save(base_path('/assets/img/logos/' . $smallFile), 100, 'png');
+            Image::make($image)->resize(320, 108)->save(base_path('/assets/img/logos/' . $filename), 100, 'png');
+            Image::make($image)->resize(120, 41)->save(base_path('/assets/img/logos/' . $smallFile), 100, 'png');
             $setting->value = $filename . '?v=' . time() . str_random(5);
             $setting->save();
         }
@@ -244,19 +247,40 @@ class SettingController extends Controller
             $setting->save();
         }
 
+
         //checkboxes settings (true/false)
-        $checkboxesSettings = ['showPromoSlider', 'showMap', 'enablePushNotification', 'enablePushNotificationOrders', 'showGdpr', 'enableGoogleAnalytics', 'taxApplicable', 'enSOV', 'enSPU', 'enableFacebookLogin', 'enableGoogleLogin', 'enableDeliveryPin', 'hidePriceWhenZero', 'enableDeliveryGuyEarning', 'enPassResetEmail', 'showPercentageDiscount', 'showVegNonVegBadge', 'showFromNowDate', 'enDelChrRnd', 'expandAllItemMenu', 'smsRestaurantNotify', 'smsRestOrderValue', 'smsDeliveryNotify', 'smsOrderNotify', 'showOrderAddonsDelivery', 'showDeliveryFullAddressOnList', 'showUserInfoBeforePickup', 'recommendedLayoutV2', 'flatApartmentAddressRequired', 'showInActiveItemsToo', 'enGDMA', 'showPriceAndOrderCommentsDelivery', 'useSimpleSpinner', 'randomizeStores', 'showCouponDescriptionOnSuccess', 'stripeAcceptAliPay', 'stripeAcceptBitCoin', 'enIOSPWAPopup', 'mockSearchOnHomepage', 'stripeInlineCardCheckout', 'stripeAcceptIdealPayment', 'stripeAcceptFpxPayment', 'stripeCheckoutPostalCode', 'googleFullAddress', 'showDeliveryCollection', 'allowPaymentGatewaySelection', 'sortSelfpickupStoresByDistance', 'countQuantityAsTotalItemsOnCart', 'allowPaymentGatewaySelection', 'showTipsPercentage', 'showTipsAmount'];
+        $checkboxesSettings = ['showPromoSlider', 'showMap', 'enablePushNotification', 'enablePushNotificationOrders', 'showGdpr', 'enableGoogleAnalytics', 'taxApplicable', 'enSOV', 'enSPU', 'enableFacebookLogin', 'enableGoogleLogin', 'enableDeliveryPin', 'hidePriceWhenZero', 'enableDeliveryGuyEarning', 'enPassResetEmail', 'showPercentageDiscount', 'showVegNonVegBadge', 'showFromNowDate', 'enDelChrRnd', 'expandAllItemMenu', 'smsRestaurantNotify', 'smsRestOrderValue', 'smsDeliveryNotify', 'smsOrderNotify', 'showOrderAddonsDelivery', 'showDeliveryFullAddressOnList', 'showUserInfoBeforePickup', 'recommendedLayoutV2', 'flatApartmentAddressRequired', 'showInActiveItemsToo', 'enGDMA', 'showPriceAndOrderCommentsDelivery', 'useSimpleSpinner', 'randomizeStores', 'showCouponDescriptionOnSuccess', 'stripeAcceptAliPay', 'stripeAcceptBitCoin', 'enIOSPWAPopup', 'mockSearchOnHomepage', 'stripeInlineCardCheckout', 'stripeAcceptIdealPayment', 'stripeAcceptFpxPayment', 'stripeCheckoutPostalCode', 'googleFullAddress', 'showDeliveryCollection', 'allowPaymentGatewaySelection', 'sortSelfpickupStoresByDistance', 'countQuantityAsTotalItemsOnCart', 'allowPaymentGatewaySelection', 'showTipsPercentage', 'showTipsAmount', 'showTryItOnPhone', 'showAddonPricesOnCart', 'showCustomerVatNumber', 'showPwaInstallPromptFooter', 'showCashChange', 'sortDeliveryStoresByDistance', 'enCODonSF', 'sendOrderInvoiceOverEmail', 'hideCustomerDetailsFromStoreOwner', 'iHaveFoodomaaAndroidApp', 'iHaveFoodomaaDeliveryApp', 'iHaveFoodomaaStoreApp', 'hasSocketPush'];
 
         foreach ($checkboxesSettings as $checkboxSetting) {
             $setting = Setting::where('key', $checkboxSetting)->first();
-            if ($request->$checkboxSetting == 'true') {
-                $setting->value = 'true';
-                $setting->save();
+            if ($setting) {
+                if ($request->$checkboxSetting == 'true') {
+                    $setting->value = 'true';
+                    $setting->save();
+                } else {
+                    $setting->value = 'false';
+
+                    $setting->save();
+                }
             } else {
-                $setting->value = 'false';
-                $setting->save();
+                if ($checkboxSetting != null || $checkboxSetting != '') {
+                    $setting = new Setting();
+                    $setting->key = $checkboxSetting;
+                    if ($request->$checkboxSetting == 'true') {
+                        $setting->value = 'true';
+                        $setting->save();
+                    } else {
+                        $setting->value = 'false';
+                        $setting->save();
+                    }
+                }
             }
         }
+
+        //get store url from request
+        $storeUrl = Setting::where('key', 'storeUrl')->first();
+        $storeUrl->value = $request->getSchemeAndHttpHost();
+        $storeUrl->save();
 
         if ($request->enDevMode == 'true') {
             $env = DotenvEditor::load();
@@ -317,12 +341,61 @@ class SettingController extends Controller
         return redirect(route('admin.settings') . $request->window_redirect_hash)->with(['success' => 'Settings saved successfully.']);
     }
 
+    public function saveSpecificSettings(Request $request)
+    {
+        $stringSettings = $request->except([]);
+        foreach ($stringSettings as $key => $value) {
+            $setting = Setting::where('key', $key)->first();
+            if ($setting != null) {
+                $setting->value = $value;
+                $setting->save();
+            }
+        }
+
+        Artisan::call('cache:clear');
+        Artisan::call('view:clear');
+
+        return redirect()->back()->with(['success' => 'Settings saved.']);
+    }
     /**
      * @param Key
      * Get setting by key name
      */
     public function getSettingByKey($key)
     {
+        if ($key == "storeColor") {
+            $setting = Setting::where('key', $key)->first();
+            $regex = '/rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)/';
+            preg_match($regex, $setting->value, $matches);
+            if (count($matches) == 4) {
+                if (strlen(dechex($matches[1])) == 1) {
+                    $red = '0' . dechex($matches[1]);
+                } else {
+                    $red = dechex($matches[1]);
+                }
+                if (strlen(dechex($matches[2])) == 1) {
+                    $green = '0' . dechex($matches[2]);
+                } else {
+                    $green = dechex($matches[2]);
+                }
+                if (strlen(dechex($matches[3])) == 1) {
+                    $blue = '0' . dechex($matches[3]);
+                } else {
+                    $blue = dechex($matches[3]);
+                }
+                $hex = '#' . $red . $green . $blue;
+                $setting->value = $hex;
+                return $setting;
+            }
+        }
+        if ($key == "intentDomains") {
+            $setting = Setting::where('key', 'intentDomains')->first();
+            $domains = $setting->value;
+            $domains = str_replace(' ', '', trim($domains, ', '));
+            $domains = explode(",", $domains);
+            $domains = json_encode($domains);
+            return $domains;
+        }
         return Setting::where('key', $key)->first();
     }
 
@@ -387,7 +460,7 @@ class SettingController extends Controller
             ];
             Mail::send('emails.testEmail', $data, function ($message) use ($data) {
                 $message->subject('Test Email from Foodomaa');
-                $message->from(config('settings.sendEmailFromEmailAddress'));
+                $message->from(config('setting.sendEmailFromEmailAddress'));
                 $message->to($data['email']);
             });
 
@@ -441,7 +514,6 @@ class SettingController extends Controller
             DB::table('locations')->truncate();
             DB::table('item_categories')->truncate();
             DB::table('items')->truncate();
-            DB::table('gps_tables')->truncate();
             DB::table('delivery_guy_details')->truncate();
             DB::table('delivery_collection_logs')->truncate();
             DB::table('delivery_collections')->truncate();
@@ -457,6 +529,13 @@ class SettingController extends Controller
         } catch (Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 401);
         }
+    }
 
+    public function deleteJunkActivityLogs(Request $request)
+    {
+        DB::statement('DELETE FROM activity_log WHERE created_at < NOW() - INTERVAL 30 DAY;');
+        DB::statement('OPTIMIZE TABLE activity_log;');
+
+        return redirect()->back()->with(['success' => 'Cleaning successful']);
     }
 }
