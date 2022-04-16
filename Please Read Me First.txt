@@ -1,0 +1,21 @@
+Full Source Files are not meant to be uploaded on your domain directly.
+
+If you upload the files directly to your server/domain, it will NOT work.
+
+Full Source Files are only meant for Local Development. 
+After you have made the customizations to the application, then you need to upload only some particular files and folders.
+
+Kindly refer to this documentation properly:
+https://docs.foodomaa.com/advanced-usage/using-the-full-source-code
+
+The above documentation clearly elaborates how you can setup your local development enviroment for Foodomaa and deploy after making your necessary customizations.
+
+Feel free to contact us on https://support.stackcanyon.com if you have any doubts.
+
+===
+
+AGAIN, DONOT UPLOAD THESE FILES TO YOUR SERVER DIRECTLY.
+
+===
+
+Please DONOT ignore this warning.
