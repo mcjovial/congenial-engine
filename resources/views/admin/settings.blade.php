@@ -1201,7 +1201,7 @@
                                 <div class="form-group row">
                                     @if(config('settings.seoOgImage') !== NULL)
                                     <div class="col-lg-9 offset-lg-3">
-                                        <img src="{{ substr(url('/'), 0, strrpos(url('/'), '/')) }}/assets/img/social/{{ config('settings.seoOgImage') }}"
+                                        <img src="/assets/img/social/{{ config('settings.seoOgImage') }}"
                                             alt="Open Graph Image" class="img-fluid mb-2" style="width: 30%;">
                                     </div>
                                     @endif
@@ -1233,7 +1233,7 @@
                                 <div class="form-group row">
                                     @if(config('settings.seoTwitterImage') !== NULL)
                                     <div class="col-lg-9 offset-lg-3">
-                                        <img src="{{ substr(url('/'), 0, strrpos(url('/'), '/')) }}/assets/img/social/{{ config('settings.seoTwitterImage') }}"
+                                        <img src="/assets/img/social/{{ config('settings.seoTwitterImage') }}"
                                             alt="Twitter Image" class="img-fluid mb-2" style="width: 30%;">
                                     </div>
                                     @endif
@@ -1253,7 +1253,7 @@
                                 <div class="form-group row">
                                     @if(config('settings.storeLogo') !== NULL)
                                     <div class="col-lg-9 offset-lg-3">
-                                        <img src="{{ substr(url('/'), 0, strrpos(url('/'), '/')) }}/assets/img/logos/{{ config('settings.storeLogo') }}"
+                                        <img src="/assets/img/logos/{{ config('settings.storeLogo') }}"
                                             alt="logo" class="img-fluid mb-2" style="width: 135px;">
                                     </div>
                                     @endif
@@ -1266,7 +1266,7 @@
                                 <div class="form-group row">
                                     @if(config('settings.favicon-32x32') !== NULL)
                                     <div class="col-lg-9 offset-lg-3">
-                                        <img src="{{ substr(url('/'), 0, strrpos(url('/'), '/')) }}/assets/img/favicons/{{ config('settings.favicon-96x96') }}"
+                                        <img src="/assets/img/favicons/{{ config('settings.favicon-96x96') }}"
                                             alt="favicon-96x96" class="img-fluid mb-2" style="width: 70px;">
                                     </div>
                                     @endif
@@ -1279,7 +1279,7 @@
                                 <div class="form-group row">
                                     @if(config('settings.splashLogo') !== NULL)
                                     <div class="col-lg-9 offset-lg-3">
-                                        <img src="{{ substr(url('/'), 0, strrpos(url('/'), '/')) }}/assets/img/splash/{{ config('settings.splashLogo') }}"
+                                        <img src="/assets/img/splash/{{ config('settings.splashLogo') }}"
                                             alt="splash screen" class="img-fluid mb-2" style="width: 30%;">
                                     </div>
                                     @endif
@@ -1292,7 +1292,7 @@
                                 <div class="form-group row">
                                     @if(config('settings.firstScreenHeroImage') !== NULL)
                                     <div class="col-lg-9 offset-lg-3">
-                                        <img src="{{ substr(url('/'), 0, strrpos(url('/'), '/')) }}/{{ config('settings.firstScreenHeroImage') }}"
+                                        <img src="/{{ config('settings.firstScreenHeroImage') }}"
                                             alt="Hero Image" class="img-fluid mb-2" style="width: 30%;">
                                     </div>
                                     @endif
@@ -1589,7 +1589,7 @@
                                 </div>
                                 @endforeach
                                 <hr>
-                                <h2> <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/img/various/stripe.png" alt="Stripe" style="width: 35px"> Stripe</h2>
+                                <h2> <img src="/assets/img/various/stripe.png" alt="Stripe" style="width: 35px"> Stripe</h2>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label"><strong>Stripe Public Key:</strong></label>
                                     <div class="col-lg-9">
@@ -1685,7 +1685,7 @@
                                 </div>
                                 
                                 <hr>
-                                <h2> <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/img/various/paypal.png" alt="PayPal" style="width: 35px"> PayPal</h2>
+                                <h2> <img src="/assets/img/various/paypal.png" alt="PayPal" style="width: 35px"> PayPal</h2>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label"><strong>Paypal Environment:</strong></label>
                                     <div class="col-lg-9">
@@ -1716,7 +1716,7 @@
                                     </div>
                                 </div>
                                 <hr>
-                                <h2> <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/img/various/paystack.png" alt="PayStack" style="width: 35px"> PayStack</h2>
+                                <h2> <img src="/assets/img/various/paystack.png" alt="PayStack" style="width: 35px"> PayStack</h2>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label"><strong>PayStack Public Key:</strong></label>
                                     <div class="col-lg-9">
@@ -1736,7 +1736,7 @@
                                     </div>
                                 </div>
                                 <hr>
-                                <h2> <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/img/various/razorpay.png" alt="Razorpay" style="width: 35px"> Razorpay</h2>
+                                <h2> <img src="/assets/img/various/razorpay.png" alt="Razorpay" style="width: 35px"> Razorpay</h2>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label"><strong>Razorpay Key Id:</strong></label>
                                     <div class="col-lg-9">
@@ -1754,7 +1754,7 @@
                                     </div>
                                 </div>
                                 <hr>
-                                <h2> <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/img/various/paymongo.png" alt="PayMongo" style="width: 35px"> PayMongo</h2>
+                                <h2> <img src="/assets/img/various/paymongo.png" alt="PayMongo" style="width: 35px"> PayMongo</h2>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label"><strong>PayMongo Public Key:</strong></label>
                                     <div class="col-lg-9">
@@ -1773,7 +1773,7 @@
                                 </div>
                                 <hr>
                                 
-                                <h2> <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/img/various/mercadopago.png" alt="MercadoPago" style="width: 35px"> MercadoPago</h2>
+                                <h2> <img src="/assets/img/various/mercadopago.png" alt="MercadoPago" style="width: 35px"> MercadoPago</h2>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label"><strong>MercadoPago Access Token:</strong></label>
                                     <div class="col-lg-9">
@@ -1786,7 +1786,7 @@
 
                                 <hr>
 
-                                <h2> <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/img/various/paytm.png" alt="Paytm" style="width: 35px"> Paytm</h2>
+                                <h2> <img src="/assets/img/various/paytm.png" alt="Paytm" style="width: 35px"> Paytm</h2>
                                 <div class="form-group row">
                                     <label class="col-lg-3 col-form-label"><strong>Paytm Environment:</strong></label>
                                     <div class="col-lg-9">
@@ -3104,7 +3104,7 @@
             //create new audio
             let selectedFile = $(this).val();
             let notification = document.createElement('audio');
-               notification.setAttribute('src', '{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/backend/tones/'+selectedFile+'.mp3');
+               notification.setAttribute('src', '/assets/backend/tones/'+selectedFile+'.mp3');
                notification.setAttribute('type', 'audio/mp3');
                notification.play();
         });

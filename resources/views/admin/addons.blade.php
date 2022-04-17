@@ -65,6 +65,9 @@
                                     <a href="{{ route('admin.editAddon', $addon->id) }}"
                                         class="badge badge-primary badge-icon"> EDIT <i
                                         class="icon-database-edit2 ml-1"></i></a>
+                                    <a href="{{ route('admin.deleteAddon', $addon->id) }}"
+                                        class="badge badge-primary badge-icon"> DELETE <i
+                                        class="icon-trash ml-1"></i></a>
 
                                     <div class="checkbox checkbox-switchery ml-1" style="padding-top: 0.8rem;">
                                         <label>

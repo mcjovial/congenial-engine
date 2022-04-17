@@ -5,12 +5,12 @@
     <div class="navbar-brand wmin-0 mr-5">
         @role("Admin")
         <a href="{{ route('admin.dashboard') }}" class="d-inline-block">
-        <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/backend/global_assets/images/dashboard-logo.png" alt="Dashboard">
+        <img src="/assets/backend/global_assets/images/dashboard-logo.png" alt="Dashboard">
         </a>
         @endif
         @role("Store Owner")
         <a href="{{ route('restaurant.dashboard') }}" class="d-inline-block">
-        <img src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/backend/global_assets/images/dashboard-logo.png" alt="Dashboard">
+        <img src="/assets/backend/global_assets/images/dashboard-logo.png" alt="Dashboard">
         </a>
         @endrole
     </div>
@@ -103,7 +103,7 @@
                     </a>
                     <a href="{{ route("admin.itemcategories") }}" class="dropdown-item {{ Request::is('admin/itemcategories') ? 'active' : '' }}">
                     <i class="icon-grid52 mr-2"></i>
-                    Menu Categories
+                    Item Categories
                     </a>
                     <a href="{{ route("admin.items") }}" class="dropdown-item {{ Request::is('admin/items') ? 'active' : '' }}">
                     <i class="icon-grid mr-2"></i>

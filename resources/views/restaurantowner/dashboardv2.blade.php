@@ -436,7 +436,7 @@
     
         /* NEW ORDER ALERT POPUP */
         let notification = document.createElement('audio');
-        let notificationFileRoute = '{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/backend/tones/{{ config('settings.restaurantNotificationAudioTrack') }}.mp3';
+        let notificationFileRoute = '/assets/backend/tones/{{ config('settings.restaurantNotificationAudioTrack') }}.mp3';
            notification.setAttribute('src', notificationFileRoute);
            notification.setAttribute('type', 'audio/mp3');
            // notification.setAttribute('muted', 'muted');

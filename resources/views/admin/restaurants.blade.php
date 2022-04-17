@@ -99,27 +99,27 @@
                             <td>{{ $restaurant->name }}</td>
                             <td>
                             @if(count($restaurant->users))
-                            @php
-                                $resUsercount = 0
-                            @endphp
-                                @foreach($restaurant->users as $restaurantUser)
-                                    @if($restaurantUser->hasRole("Store Owner"))
-                                    @php
-                                        $resUsercount++;
-                                    @endphp
-                                        <div>
-                                            <a href="{{ route('admin.impersonate', $restaurantUser->id) }}"
-                                                        class="mr-1" data-popup="tooltip"
-                                            data-placement="left" title="Login as {{ $restaurantUser->name }}" style="border: 1px solid #E0E0E0; border-radius: 0.275rem; padding: 1.5px 4px;"> <i class="icon-redo2 text-warning"></i></a>
-                                        <a href="{{ route('admin.get.editUser', $restaurantUser->id) }}">{{ $restaurantUser->name }}</a>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            @if($resUsercount == 0)
-                                <span class="badge badge-flat border-grey-800 text-default text-capitalize">
-                                    UNASSIGNED
-                                </span>
-                            @endif
+                                @php
+                                    $resUsercount = 0
+                                @endphp
+                                    @foreach($restaurant->users as $restaurantUser)
+                                        @if($restaurantUser->hasRole("Store Owner"))
+                                            @php
+                                                $resUsercount++;
+                                            @endphp
+                                            <div>
+                                                <a href="{{ route('admin.impersonate', $restaurantUser->id) }}"
+                                                            class="mr-1" data-popup="tooltip"
+                                                data-placement="left" title="Login as {{ $restaurantUser->name }}" style="border: 1px solid #E0E0E0; border-radius: 0.275rem; padding: 1.5px 4px;"> <i class="icon-redo2 text-warning"></i></a>
+                                            <a href="{{ route('admin.get.editUser', $restaurantUser->id) }}">{{ $restaurantUser->name }}</a>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                @if($resUsercount == 0)
+                                    <span class="badge badge-flat border-grey-800 text-default text-capitalize">
+                                        UNASSIGNED
+                                    </span>
+                                @endif
                             @else
                                 <span class="badge badge-flat border-grey-800 text-default text-capitalize">
                                     UNASSIGNED
@@ -142,9 +142,10 @@
                             <td class="text-center">
                                 <div class="btn-group btn-group-justified align-items-center">
                                     <a href="{{ route('admin.get.editRestaurant', $restaurant->id) }}"
-                                        class="badge badge-primary badge-icon"> Edit <i
-                                            class="icon-database-edit2 ml-1"></i></a>
-                                     <a href="{{ route('admin.getRestaurantItems', $restaurant->id) }}"
+                                        class="badge badge-primary badge-icon"> Edit <i class="icon-database-edit2 ml-1"></i></a>
+                                    <a href="{{ route('admin.deleteRestaurant', $restaurant->id) }}"
+                                        class="badge badge-primary badge-icon"> Delete <i class="icon-trash ml-1"></i></a>
+                                    <a href="{{ route('admin.getRestaurantItems', $restaurant->id) }}"
                                         class="badge badge-primary badge-icon ml-1" data-popup="tooltip"
                                         title="View {{ $restaurant->name }}'s Items" data-placement="bottom"> <i
                                             class="icon-arrow-right5"></i> </a>
@@ -203,7 +204,7 @@
                         <div class="col-lg-9">
                             <img class="slider-preview-image hidden" />
                             <div class="uploader">
-                                <input type="file" class="form-control-lg form-control-uniform" name="image" required
+                                <input type="file" class="form-control-lg form-control-uniform" name="image"
                                     accept="image/x-png,image/gif,image/jpeg" onchange="readURL(this);">
                                 <span class="help-text text-muted">Image dimension 160x117</span>
                             </div>
@@ -368,7 +369,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-group row">
+                    {{-- <div class="form-group row">
                         <label class="col-lg-3 col-form-label">Is Pure Veg?</label>
                         <div class="col-lg-9">
                             <div class="checkbox checkbox-switchery mt-2">
@@ -378,7 +379,7 @@
                                 </label>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label">Is Featured?</label>
                         <div class="col-lg-9">
@@ -492,7 +493,7 @@
         
         $('#downloadSampleRestaurantCsv').click(function(event) {
             event.preventDefault();
-            window.location.href = "{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/docs/restaurants-sample-csv.csv";
+            window.location.href = "/assets/docs/restaurants-sample-csv.csv";
         });
          
          $('.rating').numeric({allowThouSep:false,  min: 1, max: 5, maxDecimalPlaces: 1 });

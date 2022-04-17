@@ -35,7 +35,7 @@
         <script src="/assets/backend/js/jquery.overlayScrollbars.min.js"></script>
         <script src="/assets/backend/global_assets//js/plugins/ui/moment/moment.min.js"></script>
 
-        <script type="text/javascript" src="{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/backend/global_assets/js/plugins/loaders/blockui.min.js"></script>
+        <script type="text/javascript" src="/assets/backend/global_assets/js/plugins/loaders/blockui.min.js"></script>
         <script src="/assets/backend/global_assets/js/main/bootstrap.bundle.min.js"></script>
         <script src="/assets/backend/global_assets/js/plugins/ui/slinky.min.js"></script>
         <!-- /core JS files -->

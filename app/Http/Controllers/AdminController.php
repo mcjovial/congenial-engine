@@ -162,9 +162,9 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function saveNewUser(Request $request)
     {
         try {
@@ -215,9 +215,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function postSearchUsers(Request $request)
     {
         $query = $request['query'];
@@ -239,10 +239,10 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param $id
- */
-// public function getEditUser($id)
+    /**
+     * @param $id
+     */
+    // public function getEditUser($id)
     // {
     //     $user = User::where('id', $id)->first();
     //     $roles = Role::get();
@@ -265,9 +265,9 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function updateUser(Request $request)
     {
         // dd($request->all());
@@ -362,9 +362,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function banUser($id)
     {
         $user = User::where('id', $id)->firstOrFail();
@@ -382,9 +382,9 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function getManageDeliveryGuysRestaurants($id)
     {
         $user = User::where('id', $id)->first();
@@ -403,9 +403,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function updateDeliveryGuysRestaurants(Request $request)
     {
         $user = User::where('id', $request->id)->first();
@@ -425,9 +425,9 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function getManageRestaurantOwnersRestaurants($id)
     {
         $user = User::where('id', $id)->first();
@@ -445,9 +445,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function updateManageRestaurantOwnersRestaurants(Request $request)
     {
         $user = User::where('id', $request->id)->first();
@@ -461,9 +461,9 @@ class AdminController extends Controller
         return view('admin.orders');
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function postSearchOrders(Request $request)
     {
         $query = $request['query'];
@@ -478,9 +478,9 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param $order_id
- */
+    /**
+     * @param $order_id
+     */
     public function viewOrder($order_id)
     {
         $order = Order::where('unique_order_id', $order_id)->with('orderitems.order_item_addons')->first();
@@ -505,9 +505,9 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function getEditSlider($id)
     {
         $restaurants = Restaurant::get();
@@ -524,9 +524,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function updateSlider(Request $request)
     {
         $slider = PromoSlider::where('id', $request->id)->first();
@@ -538,9 +538,9 @@ class AdminController extends Controller
         return redirect()->back()->with(['success' => 'Slider Updated']);
 
     }
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function createSlider(Request $request)
     {
         $sliderCount = PromoSlider::where('is_active', 1)->count();
@@ -558,9 +558,9 @@ class AdminController extends Controller
         return redirect()->back()->with(['success' => 'New Slider Created']);
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function disableSlider($id)
     {
         $slider = PromoSlider::where('id', $id)->first();
@@ -572,9 +572,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function deleteSlider($id)
     {
         $slider = PromoSlider::where('id', $id)->first();
@@ -590,9 +590,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function saveSlide(Request $request)
     {
         $url = url('/');
@@ -621,9 +621,9 @@ class AdminController extends Controller
         return redirect()->back()->with(['success' => 'New Slide Created']);
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function editSlide($id)
     {
         $slide = Slide::where('id', $id)->with('promo_slider')->first();
@@ -638,9 +638,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function updateSlide(Request $request)
     {
         $slide = Slide::where('id', $request->id)->first();
@@ -669,9 +669,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function updateSlidePosition(Request $request)
     {
         Slide::setNewOrder($request->newOrder);
@@ -679,9 +679,9 @@ class AdminController extends Controller
         return response()->json(['success' => true]);
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function deleteSlide($id)
     {
         $slide = Slide::where('id', $id)->first();
@@ -693,9 +693,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function disableSlide($id)
     {
         $slide = Slide::where('id', $id)->first();
@@ -741,9 +741,9 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function updateStorePosition(Request $request)
     {
         Restaurant::setNewOrder($request->newOrder);
@@ -769,9 +769,9 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function acceptRestaurant($id)
     {
         $restaurant = Restaurant::where('id', $id)->first();
@@ -783,9 +783,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function searchRestaurants(Request $request)
     {
         $query = $request['query'];
@@ -808,9 +808,9 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function disableRestaurant($id)
     {
         $restaurant = Restaurant::where('id', $id)->first();
@@ -824,9 +824,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function deleteRestaurant($id)
     {
         $restaurant = Restaurant::where('id', $id)->first();
@@ -836,15 +836,17 @@ class AdminController extends Controller
                 $item->delete();
             }
             $restaurant->delete();
-            return redirect()->route('admin.restaurants');
+            // return redirect()->route('admin.restaurants');
+            return redirect()->back()->with(['success' => 'Store Deleted']);
+
         } else {
             return redirect()->route('admin.restaurants');
         }
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function saveNewRestaurant(Request $request)
     {
         $restaurant = new Restaurant();
@@ -853,12 +855,14 @@ class AdminController extends Controller
         $restaurant->description = $request->description;
 
         $image = $request->file('image');
-        $rand_name = time() . str_random(10);
-        $filename = $rand_name . '.jpg';
-        Image::make($image)
-            ->resize(160, 117)
-            ->save(base_path('assets/img/restaurants/' . $filename), config('settings.uploadImageQuality '), 'jpg');
-        $restaurant->image = '/assets/img/restaurants/' . $filename;
+        if ($image) {
+            $rand_name = time() . str_random(10);
+            $filename = $rand_name . '.jpg';
+            Image::make($image)
+                ->resize(160, 117)
+                ->save(base_path('assets/img/restaurants/' . $filename), config('settings.uploadImageQuality '), 'jpg');
+            $restaurant->image = '/assets/img/restaurants/' . $filename;
+        }
 
         $restaurant->rating = $request->rating;
         $restaurant->delivery_time = $request->delivery_time;
@@ -916,7 +920,7 @@ class AdminController extends Controller
 
         try {
             $restaurant->save();
-            return redirect()->back()->with(['success' => 'Restaurant Saved']);
+            return redirect()->back()->with(['success' => 'Vendor Saved']);
         } catch (\Illuminate\Database\QueryException $qe) {
             return redirect()->back()->with(['message' => $qe->getMessage()]);
         } catch (Exception $e) {
@@ -926,9 +930,9 @@ class AdminController extends Controller
         }
     }
 
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function getRestaurantItems($id)
     {
         $items = Item::where('restaurant_id', $id)->paginate(20);
@@ -950,9 +954,9 @@ class AdminController extends Controller
         ));
 
     }
-/**
- * @param $id
- */
+    /**
+     * @param $id
+     */
     public function getEditRestaurant($id)
     {
         $restaurant = Restaurant::where('id', $id)->first();
@@ -974,9 +978,9 @@ class AdminController extends Controller
         ));
     }
 
-/**
- * @param Request $request
- */
+    /**
+     * @param Request $request
+     */
     public function updateRestaurant(Request $request)
     {
         // dd($request->all());

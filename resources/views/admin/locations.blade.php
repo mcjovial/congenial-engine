@@ -190,7 +190,7 @@
             
            $('#downloadSampleLocationCsv').click(function(event) {
             event.preventDefault();
-            window.location.href = "{{substr(url("/"), 0, strrpos(url("/"), '/'))}}/assets/docs/locations-sample-csv.csv";
+            window.location.href = "/assets/docs/locations-sample-csv.csv";
         });
     });
 </script>
